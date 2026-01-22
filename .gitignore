@@ -1,0 +1,42 @@
+# 1. 의존성 모듈 (가장 중요! 절대 올리면 안 됨)
+node_modules/
+
+# 2. 빌드 결과물 (TypeScript가 컴파일한 js 파일들)
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# 3. 환경변수 및 보안 파일 (API 키 등이 들어있을 수 있으므로 절대 금지)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 4. 로그 파일
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 5. OS 시스템 파일 (Mac/Windows 찌꺼기)
+.DS_Store
+Thumbs.db
+
+# 6. 에디터 설정 (개인 설정이므로 공유 안 함)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 7. 테스트 커버리지 리포트
+coverage/
+
+# 8. Vite 관련
+*.local
