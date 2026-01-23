@@ -1,6 +1,6 @@
 // packages/shared/src/data/spells.ts
-import { SpellCard } from "../interfaces";
 import { CardType, TargetType } from "../enums";
+import type { SpellCard } from "../interfaces";
 
 export const SPELL_CARDS: SpellCard[] = [
   {

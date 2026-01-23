@@ -1,5 +1,5 @@
+import type { Card, Deck } from "../interfaces";
 import { CARD_CATALOG } from "./cardCatalog";
-import { Card, Deck } from "../interfaces";
 
 // ID를 가지고 실제 카드 객체를 찾아주는 헬퍼 함수
 const findCard = (id: string): Card => {

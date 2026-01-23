@@ -1,6 +1,6 @@
 // packages/shared/src/data/units.ts
-import { UnitCard } from "../interfaces";
 import { CardType, TargetType } from "../enums";
+import type { UnitCard } from "../interfaces";
 
 export const UNIT_CARDS: UnitCard[] = [
   {
@@ -11,7 +11,7 @@ export const UNIT_CARDS: UnitCard[] = [
     type: CardType.UNIT,
     target: TargetType.SINGLE_ENEMY,
     attackPower: 200,
-    health: 800
+    hp: 800
   },
   {
     id: "red_dragon",
@@ -21,6 +21,6 @@ export const UNIT_CARDS: UnitCard[] = [
     type: CardType.UNIT,
     target: TargetType.ALL_ENEMIES,
     attackPower: 1000,
-    health: 2000
+    hp: 2000
   }
 ];
