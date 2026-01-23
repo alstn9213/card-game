@@ -1,6 +1,6 @@
 export * from './enums';
 export * from './interfaces';
-
-
-
-export * from './data/deckPreset';
+export * from './gameState';
+export * from './socketEvents';
+export * from './data/units';
+export * from './data/spells';

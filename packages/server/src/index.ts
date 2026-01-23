@@ -1,19 +1,35 @@
-import express from 'express';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { express } from 'express';
+import { ClientToServerEvents, ServerToClientEvents } from "@card-game/shared";
+import { Server } from "socket.io";
+import { GameSession } from "./game/GameSession";
 
 const app = express();
-
-
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: { origin: "*" } // 모든 곳에서 접속 허용 (개발용)
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
 });
+
+const sessions = new Map<string, GameSession>();
 
 io.on('connection', (socket) => {
-  console.log('플레이어가 접속했습니다:', socket.id);
+  console.log('User connected:', socket.id);
+
+  // 접속하자마자 새 게임 세션 생성 (싱글 플레이어)
+  const session = new GameSession(socket);
+  sessions.set(socket.id, session);
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+    sessions.delete(socket.id);
+  });
 });
 
-httpServer.listen(3000, () => {
-  console.log(`서버가 3000번 포트에서 실행 중입니다.`);
+const PORT = process.env.PORT || 3000;
+
+httpServer.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

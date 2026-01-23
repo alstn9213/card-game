@@ -9,7 +9,7 @@ export const SPELL_CARDS: SpellCard[] = [
     description: "적 하나에게 500의 피해를 줍니다.",
     cost: 1,
     type: CardType.SPELL,
-    target: TargetType.SINGLE_ENEMY,
+    targetType: TargetType.SINGLE_ENEMY,
     value: 500
   },
   {
@@ -18,7 +18,7 @@ export const SPELL_CARDS: SpellCard[] = [
     description: "체력을 500 회복합니다.",
     cost: 1,
     type: CardType.SPELL,
-    target: TargetType.SELF,
+    targetType: TargetType.SELF,
     value: 500
   }
 ];

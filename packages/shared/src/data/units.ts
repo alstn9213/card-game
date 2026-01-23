@@ -1,6 +1,5 @@
-// packages/shared/src/data/units.ts
 import { CardType, TargetType } from "../enums";
-import type { UnitCard } from "../interfaces";
+import { UnitCard } from "../interfaces";
 
 export const UNIT_CARDS: UnitCard[] = [
   {
@@ -9,8 +8,8 @@ export const UNIT_CARDS: UnitCard[] = [
     description: "약한 용입니다.",
     cost: 1,
     type: CardType.UNIT,
-    target: TargetType.SINGLE_ENEMY,
-    attackPower: 200,
+    targetType: TargetType.SINGLE_ENEMY,
+    attackPower: 300,
     hp: 800
   },
   {
@@ -19,7 +18,7 @@ export const UNIT_CARDS: UnitCard[] = [
     description: "아기용 성장시 소환합니다.",
     cost: 2,
     type: CardType.UNIT,
-    target: TargetType.ALL_ENEMIES,
+    targetType: TargetType.ALL_ENEMIES,
     attackPower: 1000,
     hp: 2000
   }
