@@ -1,4 +1,4 @@
-import { ClientToServerEvents, Entity, GameState, ServerToClientEvents, SPELL_CARDS, UNIT_CARDS } from "@card-game/shared";
+import { FieldUnit, ClientToServerEvents, Entity, GameState, ServerToClientEvents, SPELL_CARDS, SpellCard, UNIT_CARDS, UnitCard } from "@card-game/shared";
 import { Socket } from "socket.io";
 
 
@@ -30,6 +30,8 @@ export class GameSession {
       enemy,
       hand,
       deck,
+      playerField: [],
+      enemyField: [],
       discardPile: [],
       currentGold: 5,
       turn: 1,
@@ -55,7 +57,32 @@ export class GameSession {
     }
 
     const card = this.state.hand[cardIndex];
-    if (!card) return;
+
+    if (card.type === "UNIT") {
+       // 유닛 소환 로직
+       const emptySlotIndex = this.state.playerField.findIndex(slot => slot === null);
+
+       if (emptySlotIndex === -1) {
+         this.socket.emit("error", "필드가 가득 찼습니다");
+         return; // 골드 소모 안 하고 중단
+       }
+
+       // 카드를 전장 유닛으로 변환하여 배치
+       const newUnit: FieldUnit = {
+         id: Math.random().toString(36).substr(2, 9), // 임시 ID 생성
+         cardId: card.id,
+         name: card.name,
+         attackPower: (card as UnitCard).attackPower,
+         maxHp: (card as UnitCard).hp,
+         currentHp: (card as UnitCard).hp,
+       };
+       
+       this.state.playerField[emptySlotIndex] = newUnit;
+
+    } else if (card.type === "SPELL") {
+       // 주문 효과 로직 (Switch 문으로 카드 ID별 효과 처리)
+       this.executeSpellEffect(card as SpellCard);
+    }
 
     if (this.state.currentGold < card.cost) {
       this.socket.emit("error", "금화가 부족합니다.");
@@ -65,15 +92,32 @@ export class GameSession {
     // 금화 소모
     this.state.currentGold -= card.cost;
 
-    // 3. 카드 이동 (핸드 -> 버린 카드 더미)
+    // 묘지에 카드 버리기
     this.state.hand.splice(cardIndex, 1);
     this.state.discardPile.push(card);
 
-    // 4. 승패 체크
+    // 승패 체크
     this.checkGameOver();
 
-    // 5. 상태 업데이트 전송
+    // 상태 업데이트 전송
     this.broadcastState();
+  }
+
+  // 주문 효과 처리 함수 분리
+  private executeSpellEffect(card: SpellCard) {
+    switch (card.id) {
+      case "breath of fire":
+        // 적 본체 공격 (추후 적 필드 유닛 타겟팅 기능 필요)
+        this.state.enemy.currentHp -= card.value;
+        break;
+      case "recovery":
+        // 플레이어 회복
+        this.state.player.currentHp = Math.min(
+          this.state.player.maxHp, 
+          this.state.player.currentHp + card.value
+        );
+        break;
+    }
   }
 
   private handleEndTurn() {
