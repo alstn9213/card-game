@@ -1,4 +1,4 @@
-import { FieldUnit, Card, Entity } from "./interfaces";
+import type { Card, Entity, FieldUnit } from "./interfaces";
 
 export type GameStatus = "playing" | "victory" | "defeat";
 

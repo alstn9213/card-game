@@ -1,9 +1,10 @@
-import { GameState } from "./gameState";
+import type { GameState } from "./gameState";
 
 export interface ClientToServerEvents {
   joinGame: () => void;
   playCard: (cardIndex: number) => void;
   endTurn: () => void;
+  attack: (attackerId: string, targetId: string) => void;
 }
 
 export interface ServerToClientEvents {

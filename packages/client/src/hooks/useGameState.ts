@@ -60,10 +60,15 @@ export const useGameState = () => {
     socket.emit("endTurn");
   }, []);
 
+  const attack = useCallback((attackerId: string, targetId: string) => {
+    socket.emit("attack", attackerId, targetId);
+  }, []);
+
   return {
     gameState,
     isConnected,
     playCard,
     endTurn,
+    attack,
   };
 };

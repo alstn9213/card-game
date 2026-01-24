@@ -1,5 +1,5 @@
 import { createServer } from 'http';
-import { express } from 'express';
+import express from 'express';
 import { ClientToServerEvents, ServerToClientEvents } from "@card-game/shared";
 import { Server } from "socket.io";
 import { GameSession } from "./game/GameSession";

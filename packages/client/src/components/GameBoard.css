@@ -164,6 +164,17 @@
   cursor: pointer;
 }
 
+.field-slot.occupied.selected {
+  border-color: #f1c40f;
+  box-shadow: 0 0 10px #f1c40f;
+}
+
+.field-slot.occupied.exhausted {
+  filter: grayscale(0.8);
+  cursor: default;
+  border-color: #7f8c8d;
+}
+
 .unit-stats {
   text-align: center;
   font-size: 12px;

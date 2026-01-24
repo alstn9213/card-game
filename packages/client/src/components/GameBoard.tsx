@@ -1,23 +1,26 @@
 import './GameBoard.css'; 
 import { useGameState } from '../hooks/useGameState';
-import type { FieldUnit } from '@card-game/shared';
+import { useGameInteraction } from '../hooks/useGameInteraction';
+import { UnitSlot } from './UnitSlot';
+import type { GameState } from '@card-game/shared';
 
-const UnitSlot = ({ unit }: { unit: FieldUnit | null }) => {
-  if (!unit) return <div className="field-slot empty"></div>;
 
-  return (
-    <div className="field-slot occupied">
-      <div className="unit-stats">
-        <span className="unit-atk">⚔️{unit.attackPower}</span>
-        <span className="unit-name">{unit.name}</span>
-        <span className="unit-hp">❤️{unit.currentHp}</span>
-      </div>
-    </div>
-  );
-};
+interface UseGameStateResult {
+  gameState: GameState | null;
+  isConnected: boolean;
+  playCard: (cardIndex: number) => void;
+  endTurn: () => void;
+  attack: (attackerId: string, targetId: string) => void;
+}
 
 export const GameBoard = () => {
-  const { gameState, isConnected, playCard, endTurn } = useGameState();
+  const { gameState, isConnected, playCard, endTurn, attack } = useGameState() as UseGameStateResult;
+  
+  // gameState가 로딩 전일 수 있으므로 안전하게 접근
+  const { selectedAttackerId, handlePlayerUnitClick, handleEnemyClick } = useGameInteraction(
+    gameState?.isPlayerTurn ?? false,
+    attack
+  );
 
   if (!isConnected) {
     return <div className="loading">서버에 연결 중입니다...</div>;
@@ -36,14 +39,21 @@ export const GameBoard = () => {
       </div>
 
       {/* 1. 적 정보 영역 */}
-      <div className="enemy-area">
+      <div className="enemy-area" onClick={() => handleEnemyClick("enemy")}>
         <div className="avatar enemy-avatar">
           적 HP: {gameState.enemy.currentHp}
         </div>
         {/* 적 필드 (추후 구현) */}
         <div className="field-row enemy-field">
             {gameState.enemyField && gameState.enemyField.map((unit, i) => (
-                <UnitSlot key={i} unit={unit} />
+                <UnitSlot 
+                  key={i} 
+                  unit={unit} 
+                  onClick={(e) => {
+                    e?.stopPropagation(); // 부모(enemy-area) 클릭 방지
+                    if (unit) handleEnemyClick(unit.id);
+                  }}
+                />
             ))}
         </div>
       </div>
@@ -52,7 +62,12 @@ export const GameBoard = () => {
       <div className="battle-zone">
         <div className="field-row player-field">
           {gameState.playerField && gameState.playerField.map((unit, i) => (
-            <UnitSlot key={i} unit={unit} />
+            <UnitSlot 
+              key={i} 
+              unit={unit} 
+              isSelected={unit?.id === selectedAttackerId}
+              onClick={() => unit && handlePlayerUnitClick(unit)}
+            />
           ))}
         </div>
       </div>

@@ -14,3 +14,11 @@ export const TargetType = {
 } as const;
 export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 
+// 효과의 종류.
+export const EffectType = {
+  TRANSFORM: "TRANSFORM", // 변신 (진화)
+  DAMAGE: "DAMAGE",       // 데미지
+  HEAL: "HEAL"            // 회복
+} as const;
+export type EffectType = (typeof EffectType)[keyof typeof EffectType];
+
