@@ -102,6 +102,7 @@ export class GameSession {
       this.broadcastState();
     }, 1000);
   }
+  
 
   private broadcastState() {
     this.socket.emit("gameStateUpdate", this.gameLogic.getState());

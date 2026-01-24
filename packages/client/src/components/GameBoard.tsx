@@ -4,7 +4,6 @@ import { useGameInteraction } from '../hooks/useGameInteraction';
 import { UnitSlot } from './UnitSlot';
 import type { GameState } from '@card-game/shared';
 
-
 interface UseGameStateResult {
   gameState: GameState | null;
   isConnected: boolean;
@@ -16,7 +15,6 @@ interface UseGameStateResult {
 export const GameBoard = () => {
   const { gameState, isConnected, playCard, endTurn, attack } = useGameState() as UseGameStateResult;
   
-  // gameState가 로딩 전일 수 있으므로 안전하게 접근
   const { selectedAttackerId, handlePlayerUnitClick, handleEnemyClick } = useGameInteraction(
     gameState?.isPlayerTurn ?? false,
     attack
@@ -29,28 +27,36 @@ export const GameBoard = () => {
   if (!gameState) {
     return <div className="loading">로딩중...</div>;
   }
+  console.log("현재 게임 상태:", gameState);
+  console.log("내 필드:", gameState.playerField);
+  console.log("적 필드:", gameState.enemyField);
 
   const { currentGold, isPlayerTurn } = gameState;
 
   return (
     <div className="game-board">
+      {/* 최상단 상태 바 */}
       <div className="status-bar">
-        턴: {gameState.turn} | {isPlayerTurn ? "당신의 차례입니다." : "상대의 차례입니다."}
+        TURN {gameState.turn} — {isPlayerTurn ? "YOUR TURN" : "ENEMY TURN"}
       </div>
 
-      {/* 1. 적 정보 영역 */}
+      {/* 1. 적 영역 */}
       <div className="enemy-area" onClick={() => handleEnemyClick("enemy")}>
-        <div className="avatar enemy-avatar">
-          적 HP: {gameState.enemy.currentHp}
+        <div className="enemy-info">
+          <div className="avatar enemy-avatar">
+            HP {gameState.enemy.currentHp}
+          </div>
+          <div>Enemy Player</div>
         </div>
-        {/* 적 필드 (추후 구현) */}
+        
+        {/* 적 필드 */}
         <div className="field-row enemy-field">
             {gameState.enemyField && gameState.enemyField.map((unit, i) => (
                 <UnitSlot 
                   key={i} 
                   unit={unit} 
                   onClick={(e) => {
-                    e?.stopPropagation(); // 부모(enemy-area) 클릭 방지
+                    e?.stopPropagation(); 
                     if (unit) handleEnemyClick(unit.id);
                   }}
                 />
@@ -72,38 +78,53 @@ export const GameBoard = () => {
         </div>
       </div>
 
-      {/* 3. 플레이어 정보 및 컨트롤 */}
+      {/* 3. 플레이어 영역 */}
       <div className="player-area">
-        <div className="avatar player-avatar">
-            플레이어 HP: {gameState.player.currentHp}
-        </div>
-        <div className="resource-display">
-          금화: {currentGold}
+        {/* 플레이어 상태 바 (아바타, 골드, 턴 종료) */}
+        <div className="player-status-bar">
+           <div className="avatar player-avatar">
+              HP {gameState.player.currentHp}
+           </div>
+           <div className="resource-display">
+             💰 {currentGold}
+           </div>
+           <button 
+             className="end-turn-btn" 
+             onClick={endTurn}
+             disabled={!isPlayerTurn}
+           >
+             턴 종료
+           </button>
         </div>
         
         {/* 핸드(손패) */}
-        <div className="hand">
-          {gameState.hand.map((card, index) => (
-            <div 
-              key={index} 
-              className="card" 
-              onClick={() => playCard(index)}
-            >
-              <div className="card-cost">{card.cost}</div>
-              <div className="card-name">{card.name}</div>
-              {/* 유닛일 경우 공격력/체력 표시 */}
-              {card.type === 'UNIT' && (
-                 <div className="card-stats">
-                    {(card as any).attackPower}/{(card as any).hp}
-                 </div>
-              )}
-            </div>
-          ))}
+        <div className="hand-container">
+          <div className="hand">
+            {gameState.hand.map((card, index) => (
+              <div 
+                key={index} 
+                className="card" 
+                onClick={() => playCard(index)}
+              >
+                <div className="card-cost">{card.cost}</div>
+                <div className="card-content">
+                  <div className="card-name">{card.name}</div>
+                </div>
+                {/* 유닛일 경우 스탯 표시 */}
+                {card.type === 'UNIT' && (
+                   <div className="card-stats">
+                      <div className="stat-badge" style={{background: '#e67e22'}}>
+                        {(card as any).attackPower}
+                      </div>
+                      <div className="stat-badge" style={{background: '#e74c3c'}}>
+                        {(card as any).hp}
+                      </div>
+                   </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-
-        <button className="end-turn-btn" onClick={endTurn}>
-          턴 종료
-        </button>
       </div>
     </div>
   );
