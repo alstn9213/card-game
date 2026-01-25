@@ -10,7 +10,7 @@ export const UNIT_CARDS: UnitCard[] = [
     type: CardType.UNIT,
     targetType: TargetType.SINGLE_ENEMY,
     attackPower: 300,
-    hp: 800,
+    maxHp: 800,
     abilities: [
       {
         type: EffectType.TRANSFORM,
@@ -26,17 +26,37 @@ export const UNIT_CARDS: UnitCard[] = [
     type: CardType.UNIT,
     targetType: TargetType.ALL_ENEMIES,
     attackPower: 1000,
-    hp: 2000
+    maxHp: 2000
   },
   {
     id: "mecha_soldier",
     name: "기계 전사",
-    description: "",
+    description: "고철로 만든 전사",
     cost: 1,
     type: CardType.UNIT,
     targetType: TargetType.SINGLE_ENEMY,
     attackPower: 500,
-    hp: 1000,
+    maxHp: 1000,
+  },
+  {
+    id: "big_mecha_soldier",
+    name: "기계 거인 전사",
+    description: "많은 고철로 만든 거인",
+    cost: 3,
+    type: CardType.UNIT,
+    targetType: TargetType.SINGLE_ENEMY,
+    attackPower: 1500,
+    maxHp: 2000,
+  },
+  {
+    id: "tank",
+    name: "시즈 탱크",
+    description: "강력한 탱크",
+    cost: 5,
+    type: CardType.UNIT,
+    targetType: TargetType.SINGLE_ENEMY,
+    attackPower: 2000,
+    maxHp: 3000,
   },
   
 ];

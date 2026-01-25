@@ -23,11 +23,11 @@ export class GameSession {
 
   // 클라이언트가 능력을 사용하겠다고 요청했을 때 호출되는 함수
   public activateAbility(playerId: string, cardInstanceId: string, abilityIndex: number) {
-    // 1. 플레이어 확인
+    // 플레이어 확인
     const state = this.gameLogic.getState();
-    // playerId 검증 로직이 필요하다면 추가 (예: if (state.player.id !== playerId) return;)
+    if (state.player.id !== playerId) return;
 
-    // 2. 필드에 있는 해당 카드(유닛) 찾기
+    // 필드에 있는 해당 카드(유닛) 찾기
     const unitIndex = state.playerField.findIndex(u => u?.id === cardInstanceId);
     if (unitIndex === -1) {
       console.log("카드가 필드에 없습니다.");
@@ -37,7 +37,7 @@ export class GameSession {
     const unitInstance = state.playerField[unitIndex]!;
     const cardData = UNIT_CARDS.find(c => c.id === unitInstance.cardId);
     
-    // 3. 능력 유효성 검사
+    // 카드 능력 유효성 검사
     if (!cardData?.abilities || !cardData.abilities[abilityIndex]) {
         console.log("유효하지 않은 능력입니다.");
         return;
@@ -47,11 +47,10 @@ export class GameSession {
 
     this.abilityManager.executeAbility(this, playerId, cardInstanceId, ability);
 
-    // 5. 변경된 상태를 모든 클라이언트에게 전송
+    // 변경된 상태를 모든 클라이언트에게 전송
     this.broadcastState();
   }
 
-  // (중요) 핸들러들이 state에 접근할 수 있도록 getter 제공 필요
   public getGameState() {
       return this.gameLogic.getState();
   }
@@ -78,7 +77,6 @@ export class GameSession {
       return;
     }
 
-    // 상태 업데이트 전송
     this.broadcastState();
   }
 
@@ -89,6 +87,7 @@ export class GameSession {
       this.socket.emit("error", result.message || "공격 실패");
       return;
     }
+    
     this.broadcastState();
   }
 

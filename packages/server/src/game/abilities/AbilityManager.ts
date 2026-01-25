@@ -3,6 +3,7 @@ import { Ability,  } from "@card-game/shared/src/interfaces"; // Shared에서 �
 import { AbilityHandler } from "./types";
 import { EffectType } from "@card-game/shared";
 import { TransformHandler } from "./handlers/TransformHandler";
+import { DamageHandler } from "./handlers/DamageHandler";
 
 export class AbilityManager {
   private handlers: Record<string, AbilityHandler> = {};
@@ -10,7 +11,7 @@ export class AbilityManager {
   constructor() {
     // 여기서 핸들러들을 등록합니다.
     this.registerHandler(EffectType.TRANSFORM, new TransformHandler());
-    // this.registerHandler(EffectType.DAMAGE, new DamageHandler()); // 나중에 추가
+    this.registerHandler(EffectType.DAMAGE, new DamageHandler());
   }
 
   private registerHandler(type: string, handler: AbilityHandler) {

@@ -5,8 +5,8 @@ export type GameStatus = "playing" | "victory" | "defeat";
 // 서버와 클라이언트가 공유하는 실시간 게임 상태
 export interface GameState {
   player: Entity;
-  enemy: Entity;
-  
+  enemy: FieldUnit;
+    
   playerField: (FieldUnit | null)[]; 
   enemyField: (FieldUnit | null)[];
 

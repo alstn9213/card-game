@@ -23,8 +23,8 @@ export class TransformHandler implements AbilityHandler {
       ...playerState.field[unitIndex],
       cardId: targetCardData.id,
       attack: targetCardData.attackPower,
-      hp: targetCardData.hp,
-      maxHp: targetCardData.hp,
+      hp: targetCardData.maxHp,
+      maxHp: targetCardData.maxHp,
       cost: targetCardData.cost,
     };
   }
