@@ -25,7 +25,6 @@ export interface UnitCard extends Card {
 }
 
 export interface FieldUnit extends UnitCard {
-  id: string;         // 고유 ID (uuid 등)
   cardId: string;     // 원본 카드 ID
   currentHp: number;
   hasAttacked: boolean;

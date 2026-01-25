@@ -1,4 +1,5 @@
-import { ClientToServerEvents, ServerToClientEvents, UNIT_CARDS } from "@card-game/shared";
+import { validateDeck } from './../../../../node_modules/@card-game/shared/src/utils/deckValidator';
+import { Card, ClientToServerEvents, ServerToClientEvents, UNIT_CARDS } from "@card-game/shared";
 import { Socket } from "socket.io";
 import { AbilityManager } from "./abilities/AbilityManager";
 import { GameLogic } from "./GameLogic";
@@ -21,13 +22,23 @@ export class GameSession {
     this.setupListeners();
   }
 
+  public startGame(playerDeck: Card[]) {
+  const validation = validateDeck(playerDeck);
+
+  if (!validation.isValid) {
+    throw new Error(`게임 시작 실패: ${validation.message}`);
+  }
+
+  // 2. 검증 통과 시 게임 상태 초기화
+  // ... (기존 deck 셔플 및 GameState 생성 로직)
+}
+
   // 클라이언트가 능력을 사용하겠다고 요청했을 때 호출되는 함수
   public activateAbility(playerId: string, cardInstanceId: string, abilityIndex: number) {
     // 플레이어 확인
     const state = this.gameLogic.getState();
     if (state.player.id !== playerId) return;
 
-    // 필드에 있는 해당 카드(유닛) 찾기
     const unitIndex = state.playerField.findIndex(u => u?.id === cardInstanceId);
     if (unitIndex === -1) {
       console.log("카드가 필드에 없습니다.");
@@ -37,7 +48,6 @@ export class GameSession {
     const unitInstance = state.playerField[unitIndex]!;
     const cardData = UNIT_CARDS.find(c => c.id === unitInstance.cardId);
     
-    // 카드 능력 유효성 검사
     if (!cardData?.abilities || !cardData.abilities[abilityIndex]) {
         console.log("유효하지 않은 능력입니다.");
         return;
