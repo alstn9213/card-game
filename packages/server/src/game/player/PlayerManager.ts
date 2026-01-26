@@ -1,5 +1,6 @@
 import { CardType, FieldUnit, GameState, } from "@card-game/shared";
 import { GameUtils } from "../utils/GameUtils";
+import { v4 as uuidv4 } from 'uuid';
 
 export class PlayerManager {
 
@@ -17,7 +18,6 @@ export class PlayerManager {
 
     const card = state.hand[cardIndex]!;
 
-    // 카드 타입별 로직
     if (card.type === CardType.UNIT) {
        this.playUnitCard(state, card as FieldUnit);
 
@@ -38,7 +38,7 @@ export class PlayerManager {
     const error = this.validateAttack(state, attackerId, targetId);
     if (error) return { success: false, message: error };
 
-    const attacker = state.playerField.find(u => u?.id === attackerId)!;
+    const attacker = state.playerField.find(u => u?.id === attackerId);
     const targetResult = GameUtils.findTarget(state, targetId);
     const { target } = targetResult;
 

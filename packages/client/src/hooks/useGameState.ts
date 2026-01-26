@@ -64,11 +64,16 @@ export const useGameState = () => {
     socket.emit("attack", attackerId, targetId);
   }, []);
 
+  const joinGame = useCallback((deck: string[]) => {
+    socket.emit("joinGame", deck);
+  }, []);
+
   return {
     gameState,
     isConnected,
     playCard,
     endTurn,
     attack,
+    joinGame,
   };
 };

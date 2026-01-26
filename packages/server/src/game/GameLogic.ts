@@ -1,20 +1,22 @@
+import { validateDeck } from '@card-game/shared/src/utils/deckValidator';
 import { 
   GameState, 
-  Entity, 
   UNIT_CARDS,
   GameCard,
+  DeckRules,
 } from "@card-game/shared";
 import { EnemyManager } from "./enemy/EnemyManager";
 import { PlayerManager } from "./player/PlayerManager";
 import { v4 as uuidv4 } from 'uuid';
+import { createInitialGameState } from "./GameStateFactory";
 
 export class GameLogic {
   private state: GameState;
   private playerManager: PlayerManager;
   private enemyManager: EnemyManager;
 
-  constructor() {
-    this.state = this.initializeGame();
+  constructor(playerDeck?: string[]) {
+    this.state = this.initializeGame(playerDeck);
     this.enemyManager = new EnemyManager(() => this.state);
     this.playerManager = new PlayerManager(
         () => this.state, 
@@ -27,36 +29,63 @@ export class GameLogic {
     return this.state;
   }
 
-  private initializeGame(): GameState {
-    const player: Entity = { id: "player", name: "Hero", maxHp: 4000, currentHp: 4000 };
+  private initializeGame(playerDeck?: string[]): GameState {
+    const state = createInitialGameState();
     
-    let rawDeck: GameCard[] = [];
+    let deckCardIds: string[] = [];
 
-    
+    // 1. 전달받은 덱이 있으면 유효성 검증 후 사용
+    if (playerDeck && playerDeck.length > 0) {
+      const validation = validateDeck(playerDeck);
+      if (!validation.isValid) {
+        throw new Error(validation.message);
+      }
+      deckCardIds = playerDeck;
+    } else {
+      deckCardIds = this.generateDefaultDeck();
+    }
+
+    // 2. ID 목록을 실제 게임 카드 인스턴스로 변환
+    const rawDeck = this.initializeDeck(deckCardIds, state.player.id);
     const deck = this.shuffleDeck(rawDeck);
 
     // 핸드 드로우 (5장)
     const hand = deck.splice(0, 5);
 
-    return {
-      player,
-      enemy: { id: "temp_enemy", name: "Loading...", maxHp: 100, currentHp: 100, attackPower: 0, actions: [] } as any,
-      hand,
-      deck,
-      playerField: Array(5).fill(null), // 5칸의 빈 필드로 초기화
-      enemyField: Array(5).fill(null),
-      discardPile: [],
-      currentGold: 5,
-      turn: 1,
-      isPlayerTurn: true,
-      gameStatus: "playing",
-    };
+    // 생성된 상태에 덱과 핸드 정보 업데이트
+    state.deck = deck;
+    state.hand = hand;
+
+    return state;
+  }
+
+  // 테스트용 기본 덱 생성 (랜덤하게 20장 채우기)
+  private generateDefaultDeck(): string[] {
+    const deckIds: string[] = [];
+    // UNIT_CARDS가 배열이라고 가정
+    const availableCards = Object.values(UNIT_CARDS); 
+
+    if (availableCards.length === 0) return [];
+
+    while (deckIds.length < DeckRules.MIN_DECK_SIZE) {
+      const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
+      
+      // 현재 덱에 포함된 해당 카드의 개수 확인
+      const currentCount = deckIds.filter(id => id === randomCard.cardId).length;
+
+      // 최대 매수 제한(3장)을 넘지 않으면 추가
+      if (currentCount < DeckRules.MAX_COPIES_PER_CARD) {
+        deckIds.push(randomCard.cardId);
+      }
+    }
+
+    return deckIds;
   }
 
   // 게임 시작 시 덱 초기화 함수
   private initializeDeck(deckCardIds: string[], playerId: string): GameCard[] {
     return deckCardIds.map((cardId) => {
-      const originalData = Object.values(UNIT_CARDS).find(c => c.cardId === cardId);
+      const originalData = Object.values(UNIT_CARDS).find((c: any) => c.cardId === cardId);
       
       if (!originalData) throw new Error(`Card not found: ${cardId}`);
 

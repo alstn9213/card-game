@@ -58,5 +58,25 @@ export const UNIT_CARDS: UnitCard[] = [
     attackPower: 2000,
     maxHp: 3000,
   },
+   {
+    cardId: "marine",
+    name: "마린",
+    description: "총을 쓰는 보병",
+    cost: 1,
+    type: CardType.UNIT,
+    targetType: TargetType.SINGLE_ENEMY,
+    attackPower: 500,
+    maxHp: 600,
+  },
+   {
+    cardId: "goli",
+    name: "골리앗",
+    description: "군인이 탑승한 로봇",
+    cost: 3,
+    type: CardType.UNIT,
+    targetType: TargetType.SINGLE_ENEMY,
+    attackPower: 1500,
+    maxHp: 3000,
+  },
   
 ];

@@ -1,9 +1,13 @@
-import { GameState, Entity, UNIT_CARDS, FieldUnit } from "@card-game/shared";
+import { GameState, UNIT_CARDS, FieldUnit } from "@card-game/shared";
 import { GameUtils } from "../utils/GameUtils";
+import { v4 as uuidv4 } from 'uuid';
+
 
 export class EnemyManager {
   constructor(private getState: () => GameState) {}
 
+
+  // 몬스터 카드 소환
   public spawnNewEnemy(state: GameState): FieldUnit {
     const emptySlotIndex = state.enemyField.findIndex((slot) => slot === null);
     if (emptySlotIndex === -1) return;
@@ -11,8 +15,8 @@ export class EnemyManager {
     const randomUnit = UNIT_CARDS[Math.floor(Math.random() * UNIT_CARDS.length)];
 
     const newUnit: FieldUnit = {
-      id: `enemy-minion-${Math.random().toString(36).substr(2, 9)}`,
-      cardId: randomUnit.id,
+      id: uuidv4(),
+      cardId: randomUnit.cardId,
       name: randomUnit.name,
       cost: randomUnit.cost,
       type: randomUnit.type,

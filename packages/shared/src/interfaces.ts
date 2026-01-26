@@ -21,7 +21,7 @@ export interface CardData {
 // [인스턴스] 게임 내에 존재하는 카드 (덱, 핸드, 무덤)
 export interface GameCard extends CardData {
   id: string;  // 예: "uuid-v4-..." (이 카드의 고유 번호)
-  ownerId: string;     // 누구 소유인지
+  ownerId?: string;     // 누구 소유인지
   
 }
 
@@ -34,7 +34,7 @@ export interface UnitCard extends CardData {
 
 
 // [필드 유닛] 전장에 소환된 상태
-export interface FieldUnit extends GameCard {
+export interface FieldUnit extends GameCard, UnitCard {
   currentHp: number;
   hasAttacked: boolean;
   

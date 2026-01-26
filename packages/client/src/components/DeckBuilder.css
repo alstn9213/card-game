@@ -1,0 +1,182 @@
+.deck-builder-container {
+  display: flex;
+  height: 100vh;
+  background-color: #121212;
+  color: #ecf0f1;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* --- 왼쪽: 라이브러리 --- */
+.library-section {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  border-right: 2px solid #333;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid #7f8c8d;
+  color: #bdc3c7;
+  padding: 5px 15px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
+}
+
+/* 라이브러리 카드 스타일 */
+.library-card {
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  border: 2px solid #7f8c8d;
+  border-radius: 8px;
+  height: 200px;
+  padding: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.library-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  border-color: #3498db;
+}
+
+.library-card.disabled {
+  opacity: 0.5;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+
+.card-cost-badge {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 30px;
+  height: 30px;
+  background-color: #3498db;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: 2px solid #fff;
+}
+
+.card-count-badge {
+  margin-top: auto;
+  font-size: 0.8rem;
+  color: #f1c40f;
+}
+
+/* --- 오른쪽: 덱 사이드바 --- */
+.deck-sidebar {
+  width: 300px;
+  background-color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #000;
+}
+
+.deck-header {
+  padding: 20px;
+  background-color: #2c3e50;
+  border-bottom: 1px solid #34495e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.deck-count {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.deck-count.valid { color: #2ecc71; }
+.deck-count.invalid { color: #e74c3c; }
+
+.deck-list {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.empty-message {
+  text-align: center;
+  color: #7f8c8d;
+  margin-top: 50px;
+}
+
+.deck-list-item {
+  background-color: #2c2c2c;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-left: 4px solid #3498db;
+}
+
+.deck-list-item:hover {
+  background-color: #3e3e3e;
+  border-left-color: #e74c3c; /* 삭제 암시 */
+}
+
+.item-cost {
+  background-color: #3498db;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 10px;
+  font-size: 0.8rem;
+}
+
+.item-name { flex: 1; font-size: 0.9rem; }
+.item-count { font-weight: bold; color: #f1c40f; }
+
+.deck-footer {
+  padding: 20px;
+  border-top: 1px solid #333;
+}
+
+.start-game-btn {
+  width: 100%;
+  padding: 15px;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.start-game-btn:disabled {
+  background-color: #7f8c8d;
+  cursor: not-allowed;
+}
+
+.start-game-btn:not(:disabled):hover {
+  background-color: #2ecc71;
+}
