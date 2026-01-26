@@ -7,6 +7,8 @@ export interface TargetResult {
 }
 
 export class GameUtils {
+
+ 
   /**
    * 게임 상태(GameState)에서 ID를 기반으로 대상을 찾습니다.
    * 적 본체, 적 유닛, 플레이어 본체, 플레이어 유닛 순으로 검색합니다.

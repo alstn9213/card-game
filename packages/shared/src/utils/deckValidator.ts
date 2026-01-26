@@ -1,4 +1,5 @@
-import { Card } from "../interfaces";
+import { GameCard } from "../interfaces";
+import {  } from "../interfaces";
 import { DeckRules } from "../types";
 
 interface ValidationResult {
@@ -6,12 +7,11 @@ interface ValidationResult {
   message?: string;
 }
 
-
-export const validateDeck = (deck: Card[]): ValidationResult => {
+export const validateDeck = (deck: GameCard[]): ValidationResult => {
   const cardCounts = new Map<string, number>();
 
   for (const card of deck) {
-    const count = (cardCounts.get(card.id) || 0) + 1;
+    const count = (cardCounts.get(card.orginalId) || 0) + 1;
     
     // 3장 초과 체크
     if (count > DeckRules.MAX_COPIES_PER_CARD) {
@@ -21,7 +21,7 @@ export const validateDeck = (deck: Card[]): ValidationResult => {
       };
     }
     
-    cardCounts.set(card.id, count);
+    cardCounts.set(card.orginalId, count);
   }
 
   return { isValid: true };

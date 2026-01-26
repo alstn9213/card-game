@@ -5,7 +5,7 @@ import { AbilityHandler } from "../types";
 
 export class TransformHandler implements AbilityHandler {
   execute(session: GameSession, playerId: string, cardInstanceId: string, ability: Ability) {
-    const playerState = session.getGameState().player[playerId]; // GameSession에 getter 필요
+    const playerState = session.getGameState().player[playerId];
     
     // 1. 대상 유닛 찾기
     const unitIndex = playerState.field.findIndex(u => u.instanceId === cardInstanceId);
@@ -13,7 +13,7 @@ export class TransformHandler implements AbilityHandler {
 
     // 2. 변신 대상 데이터 확인
     if (!ability.targetId) return;
-    const targetCardData = UNIT_CARDS.find(c => c.id === ability.targetId);
+    const targetCardData = UNIT_CARDS.find(c => c.cardId === ability.targetId);
     if (!targetCardData) return;
 
     // 3. 실제 변신 로직 수행
@@ -21,10 +21,15 @@ export class TransformHandler implements AbilityHandler {
 
     playerState.field[unitIndex] = {
       ...playerState.field[unitIndex],
-      cardId: targetCardData.id,
-      attack: targetCardData.attackPower,
-      hp: targetCardData.maxHp,
+      cardId: targetCardData.cardId,
+      name: targetCardData.name,
+      description: targetCardData.description,
+      type: targetCardData.type,
+      targetType: targetCardData.targetType,
+      abilities: targetCardData.abilities,
+      attackPower: targetCardData.attackPower,
       maxHp: targetCardData.maxHp,
+      currentHp: targetCardData.maxHp,
       cost: targetCardData.cost,
     };
   }

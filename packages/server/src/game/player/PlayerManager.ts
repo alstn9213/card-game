@@ -1,4 +1,4 @@
-import { CardType, FieldUnit, GameState, UnitCard } from "@card-game/shared";
+import { CardType, FieldUnit, GameState, } from "@card-game/shared";
 import { GameUtils } from "../utils/GameUtils";
 
 export class PlayerManager {
@@ -19,7 +19,7 @@ export class PlayerManager {
 
     // 카드 타입별 로직
     if (card.type === CardType.UNIT) {
-       this.playUnitCard(state, card as UnitCard);
+       this.playUnitCard(state, card as FieldUnit);
 
     } 
 
@@ -86,12 +86,13 @@ export class PlayerManager {
     return null;
   }
 
-  private playUnitCard(state: GameState, card: UnitCard) {
+  private playUnitCard(state: GameState, card: FieldUnit) {
     const emptySlotIndex = state.playerField.findIndex(slot => slot === null);
     if (emptySlotIndex === -1) return; // validatePlayCard에서 체크했지만 안전장치
 
     const newUnit: FieldUnit = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: uuidv4(),
+      ownerId: state.player.id,
       cardId: card.id,
       name: card.name,
       cost: card.cost,

@@ -1,4 +1,4 @@
-import type { Card, Entity, FieldUnit } from "./interfaces";
+import type { Entity, FieldUnit, GameCard } from "./interfaces";
 
 export type GameStatus = "playing" | "victory" | "defeat";
 
@@ -11,9 +11,9 @@ export interface GameState {
   enemyField: (FieldUnit | null)[];
 
   // 카드 관련 상태
-  hand: Card[];
-  deck: Card[];
-  discardPile: Card[];
+  hand: GameCard[];
+  deck: GameCard[];
+  discardPile: GameCard[];
   
   // 코스트(금화) 및 턴 관리
   currentGold: number;

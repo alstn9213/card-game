@@ -9,8 +9,8 @@ export interface Entity {
 }
 
 // 카드 데이터 구조
-export interface Card {
-  id: string;
+export interface CardData {
+  cardId: string; // 예: "unit_slime" (데이터 ID)
   name: string;
   cost: number;
   description: string;
@@ -18,16 +18,26 @@ export interface Card {
   targetType: TargetType;
 }
 
-export interface UnitCard extends Card {
+// [인스턴스] 게임 내에 존재하는 카드 (덱, 핸드, 무덤)
+export interface GameCard extends CardData {
+  id: string;  // 예: "uuid-v4-..." (이 카드의 고유 번호)
+  ownerId: string;     // 누구 소유인지
+  
+}
+
+// 몬스터 카드
+export interface UnitCard extends CardData {
   attackPower: number;
   maxHp: number;
   abilities?: Ability[];
 }
 
-export interface FieldUnit extends UnitCard {
-  cardId: string;     // 원본 카드 ID
+
+// [필드 유닛] 전장에 소환된 상태
+export interface FieldUnit extends GameCard {
   currentHp: number;
   hasAttacked: boolean;
+  
 }
 
 export interface Ability {

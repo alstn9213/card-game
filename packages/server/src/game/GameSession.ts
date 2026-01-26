@@ -1,5 +1,5 @@
 import { validateDeck } from './../../../../node_modules/@card-game/shared/src/utils/deckValidator';
-import { Card, ClientToServerEvents, ServerToClientEvents, UNIT_CARDS } from "@card-game/shared";
+import { ClientToServerEvents, GameCard, ServerToClientEvents, UNIT_CARDS } from "@card-game/shared";
 import { Socket } from "socket.io";
 import { AbilityManager } from "./abilities/AbilityManager";
 import { GameLogic } from "./GameLogic";
@@ -22,7 +22,11 @@ export class GameSession {
     this.setupListeners();
   }
 
-  public startGame(playerDeck: Card[]) {
+  public getGameState() {
+      return this.gameLogic.getState();
+  }
+
+  public startGame(playerDeck: GameCard[]) {
   const validation = validateDeck(playerDeck);
 
   if (!validation.isValid) {
@@ -46,7 +50,7 @@ export class GameSession {
     }
     
     const unitInstance = state.playerField[unitIndex]!;
-    const cardData = UNIT_CARDS.find(c => c.id === unitInstance.cardId);
+    const cardData = UNIT_CARDS.find(c => c.cardId === unitInstance.cardId);
     
     if (!cardData?.abilities || !cardData.abilities[abilityIndex]) {
         console.log("유효하지 않은 능력입니다.");
@@ -61,9 +65,7 @@ export class GameSession {
     this.broadcastState();
   }
 
-  public getGameState() {
-      return this.gameLogic.getState();
-  }
+  
 
   private setupListeners() {
     this.socket.on("playCard", (cardIndex: number) => {

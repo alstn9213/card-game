@@ -1,10 +1,12 @@
 import { 
   GameState, 
   Entity, 
-  UNIT_CARDS, 
+  UNIT_CARDS,
+  GameCard,
 } from "@card-game/shared";
 import { EnemyManager } from "./enemy/EnemyManager";
 import { PlayerManager } from "./player/PlayerManager";
+import { v4 as uuidv4 } from 'uuid';
 
 export class GameLogic {
   private state: GameState;
@@ -28,13 +30,17 @@ export class GameLogic {
   private initializeGame(): GameState {
     const player: Entity = { id: "player", name: "Hero", maxHp: 4000, currentHp: 4000 };
     
-   
-    const deck = [...UNIT_CARDS];
+    let rawDeck: GameCard[] = [];
+
+    
+    const deck = this.shuffleDeck(rawDeck);
+
+    // 핸드 드로우 (5장)
     const hand = deck.splice(0, 5);
 
     return {
       player,
-      enemy: this.state.enemy,
+      enemy: { id: "temp_enemy", name: "Loading...", maxHp: 100, currentHp: 100, attackPower: 0, actions: [] } as any,
       hand,
       deck,
       playerField: Array(5).fill(null), // 5칸의 빈 필드로 초기화
@@ -47,6 +53,36 @@ export class GameLogic {
     };
   }
 
+  // 게임 시작 시 덱 초기화 함수
+  private initializeDeck(deckCardIds: string[], playerId: string): GameCard[] {
+    return deckCardIds.map((cardId) => {
+      const originalData = Object.values(UNIT_CARDS).find(c => c.cardId === cardId);
+      
+      if (!originalData) throw new Error(`Card not found: ${cardId}`);
+
+      // 게임용 인스턴스 생성 (UUID 발급)
+      const gameCard: GameCard = {
+        ...originalData,        // 기본 스탯 복사
+        id: uuidv4(),   // 이 카드만의 고유 번호
+        cardId: cardId,     // 원본 데이터 ID
+        ownerId: playerId
+      };
+
+      return gameCard;
+    });
+  }
+
+  /**
+   * Fisher-Yates 알고리즘을 사용한 배열 셔플 함수
+   */
+  private shuffleDeck<T>(array: T[]): T[] {
+    const shuffled = [...array]; // 원본 보존을 위해 복사
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
   
   public playCard(cardIndex: number) {
     return this.playerManager.playCard(cardIndex);

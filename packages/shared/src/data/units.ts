@@ -3,7 +3,7 @@ import { CardType, EffectType, TargetType } from "../types";
 
 export const UNIT_CARDS: UnitCard[] = [
   {
-    id: "baby_dragon",
+    cardId: "baby_dragon",
     name: "아기 용",
     description: "붉은 용으로 성장할 수 있습니다.",
     cost: 1,
@@ -19,7 +19,7 @@ export const UNIT_CARDS: UnitCard[] = [
     ]
   },
   {
-    id: "red_dragon",
+    cardId: "red_dragon",
     name: "붉은 용",
     description: "아기용 성장시 소환합니다.",
     cost: 2,
@@ -29,7 +29,7 @@ export const UNIT_CARDS: UnitCard[] = [
     maxHp: 2000
   },
   {
-    id: "mecha_soldier",
+    cardId: "mecha_soldier",
     name: "기계 전사",
     description: "고철로 만든 전사",
     cost: 1,
@@ -39,7 +39,7 @@ export const UNIT_CARDS: UnitCard[] = [
     maxHp: 1000,
   },
   {
-    id: "big_mecha_soldier",
+    cardId: "big_mecha_soldier",
     name: "기계 거인 전사",
     description: "많은 고철로 만든 거인",
     cost: 3,
@@ -49,7 +49,7 @@ export const UNIT_CARDS: UnitCard[] = [
     maxHp: 2000,
   },
   {
-    id: "tank",
+    cardId: "tank",
     name: "시즈 탱크",
     description: "강력한 탱크",
     cost: 5,
