@@ -1,17 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
-import type { GameState } from "@card-game/shared";
+import { 
+  type GameState, 
+  type GameError,
+  ClientEvents, 
+  ServerEvents, 
+  type ClientToServerEvents, 
+  type ServerToClientEvents 
+} from "@card-game/shared";
 
 const SOCKET_URL = "http://localhost:3000";
 
 export const useGameState = () => {
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<GameError | null>(null);
 
   useEffect(() => {
-    const newSocket = io(SOCKET_URL, {
+    const newSocket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SOCKET_URL, {
       transports: ["websocket"],
     });
     setSocket(newSocket);
@@ -26,13 +33,13 @@ export const useGameState = () => {
       console.log("Disconnected from server");
     });
 
-    newSocket.on("gameStateUpdate", (newState: GameState) => {
+    newSocket.on(ServerEvents.GAME_STATE_UPDATE, (newState: GameState) => {
       setGameState(newState);
     });
 
-    newSocket.on("error", (message: string) => {
-      console.error("Server Error:", message);
-      setError(message);
+    newSocket.on(ServerEvents.ERROR, (err: GameError) => {
+      console.error("Server Error:", err.message);
+      setError(err);
     });
 
     return () => {
@@ -42,24 +49,24 @@ export const useGameState = () => {
 
   const startGame = useCallback((deck: string[]) => {
     if (socket) {
-      socket.emit("joinGame", deck);
+      socket.emit(ClientEvents.JOIN_GAME, deck);
     }
   }, [socket]);
 
   const playCard = useCallback((cardIndex: number) => {
-    socket?.emit("playCard", cardIndex);
+    socket?.emit(ClientEvents.PLAY_CARD, cardIndex);
   }, [socket]);
 
   const endTurn = useCallback(() => {
-    socket?.emit("endTurn");
+    socket?.emit(ClientEvents.END_TURN);
   }, [socket]);
 
   const attack = useCallback((attackerId: string, targetId: string) => {
-    socket?.emit("attack", attackerId, targetId);
+    socket?.emit(ClientEvents.ATTACK, attackerId, targetId);
   }, [socket]);
 
-  const activateAbility = useCallback((cardInstanceId: string, abilityIndex: number) => {
-    socket?.emit("activateAbility", cardInstanceId, abilityIndex);
+  const activateAbility = useCallback((cardInstanceId: string, abilityIndex: number, targetId?: string) => {
+    socket?.emit(ClientEvents.ACTIVATE_ABILITY, cardInstanceId, abilityIndex, targetId);
   }, [socket]);
 
   const resetGame = useCallback(() => {

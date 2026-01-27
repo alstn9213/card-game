@@ -1,25 +1,13 @@
 import { UNIT_CARDS } from "../data/units";
-import { DeckRules } from "../types";
+import { DeckRules, DeckErrorMessages } from "../types";
 
-interface ValidationResult {
-  isValid: boolean;
-  message?: string;
-}
-
-export const validateDeck = (deckCardIds: string[]): ValidationResult => {
-  // 1. 덱 크기 검증
+export const validateDeck = (deckCardIds: string[]): void => {
   if (deckCardIds.length < DeckRules.MIN_DECK_SIZE) {
-    return {
-      isValid: false,
-      message: `덱은 최소 ${DeckRules.MIN_DECK_SIZE}장 이상이어야 합니다.`
-    };
+    throw new Error(DeckErrorMessages.MIN_DECK_SIZE(DeckRules.MIN_DECK_SIZE));
   }
 
   if (deckCardIds.length > DeckRules.MAX_DECK_SIZE) {
-    return {
-      isValid: false,
-      message: `덱은 최대 ${DeckRules.MAX_DECK_SIZE}장까지만 구성할 수 있습니다.`
-    };
+    throw new Error(DeckErrorMessages.MAX_DECK_SIZE(DeckRules.MAX_DECK_SIZE));
   }
 
   const cardCounts = new Map<string, number>();
@@ -32,14 +20,9 @@ export const validateDeck = (deckCardIds: string[]): ValidationResult => {
     
     // 3장 초과 체크
     if (count > DeckRules.MAX_COPIES_PER_CARD) {
-      return { 
-        isValid: false, 
-        message: `'${cardName}' 카드는 최대 ${DeckRules.MAX_COPIES_PER_CARD}장까지만 넣을 수 있습니다.` 
-      };
+      throw new Error(DeckErrorMessages.MAX_COPIES_PER_CARD(cardName, DeckRules.MAX_COPIES_PER_CARD));
     }
     
     cardCounts.set(cardId, count);
   }
-
-  return { isValid: true };
 };

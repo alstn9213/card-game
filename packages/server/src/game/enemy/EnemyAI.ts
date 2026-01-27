@@ -1,4 +1,4 @@
-import { GameState } from "@card-game/shared";
+import { GameState, GameStatus, TargetSource } from "@card-game/shared";
 import { GameUtils } from "../utils/GameUtils";
 
 export class EnemyAI {
@@ -27,7 +27,7 @@ export class EnemyAI {
         GameUtils.processUnitDeath(state, {
           target: targetUnit,
           index: target.index,
-          source: "player-field"
+          source: TargetSource.PLAYER_FIELD
         });
       } else if (state.player.currentHp > 0) {
         // 방해물이 없으면 플레이어 본체 직접 공격
@@ -35,7 +35,7 @@ export class EnemyAI {
       }
 
       if (state.player.currentHp <= 0) {
-        state.gameStatus = "defeat";
+        state.gameStatus = GameStatus.DEFEAT;
       }
 
       enemyUnit.hasAttacked = true;

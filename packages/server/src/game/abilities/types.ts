@@ -5,6 +5,7 @@ export interface AbilityHandler {
     gameState: GameState, 
     playerId: string, 
     cardInstanceId: string, 
-    ability: Ability
+    ability: Ability,
+    targetId: string | undefined
   ): void;
 }

@@ -1,4 +1,4 @@
-import { DeckRules, UNIT_CARDS, validateDeck, type CardData } from '@card-game/shared';
+import { DeckRules, UNIT_CARDS, validateDeck, type CardData, DeckErrorMessages } from '@card-game/shared';
 import { useState,  useMemo } from 'react';
 
 export const useDeckBuilder = () => {
@@ -13,12 +13,12 @@ export const useDeckBuilder = () => {
 
   // 덱 추가 로직
   const addToDeck = (card: CardData) => {
-    if (deck.length >= DeckRules.MIN_DECK_SIZE) {
-      alert(`덱은 최대 ${DeckRules.MIN_DECK_SIZE}장까지만 구성할 수 있습니다.`);
+    if (deck.length >= DeckRules.MAX_DECK_SIZE) {
+      alert(DeckErrorMessages.MAX_DECK_SIZE(DeckRules.MAX_DECK_SIZE));
       return;
     }
     if (getCardCount(card.cardId) >= DeckRules.MAX_COPIES_PER_CARD) {
-      alert(`같은 카드는 최대 ${DeckRules.MAX_COPIES_PER_CARD}장까지만 넣을 수 있습니다.`);
+      alert(DeckErrorMessages.MAX_COPIES_PER_CARD(card.name, DeckRules.MAX_COPIES_PER_CARD));
       return;
     }
     setDeck([...deck, card.cardId]);
@@ -35,7 +35,14 @@ export const useDeckBuilder = () => {
   };
 
   // 덱 유효성 검사
-  const validation = useMemo(() => validateDeck(deck), [deck]);
+  const validation = useMemo(() => {
+    try {
+      validateDeck(deck);
+      return { isValid: true, message: undefined };
+    } catch (error: any) {
+      return { isValid: false, message: error.message };
+    }
+  }, [deck]);
 
   // 덱 리스트를 보기 좋게 그룹화 (UI 표시용)
   const groupedDeck = useMemo(() => {

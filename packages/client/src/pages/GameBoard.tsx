@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useGameState } from "../hooks/useGameState";
 import { useGameInteraction } from "../hooks/useGameInteraction";
 import { UnitSlot } from "../components/UnitSlot";
-import type { GameState } from "@card-game/shared";
+import { type GameError, type GameState, GameStatus } from "@card-game/shared";
 
 interface UseGameStateResult {
   gameState: GameState | null;
@@ -13,9 +13,9 @@ interface UseGameStateResult {
   endTurn: () => void;
   attack: (attackerId: string, targetId: string) => void;
   startGame?: (deck: string[]) => void;
-  activateAbility: (cardInstanceId: string, abilityIndex: number) => void;
+  activateAbility: (cardInstanceId: string, abilityIndex: number, targetId?: string) => void;
   resetGame: () => void;
-  error: string | null;
+  error: GameError | null;
   clearError: () => void;
 }
 
@@ -23,9 +23,10 @@ export const GameBoard = () => {
   const location = useLocation();
   const { gameState, isConnected, playCard, endTurn, attack, startGame, activateAbility, resetGame, error, clearError } = useGameState() as UseGameStateResult;
   
-  const { selectedAttackerId, handlePlayerUnitClick, handleEnemyClick } = useGameInteraction(
+  const { selectedAttackerId, pendingAbility, handlePlayerUnitClick, handleEnemyClick, handleAbilityClick, cancelInteraction } = useGameInteraction(
     gameState?.isPlayerTurn ?? false,
-    attack
+    attack,
+    activateAbility
   );
 
   // 플레이어 본체 데미지 효과 상태
@@ -65,17 +66,24 @@ export const GameBoard = () => {
   const { currentGold, isPlayerTurn } = gameState;
 
   return (
-    <div className="game-board">
+    // 배경 클릭 시 상호작용 취소
+    <div className="game-board" onClick={cancelInteraction}>
       {/* 최상단 상태 바 */}
       <div className="status-bar">
         <span style={{ marginRight: "15px", color: "#f1c40f", fontWeight: "bold" }}>
           ROUND {gameState.round}
         </span>
         <span>TURN {gameState.turn} — {isPlayerTurn ? "YOUR TURN" : "ENEMY TURN"}</span>
+        {pendingAbility && (
+          <span style={{ marginLeft: "20px", color: "#3498db", fontWeight: "bold" }}>🎯 대상을 선택하세요</span>
+        )}
       </div>
 
       {/* 1. 적 영역 */}
-      <div className="enemy-area" onClick={() => handleEnemyClick("enemy")}>
+      <div className="enemy-area" onClick={(e) => {
+        e.stopPropagation();
+        handleEnemyClick("enemy");
+      }}>
         
         
         {/* 적 필드 */}
@@ -101,8 +109,15 @@ export const GameBoard = () => {
               key={i} 
               unit={unit} 
               isSelected={unit?.id === selectedAttackerId}
-              onClick={() => unit && handlePlayerUnitClick(unit)}
-              onActivateAbility={(idx) => unit && activateAbility(unit.id, idx)}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (unit) handlePlayerUnitClick(unit);
+              }}
+              onActivateAbility={(idx) => {
+                if (unit && unit.abilities) {
+                  handleAbilityClick(unit.id, idx, unit.abilities[idx]);
+                }
+              }}
             />
           ))}
         </div>
@@ -121,7 +136,10 @@ export const GameBoard = () => {
            </div>
            <button 
              className="end-turn-btn" 
-             onClick={endTurn}
+             onClick={(e) => {
+               e.stopPropagation();
+               endTurn();
+             }}
              disabled={!isPlayerTurn}
            >
              턴 종료
@@ -135,7 +153,10 @@ export const GameBoard = () => {
               <div 
                 key={index} 
                 className="card" 
-                onClick={() => playCard(index)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playCard(index);
+                }}
               >
                 <div className="card-cost">{card.cost}</div>
                 <div className="card-content">
@@ -163,7 +184,7 @@ export const GameBoard = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-title" style={{ color: "#e74c3c" }}>ERROR</div>
-            <div className="modal-message">{error}</div>
+            <div className="modal-message">{error.message}</div>
             <button className="modal-btn" onClick={clearError}>
               확인
             </button>
@@ -172,14 +193,14 @@ export const GameBoard = () => {
       )}
 
       {/* 게임 종료 모달 */}
-      {(gameState.gameStatus === "victory" || gameState.gameStatus === "defeat") && (
+      {(gameState.gameStatus === GameStatus.VICTORY || gameState.gameStatus === GameStatus.DEFEAT) && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className={`modal-title ${gameState.gameStatus}`}>
-              {gameState.gameStatus === "victory" ? "VICTORY!" : "DEFEAT"}
+              {gameState.gameStatus === GameStatus.VICTORY ? "VICTORY!" : "DEFEAT"}
             </div>
             <div className="modal-message">
-              {gameState.gameStatus === "victory" 
+              {gameState.gameStatus === GameStatus.VICTORY 
                 ? "축하합니다! 모든 적을 물리쳤습니다." 
                 : "아쉽게도 패배했습니다. 다시 도전해보세요."}
             </div>
