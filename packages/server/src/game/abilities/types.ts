@@ -1,9 +1,8 @@
-import { Ability } from "@card-game/shared";
-import { GameSession } from "../GameSession";
+import { Ability, GameState } from "@card-game/shared";
 
 export interface AbilityHandler {
   execute(
-    session: GameSession, 
+    gameState: GameState, 
     playerId: string, 
     cardInstanceId: string, 
     ability: Ability

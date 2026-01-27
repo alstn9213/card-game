@@ -1,11 +1,14 @@
 import { GameState, UNIT_CARDS, FieldUnit } from "@card-game/shared";
-import { GameUtils } from "../utils/GameUtils";
 import { v4 as uuidv4 } from 'uuid';
+import { EnemyAI } from "./EnemyAI";
 
 
 export class EnemyManager {
-  constructor(private getState: () => GameState) {}
+  private ai: EnemyAI;
 
+  constructor(private getState: () => GameState) {
+    this.ai = new EnemyAI();
+  }
 
   // 몬스터 카드 소환
   public spawnNewEnemy(state: GameState): FieldUnit {
@@ -42,39 +45,7 @@ export class EnemyManager {
       if (unit) unit.hasAttacked = false;
     });
 
-    // 공격 AI
-    state.enemyField.forEach((enemyUnit) => {
-      if (!enemyUnit) return;
-      if (enemyUnit.hasAttacked) return;
-      if (state.player.currentHp <= 0) return;
-
-      const playerUnits = state.playerField
-        .map((u, i) => ({ unit: u, index: i }))
-        .filter((item) => item.unit !== null);
-
-      if (playerUnits.length > 0) {
-        const target = playerUnits[Math.floor(Math.random() * playerUnits.length)];
-        const targetUnit = state.playerField[target.index]!;
-
-        targetUnit.currentHp -= enemyUnit.attackPower;
-
-        GameUtils.processUnitDeath(state, {
-          target: targetUnit,
-          index: target.index,
-          source: "player-field"
-        });
-      } else if(state.player.currentHp > 0){
-        state.player.currentHp -= enemyUnit.attackPower;
-      } 
-      
-      if (state.player.currentHp <= 0) {
-        state.gameStatus = "defeat";
-        return;
-      }
-
-      enemyUnit.hasAttacked = true;
-    });
+    // AI에게 턴 실행 위임
+    this.ai.executeTurn(state);
   }
-
- 
 }

@@ -5,6 +5,7 @@ export interface ClientToServerEvents {
   playCard: (cardIndex: number) => void;
   endTurn: () => void;
   attack: (attackerId: string, targetId: string) => void;
+  activateAbility: (cardInstanceId: string, abilityIndex: number) => void;
 }
 
 export interface ServerToClientEvents {

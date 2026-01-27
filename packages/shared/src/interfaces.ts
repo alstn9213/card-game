@@ -42,6 +42,7 @@ export interface FieldUnit extends GameCard, UnitCard {
 
 export interface Ability {
   type: EffectType;
+  description: string;
   value?: number;          // 데미지나 회복량 등 수치 (선택)
   targetId?: string;       // 변신할 대상의 ID 등 (선택)
 }

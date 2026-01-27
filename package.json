@@ -3,5 +3,11 @@
   "private": true,
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @card-game/client\" \"npm run dev -w @card-game/server\" --names \"CLIENT,SERVER\" --prefix-colors \"bgBlue.bold,bgMagenta.bold\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
 }

@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
-import { UNIT_CARDS, DeckRules, type CardData } from '@card-game/shared';
-import { validateDeck } from '@card-game/shared/src/utils/deckValidator';
-import './DeckBuilder.css';
+import { useState, useMemo } from "react";
+import { UNIT_CARDS, DeckRules, type CardData } from "@card-game/shared";
+import { validateDeck } from "@card-game/shared/src/utils/deckValidator";
+import "./DeckBuilder.css";
 
 interface DeckBuilderProps {
   onGameStart: (deckCardIds: string[]) => void;
@@ -31,7 +31,7 @@ export const DeckBuilder = ({ onGameStart, onBack }: DeckBuilderProps) => {
     setDeck([...deck, card.cardId]);
   };
 
-  // 덱 제거 로직
+  // 덱에서 카드 제거 로직
   const removeFromDeck = (cardId: string) => {
     const index = deck.indexOf(cardId);
     if (index > -1) {
@@ -76,7 +76,7 @@ export const DeckBuilder = ({ onGameStart, onBack }: DeckBuilderProps) => {
             return (
               <div 
                 key={card.cardId} 
-                className={`library-card ${isMaxed ? 'disabled' : ''}`}
+                className={`library-card ${isMaxed ? "disabled" : ""}`}
                 onClick={() => addToDeck(card)}
               >
                 <div className="card-cost-badge">{card.cost}</div>
@@ -93,7 +93,7 @@ export const DeckBuilder = ({ onGameStart, onBack }: DeckBuilderProps) => {
       <div className="deck-sidebar">
         <div className="deck-header">
           <h2>나의 덱</h2>
-          <div className={`deck-count ${validation.isValid ? 'valid' : 'invalid'}`} title={validation.message}>
+          <div className={`deck-count ${validation.isValid ? "valid" : "invalid"}`} title={validation.message}>
             {deck.length} / {DeckRules.MIN_DECK_SIZE}
           </div>
         </div>

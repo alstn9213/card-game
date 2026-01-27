@@ -1,79 +1,78 @@
-import { useState, useCallback, useEffect } from "react";
-import type { ClientToServerEvents, GameState, ServerToClientEvents } from "@card-game/shared";
-import { io, type Socket } from "socket.io-client";
+import { useState, useEffect, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
+import type { GameState } from "@card-game/shared";
 
-// 소켓 인스턴스를 컴포넌트 외부에서 생성하여 리렌더링 시에도 연결 유지
-// 실제 배포 시에는 환경변수(import.meta.env.VITE_API_URL) 등을 사용해야 함
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io("http://localhost:3000", {
-  autoConnect: false, // 필요할 때 연결하기 위해 false 설정
-});
+const SOCKET_URL = "http://localhost:3000";
 
 export const useGameState = () => {
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // 1. 소켓 연결
-    socket.connect();
+    const newSocket = io(SOCKET_URL, {
+      transports: ["websocket"],
+    });
+    setSocket(newSocket);
 
-    // 2. 이벤트 리스너 등록
-    function onConnect() {
+    newSocket.on("connect", () => {
       setIsConnected(true);
-      console.log("Connected to server");
-    }
+      console.log("Connected to server:", newSocket.id);
+    });
 
-    function onDisconnect() {
+    newSocket.on("disconnect", () => {
       setIsConnected(false);
       console.log("Disconnected from server");
-    }
+    });
 
-    function onGameStateUpdate(newState: GameState) {
-      console.log("Game state updated:", newState);
+    newSocket.on("gameStateUpdate", (newState: GameState) => {
       setGameState(newState);
-    }
+    });
 
-    function onError(message: string) {
-      alert(`Error: ${message}`); // 간단한 에러 처리
-    }
+    newSocket.on("error", (message: string) => {
+      console.error("Server Error:", message);
+      alert(message);
+    });
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("gameStateUpdate", onGameStateUpdate);
-    socket.on("error", onError);
-
-    // 3. 클린업 (컴포넌트 언마운트 시 리스너 제거)
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("gameStateUpdate", onGameStateUpdate);
-      socket.off("error", onError);
-      socket.disconnect();
+      newSocket.disconnect();
     };
   }, []);
 
-  // 4. 액션 함수 정의 (서버로 이벤트 전송)
+  const startGame = useCallback((deck: string[]) => {
+    if (socket) {
+      socket.emit("joinGame", deck);
+    }
+  }, [socket]);
+
   const playCard = useCallback((cardIndex: number) => {
-    socket.emit("playCard", cardIndex);
-  }, []);
+    socket?.emit("playCard", cardIndex);
+  }, [socket]);
 
   const endTurn = useCallback(() => {
-    socket.emit("endTurn");
-  }, []);
+    socket?.emit("endTurn");
+  }, [socket]);
 
   const attack = useCallback((attackerId: string, targetId: string) => {
-    socket.emit("attack", attackerId, targetId);
-  }, []);
+    socket?.emit("attack", attackerId, targetId);
+  }, [socket]);
 
-  const joinGame = useCallback((deck: string[]) => {
-    socket.emit("joinGame", deck);
+  const activateAbility = useCallback((cardInstanceId: string, abilityIndex: number) => {
+    socket?.emit("activateAbility", cardInstanceId, abilityIndex);
+  }, [socket]);
+
+  const resetGame = useCallback(() => {
+    setGameState(null);
   }, []);
 
   return {
     gameState,
     isConnected,
+    startGame,
     playCard,
     endTurn,
     attack,
-    joinGame,
+    activateAbility,
+    resetGame,
   };
 };

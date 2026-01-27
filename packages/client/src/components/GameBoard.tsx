@@ -1,8 +1,10 @@
-import './GameBoard.css'; 
-import { useGameState } from '../hooks/useGameState';
-import { useGameInteraction } from '../hooks/useGameInteraction';
-import { UnitSlot } from './UnitSlot';
-import type { GameState } from '@card-game/shared';
+import { useState, useEffect, useRef } from "react";
+import "./GameBoard.css"; 
+import { useGameState } from "../hooks/useGameState";
+import { useGameInteraction } from "../hooks/useGameInteraction";
+import { UnitSlot } from "./UnitSlot";
+import { DeckBuilder } from "./DeckBuilder";
+import type { GameState } from "@card-game/shared";
 
 interface UseGameStateResult {
   gameState: GameState | null;
@@ -10,27 +12,53 @@ interface UseGameStateResult {
   playCard: (cardIndex: number) => void;
   endTurn: () => void;
   attack: (attackerId: string, targetId: string) => void;
+  startGame?: (deck: string[]) => void;
+  activateAbility: (cardInstanceId: string, abilityIndex: number) => void;
+  resetGame: () => void;
 }
 
 export const GameBoard = () => {
-  const { gameState, isConnected, playCard, endTurn, attack } = useGameState() as UseGameStateResult;
+  const { gameState, isConnected, playCard, endTurn, attack, startGame, activateAbility, resetGame } = useGameState() as UseGameStateResult;
   
   const { selectedAttackerId, handlePlayerUnitClick, handleEnemyClick } = useGameInteraction(
     gameState?.isPlayerTurn ?? false,
     attack
   );
 
+  // 플레이어 본체 데미지 효과 상태
+  const [playerDamage, setPlayerDamage] = useState<{ id: number; text: string } | null>(null);
+  const prevPlayerHp = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (gameState) {
+      if (prevPlayerHp.current !== null && gameState.player.currentHp < prevPlayerHp.current) {
+        const dmg = prevPlayerHp.current - gameState.player.currentHp;
+        setPlayerDamage({ id: Date.now(), text: `-${dmg}` });
+        setTimeout(() => setPlayerDamage(null), 1000);
+      }
+      prevPlayerHp.current = gameState.player.currentHp;
+    }
+  }, [gameState?.player.currentHp]);
+
   if (!isConnected) {
     return <div className="loading">서버에 연결 중입니다...</div>;
   }
 
   if (!gameState) {
-    return <div className="loading">로딩중...</div>;
+    return (
+      <DeckBuilder 
+        onGameStart={(deck) => {
+          if (startGame) {
+            startGame(deck);
+          } else {
+            console.error("startGame 함수가 useGameState에서 제공되지 않았습니다.");
+          }
+        }}
+        onBack={() => console.log("뒤로가기")}
+      />
+    );
   }
-  console.log("현재 게임 상태:", gameState);
-  console.log("내 필드:", gameState.playerField);
-  console.log("적 필드:", gameState.enemyField);
-
+ 
   const { currentGold, isPlayerTurn } = gameState;
 
   return (
@@ -73,6 +101,7 @@ export const GameBoard = () => {
               unit={unit} 
               isSelected={unit?.id === selectedAttackerId}
               onClick={() => unit && handlePlayerUnitClick(unit)}
+              onActivateAbility={(idx) => unit && activateAbility(unit.id, idx)}
             />
           ))}
         </div>
@@ -83,6 +112,7 @@ export const GameBoard = () => {
         {/* 플레이어 상태 바 (아바타, 골드, 턴 종료) */}
         <div className="player-status-bar">
            <div className="avatar player-avatar">
+              {playerDamage && <div key={playerDamage.id} className="floating-damage">{playerDamage.text}</div>}
               HP {gameState.player.currentHp}
            </div>
            <div className="resource-display">
@@ -111,12 +141,12 @@ export const GameBoard = () => {
                   <div className="card-name">{card.name}</div>
                 </div>
                 {/* 유닛일 경우 스탯 표시 */}
-                {card.type === 'UNIT' && (
+                {card.type === "UNIT" && (
                    <div className="card-stats">
-                      <div className="stat-badge" style={{background: '#e67e22'}}>
+                      <div className="stat-badge" style={{background: "#e67e22"}}>
                         {(card as any).attackPower}
                       </div>
-                      <div className="stat-badge" style={{background: '#e74c3c'}}>
+                      <div className="stat-badge" style={{background: "#e74c3c"}}>
                         {(card as any).hp}
                       </div>
                    </div>
@@ -126,6 +156,25 @@ export const GameBoard = () => {
           </div>
         </div>
       </div>
+
+      {/* 게임 종료 모달 */}
+      {(gameState.gameStatus === "victory" || gameState.gameStatus === "defeat") && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className={`modal-title ${gameState.gameStatus}`}>
+              {gameState.gameStatus === "victory" ? "VICTORY!" : "DEFEAT"}
+            </div>
+            <div className="modal-message">
+              {gameState.gameStatus === "victory" 
+                ? "축하합니다! 모든 적을 물리쳤습니다." 
+                : "아쉽게도 패배했습니다. 다시 도전해보세요."}
+            </div>
+            <button className="modal-btn" onClick={resetGame}>
+              메인으로 돌아가기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

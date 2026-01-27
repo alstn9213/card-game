@@ -4,9 +4,11 @@ import {
   UNIT_CARDS,
   GameCard,
   DeckRules,
+  UnitCard,
 } from "@card-game/shared";
 import { EnemyManager } from "./enemy/EnemyManager";
 import { PlayerManager } from "./player/PlayerManager";
+import { AbilityManager } from "./abilities/AbilityManager";
 import { v4 as uuidv4 } from 'uuid';
 import { createInitialGameState } from "./GameStateFactory";
 
@@ -14,6 +16,7 @@ export class GameLogic {
   private state: GameState;
   private playerManager: PlayerManager;
   private enemyManager: EnemyManager;
+  private abilityManager: AbilityManager;
 
   constructor(playerDeck?: string[]) {
     this.state = this.initializeGame(playerDeck);
@@ -22,6 +25,7 @@ export class GameLogic {
         () => this.state, 
         () => this.checkGameOver()
     );
+    this.abilityManager = new AbilityManager();
     this.state.enemy = this.enemyManager.spawnNewEnemy(this.state);
   }
 
@@ -34,7 +38,8 @@ export class GameLogic {
     
     let deckCardIds: string[] = [];
 
-    // 1. 전달받은 덱이 있으면 유효성 검증 후 사용
+    //  전달받은 덱이 있으면 유효성 검증 후 사용
+    //  테스트용으로 덱이 없으면 기본 덱을 생성하는 로직 추가
     if (playerDeck && playerDeck.length > 0) {
       const validation = validateDeck(playerDeck);
       if (!validation.isValid) {
@@ -85,7 +90,7 @@ export class GameLogic {
   // 게임 시작 시 덱 초기화 함수
   private initializeDeck(deckCardIds: string[], playerId: string): GameCard[] {
     return deckCardIds.map((cardId) => {
-      const originalData = Object.values(UNIT_CARDS).find((c: any) => c.cardId === cardId);
+      const originalData = Object.values(UNIT_CARDS).find((c: UnitCard) => c.cardId === cardId);
       
       if (!originalData) throw new Error(`Card not found: ${cardId}`);
 
@@ -117,6 +122,29 @@ export class GameLogic {
     return this.playerManager.playCard(cardIndex);
   }
 
+  public activateAbility(playerId: string, cardInstanceId: string, abilityIndex: number): { success: boolean; message?: string } {
+    const state = this.state;
+    if (state.player.id !== playerId) {
+      return { success: false, message: "잘못된 플레이어입니다." };
+    }
+
+    const unitIndex = state.playerField.findIndex(u => u?.id === cardInstanceId);
+    if (unitIndex === -1) {
+      return { success: false, message: "카드가 필드에 없습니다." };
+    }
+    
+    const unitInstance = state.playerField[unitIndex]!;
+    const cardData = UNIT_CARDS.find(c => c.cardId === unitInstance.cardId);
+    
+    if (!cardData?.abilities || !cardData.abilities[abilityIndex]) {
+      return { success: false, message: "유효하지 않은 능력입니다." };
+    }
+
+    const ability = cardData.abilities[abilityIndex];
+    this.abilityManager.executeAbility(this.state, playerId, cardInstanceId, ability);
+    return { success: true };
+  }
+
   public attack(attackerId: string, targetId: string) {
     return this.playerManager.attack(attackerId, targetId);
   }
@@ -145,6 +173,8 @@ export class GameLogic {
   private checkGameOver() {
     if (this.state.player.currentHp <= 0) {
       this.state.gameStatus = "defeat";
+    } else if (this.state.turn > 50) {
+      this.state.gameStatus = "victory";
     } else if (this.state.enemy.currentHp <= 0) {
       if (this.state.enemy.cost) {
         this.state.currentGold += this.state.enemy.cost;

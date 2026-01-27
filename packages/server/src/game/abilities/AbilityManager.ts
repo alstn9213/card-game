@@ -1,5 +1,4 @@
-import { GameSession } from "../GameSession";
-import { Ability,  } from "@card-game/shared/src/interfaces"; // Shared에서 수정했던 EffectType 사용
+import { Ability, GameState } from "@card-game/shared";
 import { AbilityHandler } from "./types";
 import { EffectType } from "@card-game/shared";
 import { TransformHandler } from "./handlers/TransformHandler";
@@ -18,7 +17,7 @@ export class AbilityManager {
     this.handlers[type] = handler;
   }
 
-  public executeAbility(session: GameSession, playerId: string, cardInstanceId: string, ability: Ability) {
+  public executeAbility(gameState: GameState, playerId: string, cardInstanceId: string, ability: Ability) {
     const handler = this.handlers[ability.type];
     
     if (!handler) {
@@ -27,6 +26,6 @@ export class AbilityManager {
     }
 
     // 해당 핸들러에게 일임
-    handler.execute(session, playerId, cardInstanceId, ability);
+    handler.execute(gameState, playerId, cardInstanceId, ability);
   }
 }

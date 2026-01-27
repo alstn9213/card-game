@@ -1,73 +1,62 @@
-import { validateDeck } from './../../../../node_modules/@card-game/shared/src/utils/deckValidator';
-import { ClientToServerEvents, GameCard, ServerToClientEvents, UNIT_CARDS } from "@card-game/shared";
+import { ClientToServerEvents, ServerToClientEvents, validateDeck } from "@card-game/shared";
 import { Socket } from "socket.io";
-import { AbilityManager } from "./abilities/AbilityManager";
 import { GameLogic } from "./GameLogic";
 
 
 export class GameSession {
   private socket: Socket<ClientToServerEvents, ServerToClientEvents>;
-  private abilityManager: AbilityManager;
-  private gameLogic: GameLogic;
+  private gameLogic: GameLogic | null = null;
 
   constructor(socket: Socket) {
     this.socket = socket;
-    this.gameLogic = new GameLogic();
-    this.abilityManager = new AbilityManager();
-
-    // 클라이언트에게 초기 상태 전송
-    this.broadcastState();
     
     // 이벤트 리스너 등록
     this.setupListeners();
   }
 
   public getGameState() {
-      return this.gameLogic.getState();
+    return this.gameLogic?.getState();
   }
 
-  public startGame(playerDeck: GameCard[]) {
-  const validation = validateDeck(playerDeck);
+  public startGame(playerDeck: string[]) {
+    const validation = validateDeck(playerDeck);
 
-  if (!validation.isValid) {
-    throw new Error(`게임 시작 실패: ${validation.message}`);
-  }
+    if (!validation.isValid) {
+      throw new Error(`게임 시작 실패: ${validation.message}`);
+    }
 
-  // 2. 검증 통과 시 게임 상태 초기화
-  // ... (기존 deck 셔플 및 GameState 생성 로직)
+    // 검증된 덱을 사용하여 새로운 게임 로직 인스턴스를 생성하고 상태를 전파합니다.
+    this.gameLogic = new GameLogic(playerDeck);
+    this.broadcastState();
 }
 
-  // 클라이언트가 능력을 사용하겠다고 요청했을 때 호출되는 함수
-  public activateAbility(playerId: string, cardInstanceId: string, abilityIndex: number) {
-    // 플레이어 확인
-    const state = this.gameLogic.getState();
-    if (state.player.id !== playerId) return;
+  private handleActivateAbility(cardInstanceId: string, abilityIndex: number) {
+    if (!this.gameLogic) return;
+    
+    // 현재 게임 세션의 플레이어 ID를 가져옴
+    const playerId = this.gameLogic.getState().player.id;
 
-    const unitIndex = state.playerField.findIndex(u => u?.id === cardInstanceId);
-    if (unitIndex === -1) {
-      console.log("카드가 필드에 없습니다.");
-      return;
-    }
+    const result = this.gameLogic.activateAbility(playerId, cardInstanceId, abilityIndex);
     
-    const unitInstance = state.playerField[unitIndex]!;
-    const cardData = UNIT_CARDS.find(c => c.cardId === unitInstance.cardId);
-    
-    if (!cardData?.abilities || !cardData.abilities[abilityIndex]) {
-        console.log("유효하지 않은 능력입니다.");
+    if (!result.success) {
+        this.socket.emit("error", result.message || "능력 사용 실패");
         return;
     }
-
-    const ability = cardData.abilities[abilityIndex];
-
-    this.abilityManager.executeAbility(this, playerId, cardInstanceId, ability);
 
     // 변경된 상태를 모든 클라이언트에게 전송
     this.broadcastState();
   }
 
-  
 
   private setupListeners() {
+    this.socket.on("joinGame", (deck: string[]) => {
+      try {
+        this.startGame(deck);
+      } catch (err: any) {
+        this.socket.emit("error", err.message);
+      }
+    });
+
     this.socket.on("playCard", (cardIndex: number) => {
       this.handlePlayCard(cardIndex);
     });
@@ -79,9 +68,19 @@ export class GameSession {
     this.socket.on("attack", (attackerId: string, targetId: string) => {
       this.handleAttack(attackerId, targetId);
     });
+
+    this.socket.on("activateAbility", (cardInstanceId: string, abilityIndex: number) => {
+      this.handleActivateAbility(cardInstanceId, abilityIndex);
+    });
+
+    this.socket.on("disconnect", () => {
+      console.log(`Client disconnected: ${this.socket.id}`);
+      this.gameLogic = null;
+    });
   }
 
   private handlePlayCard(cardIndex: number) {
+    if (!this.gameLogic) return;
     const result = this.gameLogic.playCard(cardIndex);
     
     if (!result.success) {
@@ -93,6 +92,7 @@ export class GameSession {
   }
 
   private handleAttack(attackerId: string, targetId: string) {
+    if (!this.gameLogic) return;
     const result = this.gameLogic.attack(attackerId, targetId);
     
     if (!result.success) {
@@ -104,11 +104,13 @@ export class GameSession {
   }
 
   private handleEndTurn() {
+    if (!this.gameLogic) return;
     this.gameLogic.endTurn();
     this.broadcastState();
 
     // 적의 턴 진행 (약간의 지연 효과)
     setTimeout(() => {
+      if (!this.gameLogic) return;
       this.gameLogic.processEnemyTurn();
       this.broadcastState();
     }, 1000);
@@ -116,6 +118,7 @@ export class GameSession {
   
 
   private broadcastState() {
+    if (!this.gameLogic) return;
     this.socket.emit("gameStateUpdate", this.gameLogic.getState());
   }
 }

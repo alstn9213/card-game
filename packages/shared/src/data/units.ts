@@ -5,7 +5,7 @@ export const UNIT_CARDS: UnitCard[] = [
   {
     cardId: "baby_dragon",
     name: "아기 용",
-    description: "붉은 용으로 성장할 수 있습니다.",
+    description: "작은 용입니다.",
     cost: 1,
     type: CardType.UNIT,
     targetType: TargetType.SINGLE_ENEMY,
@@ -14,7 +14,8 @@ export const UNIT_CARDS: UnitCard[] = [
     abilities: [
       {
         type: EffectType.TRANSFORM,
-        targetId: "red_dragon" // 변신할 대상 ID
+        targetId: "red_dragon", // 변신할 대상 ID
+        description: "붉은 용으로 변신합니다."
       }
     ]
   },

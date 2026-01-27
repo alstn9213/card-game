@@ -12,7 +12,7 @@ export const createInitialGameState = (): GameState => {
       maxHp: 4000,
       currentHp: 4000,
     },
-    // 적 영웅(보스) 초기화
+    // 임시 적 상태
     enemy: {
       id: "enemy-hero",
       cardId: "boss_01",
