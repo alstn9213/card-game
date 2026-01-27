@@ -26,7 +26,7 @@ export class GameLogic {
         () => this.checkGameOver()
     );
     this.abilityManager = new AbilityManager();
-    this.state.enemy = this.enemyManager.spawnNewEnemy(this.state);
+    this.enemyManager.spawnRandomEnemies(this.state);
   }
 
   public getState(): GameState {
@@ -171,19 +171,34 @@ export class GameLogic {
   }
 
   private checkGameOver() {
+    // 1. 적 유닛 사망 처리 및 보상 지급
+    let activeEnemyCount = 0;
+    this.state.enemyField.forEach((unit, index) => {
+      if (unit) {
+        if (unit.currentHp <= 0) {
+          // 몬스터 처치 시 코스트만큼 금화 획득
+          this.state.currentGold += unit.cost;
+          this.state.enemyField[index] = null;
+        } else {
+          activeEnemyCount++;
+        }
+      }
+    });
+
+    // 2. 모든 적이 제거되었으면 다음 라운드로 진행
+    if (activeEnemyCount === 0) {
+        this.startNextRound();
+    }
+
     if (this.state.player.currentHp <= 0) {
       this.state.gameStatus = "defeat";
-    } else if (this.state.turn > 50) {
+    } else if (this.state.round > 50) {
       this.state.gameStatus = "victory";
-    } else if (this.state.enemy.currentHp <= 0) {
-      if (this.state.enemy.cost) {
-        this.state.currentGold += this.state.enemy.cost;
-      }
-      this.startNextRound();
     }
   }
 
   private startNextRound() {
-    this.state.enemy = this.enemyManager.spawnNewEnemy(this.state);
+    this.state.round++;
+    this.enemyManager.spawnRandomEnemies(this.state);
   }
 }

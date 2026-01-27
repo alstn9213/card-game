@@ -47,3 +47,16 @@ export interface Ability {
   targetId?: string;       // 변신할 대상의 ID 등 (선택)
 }
 
+export interface GameState {
+  gameStatus: "playing" | "victory" | "defeat";
+  turn: number;
+  round: number;
+  isPlayerTurn: boolean;
+  player: Entity;
+  playerField: (FieldUnit | null)[];
+  enemyField: (FieldUnit | null)[];
+  hand: GameCard[];
+  deck: GameCard[];
+  discardPile: GameCard[];
+  currentGold: number;
+}

@@ -506,3 +506,41 @@
   0% { opacity: 0.8; box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.8); }
   100% { opacity: 0; box-shadow: 0 0 40px 20px rgba(255, 255, 255, 0); }
 }
+
+/* --- 라운드 알림 텍스트 --- */
+.round-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 6rem;
+  font-weight: 900;
+  color: #f1c40f;
+  text-shadow: 0 0 20px rgba(241, 196, 15, 0.5), 4px 4px 0 #000;
+  z-index: 2000;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: roundPop 2s ease-in-out forwards;
+}
+
+@keyframes roundPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}

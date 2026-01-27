@@ -10,29 +10,34 @@ export class EnemyManager {
     this.ai = new EnemyAI();
   }
 
-  // 몬스터 카드 소환
-  public spawnNewEnemy(state: GameState): FieldUnit {
-    const emptySlotIndex = state.enemyField.findIndex((slot) => slot === null);
-    if (emptySlotIndex === -1) return;
+  // 몬스터 카드 소환 (랜덤 1~5마리, 랜덤 위치)
+  public spawnRandomEnemies(state: GameState): void {
+    // 1. 적 필드 초기화
+    state.enemyField = [null, null, null, null, null];
 
-    const randomUnit = UNIT_CARDS[Math.floor(Math.random() * UNIT_CARDS.length)];
+    // 2. 소환할 몬스터 수 결정 (1 ~ 5)
+    const spawnCount = Math.floor(Math.random() * 5) + 1;
 
-    const newUnit: FieldUnit = {
-      id: uuidv4(),
-      cardId: randomUnit.cardId,
-      name: randomUnit.name,
-      cost: randomUnit.cost,
-      type: randomUnit.type,
-      targetType: randomUnit.targetType,
-      description: randomUnit.description,
-      attackPower: randomUnit.attackPower,
-      maxHp: randomUnit.maxHp,
-      currentHp: randomUnit.maxHp,
-      hasAttacked: false,
-    };
+    // 3. 소환할 위치 결정 (0~4 인덱스 중 랜덤하게 선택)
+    const availableSlots = [0, 1, 2, 3, 4];
+    // 배열 섞기 (Fisher-Yates Shuffle)
+    for (let i = availableSlots.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [availableSlots[i], availableSlots[j]] = [availableSlots[j], availableSlots[i]];
+    }
 
-    state.enemyField[emptySlotIndex] = newUnit;
-    return newUnit;
+    // 4. 몬스터 배치
+    for (let i = 0; i < spawnCount; i++) {
+      const slotIndex = availableSlots[i];
+      const randomUnit = UNIT_CARDS[Math.floor(Math.random() * UNIT_CARDS.length)];
+
+      state.enemyField[slotIndex] = {
+        ...randomUnit,
+        id: uuidv4(),
+        currentHp: randomUnit.maxHp,
+        hasAttacked: false,
+      };
+    }
   }
 
   // 적 턴 진행 (AI 로직)

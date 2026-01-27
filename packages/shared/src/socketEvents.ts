@@ -1,4 +1,4 @@
-import type { GameState } from "./gameState";
+import type { GameState } from "./interfaces";
 
 export interface ClientToServerEvents {
   joinGame: (deck: string[]) => void;

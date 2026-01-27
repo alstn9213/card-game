@@ -8,6 +8,7 @@ export const useGameState = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const newSocket = io(SOCKET_URL, {
@@ -31,7 +32,7 @@ export const useGameState = () => {
 
     newSocket.on("error", (message: string) => {
       console.error("Server Error:", message);
-      alert(message);
+      setError(message);
     });
 
     return () => {
@@ -65,6 +66,10 @@ export const useGameState = () => {
     setGameState(null);
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     gameState,
     isConnected,
@@ -74,5 +79,7 @@ export const useGameState = () => {
     attack,
     activateAbility,
     resetGame,
+    error,
+    clearError,
   };
 };

@@ -1,9 +1,9 @@
+import "../css/GameBoard.css";
 import { useState, useEffect, useRef } from "react";
-import "./GameBoard.css"; 
+import { useLocation } from "react-router-dom";
 import { useGameState } from "../hooks/useGameState";
 import { useGameInteraction } from "../hooks/useGameInteraction";
-import { UnitSlot } from "./UnitSlot";
-import { DeckBuilder } from "./DeckBuilder";
+import { UnitSlot } from "../components/UnitSlot";
 import type { GameState } from "@card-game/shared";
 
 interface UseGameStateResult {
@@ -15,10 +15,13 @@ interface UseGameStateResult {
   startGame?: (deck: string[]) => void;
   activateAbility: (cardInstanceId: string, abilityIndex: number) => void;
   resetGame: () => void;
+  error: string | null;
+  clearError: () => void;
 }
 
 export const GameBoard = () => {
-  const { gameState, isConnected, playCard, endTurn, attack, startGame, activateAbility, resetGame } = useGameState() as UseGameStateResult;
+  const location = useLocation();
+  const { gameState, isConnected, playCard, endTurn, attack, startGame, activateAbility, resetGame, error, clearError } = useGameState() as UseGameStateResult;
   
   const { selectedAttackerId, handlePlayerUnitClick, handleEnemyClick } = useGameInteraction(
     gameState?.isPlayerTurn ?? false,
@@ -28,6 +31,15 @@ export const GameBoard = () => {
   // 플레이어 본체 데미지 효과 상태
   const [playerDamage, setPlayerDamage] = useState<{ id: number; text: string } | null>(null);
   const prevPlayerHp = useRef<number | null>(null);
+  const hasStarted = useRef(false);
+
+  useEffect(() => {
+    if (isConnected && startGame && !hasStarted.current) {
+      const deck = location.state?.deck || [];
+      startGame(deck);
+      hasStarted.current = true;
+    }
+  }, [isConnected, startGame, location.state]);
 
   useEffect(() => {
     if (gameState) {
@@ -46,16 +58,7 @@ export const GameBoard = () => {
 
   if (!gameState) {
     return (
-      <DeckBuilder 
-        onGameStart={(deck) => {
-          if (startGame) {
-            startGame(deck);
-          } else {
-            console.error("startGame 함수가 useGameState에서 제공되지 않았습니다.");
-          }
-        }}
-        onBack={() => console.log("뒤로가기")}
-      />
+      <div className="loading">게임 준비 중...</div>
     );
   }
  
@@ -65,17 +68,15 @@ export const GameBoard = () => {
     <div className="game-board">
       {/* 최상단 상태 바 */}
       <div className="status-bar">
-        TURN {gameState.turn} — {isPlayerTurn ? "YOUR TURN" : "ENEMY TURN"}
+        <span style={{ marginRight: "15px", color: "#f1c40f", fontWeight: "bold" }}>
+          ROUND {gameState.round}
+        </span>
+        <span>TURN {gameState.turn} — {isPlayerTurn ? "YOUR TURN" : "ENEMY TURN"}</span>
       </div>
 
       {/* 1. 적 영역 */}
       <div className="enemy-area" onClick={() => handleEnemyClick("enemy")}>
-        <div className="enemy-info">
-          <div className="avatar enemy-avatar">
-            HP {gameState.enemy.currentHp}
-          </div>
-          <div>Enemy Player</div>
-        </div>
+        
         
         {/* 적 필드 */}
         <div className="field-row enemy-field">
@@ -156,6 +157,19 @@ export const GameBoard = () => {
           </div>
         </div>
       </div>
+
+      {/* 에러 메시지 모달 */}
+      {error && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-title" style={{ color: "#e74c3c" }}>ERROR</div>
+            <div className="modal-message">{error}</div>
+            <button className="modal-btn" onClick={clearError}>
+              확인
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 게임 종료 모달 */}
       {(gameState.gameStatus === "victory" || gameState.gameStatus === "defeat") && (
