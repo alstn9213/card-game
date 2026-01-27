@@ -35,7 +35,8 @@ export type DeckRules = (typeof DeckRules)[keyof typeof DeckRules];
 export const GameStatus = {
   PLAYING: "playing",
   VICTORY: "victory",
-  DEFEAT: "defeat"
+  DEFEAT: "defeat",
+  SHOP: "shop"
 } as const;
 export type GameStatus = (typeof GameStatus)[keyof typeof GameStatus];
 
@@ -57,6 +58,7 @@ export const ErrorCode = {
   ALREADY_ATTACKED: "ALREADY_ATTACKED",
   TARGET_NOT_FOUND: "TARGET_NOT_FOUND",
   ATTACK_ENEMY_ONLY: "ATTACK_ENEMY_ONLY",
+  DECK_FULL: "DECK_FULL",
   UNKNOWN_ERROR: "UNKNOWN_ERROR"
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -76,4 +78,3 @@ export const DeckErrorMessages = {
   MAX_DECK_SIZE: (max: number) => `덱은 최대 ${max}장까지만 구성할 수 있습니다.`,
   MAX_COPIES_PER_CARD: (cardName: string, max: number) => `'${cardName}' 카드는 최대 ${max}장까지만 넣을 수 있습니다.`
 } as const;
-

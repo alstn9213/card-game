@@ -2,8 +2,34 @@ import { GameState, GameStatus, UNIT_CARDS, DeckRules, UnitCard, GameCard, valid
 import { v4 as uuidv4 } from 'uuid';
 import { GameUtils } from "./utils/GameUtils";
 
-export const createInitialGameState = (): GameState => {
-  // 5개의 슬롯을 가진 빈 필드 정의 (null로 초기화)
+export const initializeGame = (playerDeck?: string[]): GameState => {
+  const state = createInitialGameState();
+  
+  let deckCardIds: string[] = [];
+
+  //  덱이 없으면 기본 덱 생성
+  if (playerDeck && playerDeck.length > 0) {
+    validateDeck(playerDeck);
+    deckCardIds = playerDeck;
+  } else {
+    deckCardIds = generateDefaultDeck();
+  }
+
+  // ID 목록을 실제 게임 카드 인스턴스로 변환
+  const rawDeck = initializeDeck(deckCardIds, state.player.id);
+  const deck = GameUtils.shuffleArray(rawDeck);
+
+  // 핸드 드로우 (5장)
+  const hand = deck.splice(0, 5);
+
+  // 생성된 상태에 덱과 핸드 정보 업데이트
+  state.deck = deck;
+  state.hand = hand;
+
+  return state;
+};
+
+const createInitialGameState = (): GameState => {
   const emptyField: FieldUnit[] = [null, null, null, null, null];
 
   return {
@@ -27,34 +53,9 @@ export const createInitialGameState = (): GameState => {
     isPlayerTurn: true,
     
     gameStatus: GameStatus.PLAYING,
+    shopItems: [],
+    currentRoundEnemies: [],
   };
-};
-
-export const initializeGame = (playerDeck?: string[]): GameState => {
-  const state = createInitialGameState();
-  
-  let deckCardIds: string[] = [];
-
-  //  덱이 없으면 기본 덱을 생성하는 로직 추가
-  if (playerDeck && playerDeck.length > 0) {
-    validateDeck(playerDeck);
-    deckCardIds = playerDeck;
-  } else {
-    deckCardIds = generateDefaultDeck();
-  }
-
-  // ID 목록을 실제 게임 카드 인스턴스로 변환
-  const rawDeck = initializeDeck(deckCardIds, state.player.id);
-  const deck = GameUtils.shuffleArray(rawDeck);
-
-  // 핸드 드로우 (5장)
-  const hand = deck.splice(0, 5);
-
-  // 생성된 상태에 덱과 핸드 정보 업데이트
-  state.deck = deck;
-  state.hand = hand;
-
-  return state;
 };
 
 // 기본 덱 생성 (랜덤하게 20장 채우기)

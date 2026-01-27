@@ -11,15 +11,11 @@ export class EnemyManager {
     this.ai = new EnemyAI();
   }
 
-  // 몬스터 카드 소환 (랜덤 1~5마리, 랜덤 위치)
+  // 몬스터 카드 소환
   public spawnRandomEnemies(state: GameState): void {
-    // 적 필드 초기화
     state.enemyField = [null, null, null, null, null];
-
-    // 소환할 몬스터 수 결정 (1 ~ 5)
-    const spawnCount = Math.floor(Math.random() * 5) + 1;
-
-    // 소환할 위치 결정 (0~4 인덱스 중 랜덤하게 선택)
+    state.currentRoundEnemies = []; // 새 라운드 적 목록 초기화
+    const spawnCount = Math.floor(Math.random() * 3) + 1;
     const availableSlots = GameUtils.shuffleArray([0, 1, 2, 3, 4]);
 
     // 몬스터 배치
@@ -33,6 +29,9 @@ export class EnemyManager {
         currentHp: randomUnit.maxHp,
         hasAttacked: false,
       };
+
+      // 이번 라운드에 등장한 적 기록 (상점 판매용)
+      state.currentRoundEnemies.push(randomUnit);
     }
   }
 

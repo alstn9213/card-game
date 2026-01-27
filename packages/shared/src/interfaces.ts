@@ -33,7 +33,7 @@ export interface UnitCard extends CardData {
 }
 
 
-// [필드 유닛] 전장에 소환된 상태
+// 전장에 소환된 카드
 export interface FieldUnit extends GameCard, UnitCard {
   currentHp: number;
   hasAttacked: boolean;
@@ -60,6 +60,8 @@ export interface GameState {
   deck: GameCard[];
   discardPile: GameCard[];
   currentGold: number;
+  shopItems: UnitCard[];        // 상점에서 판매 중인 카드 목록
+  currentRoundEnemies: UnitCard[]; // 현재 라운드에 등장한 적 목록 (라운드 종료 후 상점 등록용)
 }
 
 export interface GameError {

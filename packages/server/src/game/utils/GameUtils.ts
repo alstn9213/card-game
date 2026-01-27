@@ -43,7 +43,11 @@ export class GameUtils {
     if (!target || target.currentHp > 0) return;
 
     if (source === TargetSource.ENEMY_FIELD) {
+      const enemyUnit = target as FieldUnit;
+      const reward = enemyUnit.cost; 
+      state.currentGold += reward;
       state.enemyField[index] = null;
+      
     } else if (source === TargetSource.PLAYER_FIELD) {
       state.playerField[index] = null;
     }

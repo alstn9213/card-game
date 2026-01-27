@@ -19,6 +19,9 @@ const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCode.ALREADY_ATTACKED]: "이미 공격한 유닛입니다.",
   [ErrorCode.TARGET_NOT_FOUND]: "대상을 찾을 수 없습니다.",
   [ErrorCode.ATTACK_ENEMY_ONLY]: "적군만 공격할 수 있습니다.",
+  
+  [ErrorCode.DECK_FULL]: "덱이 가득 찼습니다.",
+
   [ErrorCode.UNKNOWN_ERROR]: "알 수 없는 오류가 발생했습니다."
 };
 

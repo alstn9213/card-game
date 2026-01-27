@@ -4,24 +4,11 @@ import { useLocation } from "react-router-dom";
 import { useGameState } from "../hooks/useGameState";
 import { useGameInteraction } from "../hooks/useGameInteraction";
 import { UnitSlot } from "../components/UnitSlot";
-import { type GameError, type GameState, GameStatus } from "@card-game/shared";
-
-interface UseGameStateResult {
-  gameState: GameState | null;
-  isConnected: boolean;
-  playCard: (cardIndex: number) => void;
-  endTurn: () => void;
-  attack: (attackerId: string, targetId: string) => void;
-  startGame?: (deck: string[]) => void;
-  activateAbility: (cardInstanceId: string, abilityIndex: number, targetId?: string) => void;
-  resetGame: () => void;
-  error: GameError | null;
-  clearError: () => void;
-}
+import { GameStatus } from "@card-game/shared";
 
 export const GameBoard = () => {
   const location = useLocation();
-  const { gameState, isConnected, playCard, endTurn, attack, startGame, activateAbility, resetGame, error, clearError } = useGameState() as UseGameStateResult;
+  const { gameState, isConnected, playCard, endTurn, attack, startGame, activateAbility, resetGame, error, clearError } = useGameState();
   
   const { selectedAttackerId, pendingAbility, handlePlayerUnitClick, handleEnemyClick, handleAbilityClick, cancelInteraction } = useGameInteraction(
     gameState?.isPlayerTurn ?? false,

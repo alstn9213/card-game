@@ -18,41 +18,44 @@ export class GameSession {
   }
 
   public startGame(playerDeck: string[]) {
+    // 이전 게임의 타이머가 남아있을 수 있으므로 정리
+    this.gameLogic?.onDisconnect();
     validateDeck(playerDeck);
-    this.gameLogic = new GameLogic(playerDeck);
+    this.gameLogic = new GameLogic(playerDeck, () => this.broadcastState());
     this.broadcastState();
   }
 
   // --- 헬퍼 메서드 ---
   
+  private validateGameLogic(): GameLogic | null {
+    if (!this.gameLogic) {
+      this.socket.emit(ServerEvents.ERROR, createError(ErrorCode.GAME_NOT_STARTED));
+      return null;
+    }
+    return this.gameLogic;
+  }
+
   // 반복되는 액션 실행 및 에러 처리 로직을 공통화
   private executeGameAction(
     action: (gameLogic: GameLogic) => void,
     failCode: ErrorCode
   ) {
-    if (!this.gameLogic) {
-      this.socket.emit(ServerEvents.ERROR, createError(ErrorCode.GAME_NOT_STARTED));
-      return;
-    }
+    const gameLogic = this.validateGameLogic();
+    if (!gameLogic) return;
 
     try {
-      action(this.gameLogic);
-      this.broadcastState();
+      action(gameLogic);
+      // 동기적인 액션(카드 내기, 공격) 후에는 즉시 상태를 전파합니다.
+      // 비동기적인 endTurn은 TurnManager가 직접 전파를 처리합니다.
+      if (action.name !== 'endTurn') {
+        this.broadcastState();
+      }
     } catch (error: any) {
       // GameError 객체인지 확인 (code 속성 존재 여부 등), 아니면 기본 에러 생성
       const gameError = error.code ? error : createError(failCode, error.message);
       this.socket.emit(ServerEvents.ERROR, gameError);
     }
   }
-
-  private handleActivateAbility(cardInstanceId: string, abilityIndex: number, targetId?: string) {
-    this.executeGameAction((logic) => {
-      const state = logic.getState();
-      const playerId = state.player.id;
-      logic.getAbilityManager().executeAbility(state, playerId, cardInstanceId, abilityIndex, targetId);
-    }, ErrorCode.ABILITY_USE_FAILED);
-  }
-
 
   private setupListeners() {
     this.socket.on(ClientEvents.JOIN_GAME, (deck: string[]) => {
@@ -79,42 +82,66 @@ export class GameSession {
       this.handleActivateAbility(cardInstanceId, abilityIndex, targetId);
     });
 
+    this.socket.on(ClientEvents.CONTINUE_ROUND, () => {
+      this.handleContinueRound();
+    });
+
+    this.socket.on(ClientEvents.BUY_CARD, (cardIndex: number) => {
+      this.handleBuyCard(cardIndex);
+    });
+
     this.socket.on("disconnect", () => {
-      console.log(`Client disconnected: ${this.socket.id}`);
+      this.gameLogic?.onDisconnect();
       this.gameLogic = null;
     });
   }
 
+  private handleActivateAbility(cardInstanceId: string, abilityIndex: number, targetId?: string) {
+    this.executeGameAction((logic) => {
+      logic.activateAbility(cardInstanceId, abilityIndex, targetId);
+    }, ErrorCode.ABILITY_USE_FAILED);
+  }
+
   private handlePlayCard(cardIndex: number) {
     this.executeGameAction(
-      (logic) => logic.getPlayerManager().playCard(cardIndex),
+      (logic) => logic.playCard(cardIndex),
       ErrorCode.PLAY_CARD_FAILED
     );
   }
 
   private handleAttack(attackerId: string, targetId: string) {
     this.executeGameAction(
-      (logic) => logic.getPlayerManager().attack(attackerId, targetId),
+      (logic) => logic.attack(attackerId, targetId),
       ErrorCode.ATTACK_FAILED
     );
   }
 
+  private handleContinueRound() {
+    this.executeGameAction(
+      (logic) => logic.continueRound(),
+      ErrorCode.UNKNOWN_ERROR
+    );
+  }
+
+  private handleBuyCard(cardIndex: number) {
+    this.executeGameAction(
+      (logic) => logic.buyCard(cardIndex),
+      ErrorCode.UNKNOWN_ERROR
+    );
+  }
+
   private handleEndTurn() {
-    if (!this.gameLogic) {
-      this.socket.emit(ServerEvents.ERROR, createError(ErrorCode.GAME_NOT_STARTED));
+    const gameLogic = this.validateGameLogic();
+    if (!gameLogic) return;
+    
+    // 플레이어 턴이 아닐 때 요청이 오면 무시
+    if (!gameLogic.getState().isPlayerTurn) {
+      this.socket.emit(ServerEvents.ERROR, createError(ErrorCode.NOT_YOUR_TURN));
       return;
     }
-    this.gameLogic.getTurnManager().endTurn();
-    this.broadcastState();
 
-    // 적의 턴 진행 (약간의 지연 효과)
-    setTimeout(() => {
-      if (!this.gameLogic) return;
-      this.gameLogic.getTurnManager().processEnemyTurn();
-      this.broadcastState();
-    }, 1000);
+    gameLogic.endTurn();
   }
-  
 
   private broadcastState() {
     if (!this.gameLogic) return;

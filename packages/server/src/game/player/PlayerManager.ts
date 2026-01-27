@@ -1,4 +1,4 @@
-import { CardType, FieldUnit, GameState, GameStatus, ErrorCode, GameError, TargetSource } from "@card-game/shared";
+import { CardType, FieldUnit, GameState, GameStatus, ErrorCode, GameError, TargetSource, GameCard, DeckRules } from "@card-game/shared";
 import { GameUtils } from "../utils/GameUtils";
 import { v4 as uuidv4 } from 'uuid';
 import { createError } from "../GameErrors";
@@ -54,13 +54,37 @@ export class PlayerManager {
     state.playerField.forEach(unit => {
       if (unit) unit.hasAttacked = false;
     });
-
-    // 패가 5장이 될 때까지 드로우
-    while (state.hand.length < 5 && state.deck.length > 0) {
-      state.hand.push(state.deck.shift()!);
-    }
   }
 
+  // 상점 카드 구매
+  public buyCard(cardIndex: number): void {
+    const state = this.getState();
+    
+    if (state.gameStatus !== GameStatus.SHOP) {
+      throw createError(ErrorCode.UNKNOWN_ERROR, "상점 단계가 아닙니다.");
+    }
+
+    const cardData = state.shopItems[cardIndex];
+    if (!cardData) {
+      throw createError(ErrorCode.CARD_NOT_FOUND, "상품을 찾을 수 없습니다.");
+    }
+
+    if (state.currentGold < cardData.cost) {
+      throw createError(ErrorCode.NOT_ENOUGH_GOLD);
+    }
+
+    if (state.deck.length >= DeckRules.MAX_DECK_SIZE) {
+      throw createError(ErrorCode.DECK_FULL, `덱이 가득 찼습니다. (최대 ${DeckRules.MAX_DECK_SIZE}장)`);
+    }
+
+    // 구매 처리
+    state.currentGold -= cardData.cost;
+    
+    // 덱에 추가 (새 인스턴스 생성)
+    const newCard: GameCard = { ...cardData, id: uuidv4(), ownerId: state.player.id };
+    state.deck.push(newCard);
+    state.shopItems.splice(cardIndex, 1); // 구매한 카드는 목록에서 제거
+  }
 
   // --- 헬퍼 함수 ---
   

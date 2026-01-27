@@ -29,6 +29,7 @@ export class EnemyAI {
           index: target.index,
           source: TargetSource.PLAYER_FIELD
         });
+        
       } else if (state.player.currentHp > 0) {
         // 방해물이 없으면 플레이어 본체 직접 공격
         state.player.currentHp -= enemyUnit.attackPower;
