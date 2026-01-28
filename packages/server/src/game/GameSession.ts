@@ -20,7 +20,9 @@ export class GameSession {
   public startGame(playerDeck: string[]) {
     // 이전 게임의 타이머가 남아있을 수 있으므로 정리
     this.gameLogic?.onDisconnect();
-    validateDeck(playerDeck);
+    if (playerDeck && playerDeck.length > 0) {
+      validateDeck(playerDeck);
+    }
     this.gameLogic = new GameLogic(playerDeck, () => this.broadcastState());
     this.broadcastState();
   }
@@ -38,7 +40,8 @@ export class GameSession {
   // 반복되는 액션 실행 및 에러 처리 로직을 공통화
   private executeGameAction(
     action: (gameLogic: GameLogic) => void,
-    failCode: ErrorCode
+    failCode: ErrorCode,
+    skipBroadcast: boolean = false
   ) {
     const gameLogic = this.validateGameLogic();
     if (!gameLogic) return;
@@ -47,7 +50,7 @@ export class GameSession {
       action(gameLogic);
       // 동기적인 액션(카드 내기, 공격) 후에는 즉시 상태를 전파합니다.
       // 비동기적인 endTurn은 TurnManager가 직접 전파를 처리합니다.
-      if (action.name !== 'endTurn') {
+      if (!skipBroadcast && action.name !== 'endTurn') {
         this.broadcastState();
       }
     } catch (error: any) {
@@ -119,7 +122,8 @@ export class GameSession {
   private handleContinueRound() {
     this.executeGameAction(
       (logic) => logic.continueRound(),
-      ErrorCode.UNKNOWN_ERROR
+      ErrorCode.UNKNOWN_ERROR,
+      true // TurnManager.startNextRound에서 이미 broadcast를 호출하므로 중복 전송 방지
     );
   }
 

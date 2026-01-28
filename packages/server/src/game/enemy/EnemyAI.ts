@@ -23,6 +23,13 @@ export class EnemyAI {
         // 공격 실행
         targetUnit.currentHp -= enemyUnit.attackPower;
 
+        // 공격 로그 기록
+        state.attackLogs.push({
+          attackerId: enemyUnit.id,
+          targetId: targetUnit.id,
+          damage: enemyUnit.attackPower
+        });
+
         // 유닛 사망 처리
         GameUtils.processUnitDeath(state, {
           target: targetUnit,
@@ -33,6 +40,13 @@ export class EnemyAI {
       } else if (state.player.currentHp > 0) {
         // 방해물이 없으면 플레이어 본체 직접 공격
         state.player.currentHp -= enemyUnit.attackPower;
+
+        // 공격 로그 기록
+        state.attackLogs.push({
+          attackerId: enemyUnit.id,
+          targetId: "player",
+          damage: enemyUnit.attackPower
+        });
       }
 
       if (state.player.currentHp <= 0) {

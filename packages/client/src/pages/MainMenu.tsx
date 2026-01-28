@@ -11,7 +11,7 @@ export const MainMenu = () => {
         {/* '/game' 경로로 이동 */}
         <button 
           className="menu-button" 
-          onClick={() => navigate('/game')}
+          onClick={() => navigate('/game', { state: { deck: [] } })}
         >
           게임 시작
         </button>

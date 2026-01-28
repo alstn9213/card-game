@@ -55,6 +55,7 @@ const createInitialGameState = (): GameState => {
     gameStatus: GameStatus.PLAYING,
     shopItems: [],
     currentRoundEnemies: [],
+    attackLogs: [],
   };
 };
 

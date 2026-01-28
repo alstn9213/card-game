@@ -39,6 +39,14 @@ export class PlayerManager {
     const { target } = targetResult;
 
     target!.currentHp -= attacker.attackPower;
+    
+    // 공격 로그 기록
+    state.attackLogs.push({
+      attackerId,
+      targetId,
+      damage: attacker.attackPower
+    });
+
     attacker.hasAttacked = true;
 
     GameUtils.processUnitDeath(state, targetResult);
@@ -54,6 +62,9 @@ export class PlayerManager {
     state.playerField.forEach(unit => {
       if (unit) unit.hasAttacked = false;
     });
+
+    // 턴 시작 시 카드 드로우
+    this.drawCard(state);
   }
 
   // 상점 카드 구매
@@ -69,12 +80,14 @@ export class PlayerManager {
       throw createError(ErrorCode.CARD_NOT_FOUND, "상품을 찾을 수 없습니다.");
     }
 
-    if (state.currentGold < cardData.cost) {
-      throw createError(ErrorCode.NOT_ENOUGH_GOLD);
+    // 보유 한도 체크 (3장 제한)
+    const currentCount = state.deck.filter(c => c.cardId === cardData.cardId).length;
+    if (currentCount >= DeckRules.MAX_COPIES_PER_CARD) {
+      throw createError(ErrorCode.UNKNOWN_ERROR, "해당 카드는 보유 한도(3장)를 초과하여 구매할 수 없습니다.");
     }
 
-    if (state.deck.length >= DeckRules.MAX_DECK_SIZE) {
-      throw createError(ErrorCode.DECK_FULL, `덱이 가득 찼습니다. (최대 ${DeckRules.MAX_DECK_SIZE}장)`);
+    if (state.currentGold < cardData.cost) {
+      throw createError(ErrorCode.NOT_ENOUGH_GOLD);
     }
 
     // 구매 처리
@@ -82,8 +95,31 @@ export class PlayerManager {
     
     // 덱에 추가 (새 인스턴스 생성)
     const newCard: GameCard = { ...cardData, id: uuidv4(), ownerId: state.player.id };
+    // 덱의 맨 뒤에 추가 (다음 드로우 사이클에 등장)
     state.deck.push(newCard);
     state.shopItems.splice(cardIndex, 1); // 구매한 카드는 목록에서 제거
+  }
+
+  // 카드 드로우 로직
+  private drawCard(state: GameState) {
+    // 핸드가 가득 찼으면(5장) 드로우하지 않음
+    if (state.hand.length >= 5) return;
+
+    // 덱이 비어있다면 묘지를 섞어 덱으로 보충
+    if (state.deck.length === 0) {
+      if (state.discardPile.length > 0) {
+        // 묘지의 카드를 덱으로 이동 후 셔플
+        state.deck = GameUtils.shuffleArray([...state.discardPile]);
+        state.discardPile = [];
+      } else {
+        return; // 덱과 묘지 모두 비었음 (탈진)
+      }
+    }
+
+    const card = state.deck.shift();
+    if (card) {
+      state.hand.push(card);
+    }
   }
 
   // --- 헬퍼 함수 ---

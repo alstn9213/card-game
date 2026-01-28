@@ -26,7 +26,7 @@ export interface GameCard extends CardData {
 }
 
 // 몬스터 카드
-export interface UnitCard extends CardData {
+export interface UnitCard extends CardData, GameCard {
   attackPower: number;
   maxHp: number;
   abilities?: Ability[];
@@ -48,6 +48,12 @@ export interface Ability {
   targetId?: string;       // 변신할 대상의 ID 등 (선택)
 }
 
+export interface AttackLog {
+  attackerId: string;
+  targetId: string;
+  damage: number;
+}
+
 export interface GameState {
   gameStatus: GameStatus;
   turn: number;
@@ -62,6 +68,7 @@ export interface GameState {
   currentGold: number;
   shopItems: UnitCard[];        // 상점에서 판매 중인 카드 목록
   currentRoundEnemies: UnitCard[]; // 현재 라운드에 등장한 적 목록 (라운드 종료 후 상점 등록용)
+  attackLogs: AttackLog[];      // 이번 턴(또는 액션)에 발생한 공격 로그
 }
 
 export interface GameError {

@@ -1,0 +1,117 @@
+/* --- 공통 애니메이션 --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --- 플로팅 데미지 텍스트 --- */
+.floating-damage {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #e74c3c;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 0 #000;
+  pointer-events: none;
+  z-index: 100;
+  animation: floatUp 1s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50px) scale(1.5); }
+}
+
+/* --- 라운드/턴 알림 텍스트 --- */
+.round-notification, .turn-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  z-index: 2000;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: roundPop 2s ease-in-out forwards;
+}
+
+.round-notification {
+  font-size: 6rem;
+  color: #f1c40f;
+  text-shadow: 0 0 20px rgba(241, 196, 15, 0.5), 4px 4px 0 #000;
+}
+
+.turn-notification {
+  font-size: 5rem;
+  color: #3498db;
+  text-shadow: 0 0 20px rgba(52, 152, 219, 0.5), 4px 4px 0 #000;
+}
+
+@keyframes roundPop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  40% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+
+/* --- 폭죽 애니메이션 --- */
+.firework-effect {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 999;
+  animation: explosion 1.2s ease-out infinite;
+}
+
+@keyframes explosion {
+  0% {
+    box-shadow: 0 0 0 #f1c40f, 0 0 0 #e74c3c, 0 0 0 #3498db, 0 0 0 #2ecc71, 0 0 0 #9b59b6, 0 0 0 #e67e22;
+    opacity: 1;
+    transform: scale(0.1);
+  }
+  100% {
+    box-shadow: -100px -120px 0 #f1c40f, 100px -120px 0 #e74c3c, -100px 120px 0 #3498db, 100px 120px 0 #2ecc71, -160px 0 0 #9b59b6, 160px 0 0 #e67e22;
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* --- 타격감 흔들림 효과 --- */
+.shake-effect {
+  animation: shake 0.5s;
+}
+
+/* --- 카드 드로우 애니메이션 --- */
+@keyframes drawCard {
+  0% {
+    opacity: 0;
+    transform: translate(300px, 200px) scale(0.4) rotate(15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+}
+
+.draw-effect {
+  animation: drawCard 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}

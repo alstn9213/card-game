@@ -1,0 +1,202 @@
+/* 필드 슬롯 스타일 */
+.field-slot {
+  width: 90px;
+  height: 110px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.field-slot.empty {
+  border: 2px dashed #666;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.field-slot.occupied-wrapper {
+  cursor: pointer;
+}
+
+/* 유닛 토큰 디자인 */
+.field-unit {
+  width: 90px;
+  height: 110px;
+  background: radial-gradient(circle at center, #4a69bd, #2c3e50);
+  border: 3px solid #bdc3c7;
+  border-radius: 50% / 40%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  transition: transform 0.2s, border-color 0.2s;
+  animation: spawnPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.field-unit:hover {
+  transform: scale(1.05);
+  z-index: 10;
+  border-color: #f1c40f;
+}
+
+.field-unit::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: inherit;
+  opacity: 0;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  animation: spawnFlash 0.6s ease-out;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.field-unit.selected {
+  border-color: #f1c40f;
+  box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
+}
+
+.field-unit.exhausted {
+  filter: grayscale(0.8);
+  opacity: 0.8;
+}
+
+.unit-image-placeholder {
+  font-size: 2rem;
+  opacity: 0.3;
+  margin-bottom: 5px;
+}
+
+.unit-name {
+  font-size: 0.7rem;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 유닛 스탯 버블 */
+.unit-stat {
+  position: absolute;
+  bottom: 5px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: white;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.unit-stat.atk {
+  left: 0;
+  background-color: #e67e22;
+}
+
+.unit-stat.hp {
+  right: 0;
+  background-color: #e74c3c;
+}
+
+/* 능력 사용 오버레이 */
+.ability-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 50% / 40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  z-index: 20;
+  animation: fadeIn 0.2s;
+}
+
+.ability-btn {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 80%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ability-btn:hover {
+  background-color: #2980b9;
+  transform: scale(1.05);
+}
+
+@keyframes spawnPop {
+  0% { opacity: 0; transform: scale(0); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spawnFlash {
+  0% { opacity: 0.8; box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.8); }
+  100% { opacity: 0; box-shadow: 0 0 40px 20px rgba(255, 255, 255, 0); }
+}
+
+/* --- 툴팁 스타일 --- */
+.unit-tooltip {
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  width: 220px;
+  z-index: 1000;
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  text-align: left;
+  border: 1px solid #444;
+}
+
+.tooltip-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #f1c40f;
+  border-bottom: 1px solid #555;
+  padding-bottom: 4px;
+}
+
+.tooltip-desc {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  color: #ddd;
+}
+
+.tooltip-abilities {
+  border-top: 1px solid #555;
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+.tooltip-ability-item {
+  margin-bottom: 4px;
+}
+
+.tooltip-ability-type {
+  color: #3498db;
+  font-weight: bold;
+}

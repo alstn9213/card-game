@@ -1,0 +1,65 @@
+/* --- 모달 공통 --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #2c3e50, #000);
+  padding: 40px;
+  border-radius: 15px;
+  text-align: center;
+  border: 2px solid #7f8c8d;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal-title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.modal-title.victory {
+  color: #f1c40f;
+  text-shadow: 0 0 10px #f39c12;
+}
+
+.modal-title.defeat {
+  color: #e74c3c;
+  text-shadow: 0 0 10px #c0392b;
+}
+
+.modal-message {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  color: #ecf0f1;
+  line-height: 1.5;
+}
+
+.modal-btn {
+  padding: 12px 30px;
+  font-size: 1.2rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.modal-btn:hover {
+  background-color: #2980b9;
+  transform: scale(1.1);
+}

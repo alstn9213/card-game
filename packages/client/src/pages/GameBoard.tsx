@@ -1,13 +1,22 @@
 import "../css/GameBoard.css";
-import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import "../css/Card.css";
+import "../css/GameModal.css";
+import "../css/GameEffects.css";
 import { useGameState } from "../hooks/useGameState";
 import { useGameInteraction } from "../hooks/useGameInteraction";
+import { useGameInitialization } from "../hooks/useGameInitialization";
+import { usePlayerDamageAnimation } from "../hooks/usePlayerDamageAnimation";
 import { UnitSlot } from "../components/UnitSlot";
-import { GameStatus } from "@card-game/shared";
+import { GameStatus, type FieldUnit, type UnitCard } from "@card-game/shared";
+import { Shop } from "./Shop";
+import { GameResultModal } from "../components/GameResultModal";
+import { ErrorModal } from "../components/ErrorModal";
+import { TargetingArrow } from "../components/TargetingArrow";
+import { useTargetingArrow } from "../hooks/useTargetingArrow";
+import { useGameEffects } from "../hooks/useGameEffects";
+import { RoundVictoryModal } from "../components/RoundVictoryModal";
 
 export const GameBoard = () => {
-  const location = useLocation();
   const { gameState, isConnected, playCard, endTurn, attack, startGame, activateAbility, resetGame, error, clearError } = useGameState();
   
   const { selectedAttackerId, pendingAbility, handlePlayerUnitClick, handleEnemyClick, handleAbilityClick, cancelInteraction } = useGameInteraction(
@@ -16,29 +25,11 @@ export const GameBoard = () => {
     activateAbility
   );
 
-  // 플레이어 본체 데미지 효과 상태
-  const [playerDamage, setPlayerDamage] = useState<{ id: number; text: string } | null>(null);
-  const prevPlayerHp = useRef<number | null>(null);
-  const hasStarted = useRef(false);
-
-  useEffect(() => {
-    if (isConnected && startGame && !hasStarted.current) {
-      const deck = location.state?.deck || [];
-      startGame(deck);
-      hasStarted.current = true;
-    }
-  }, [isConnected, startGame, location.state]);
-
-  useEffect(() => {
-    if (gameState) {
-      if (prevPlayerHp.current !== null && gameState.player.currentHp < prevPlayerHp.current) {
-        const dmg = prevPlayerHp.current - gameState.player.currentHp;
-        setPlayerDamage({ id: Date.now(), text: `-${dmg}` });
-        setTimeout(() => setPlayerDamage(null), 1000);
-      }
-      prevPlayerHp.current = gameState.player.currentHp;
-    }
-  }, [gameState?.player.currentHp]);
+  useGameInitialization(isConnected, startGame);
+  
+  const playerDamage = usePlayerDamageAnimation(gameState);
+  const { mousePos, setMousePos, handleMouseMove, getUnitCenter, setUnitRef, getUnitElement } = useTargetingArrow(!!selectedAttackerId);
+  const { showRoundVictory, showTurnNotification, enemyAttackArrow } = useGameEffects(gameState, getUnitCenter, getUnitElement);
 
   if (!isConnected) {
     return <div className="loading">서버에 연결 중입니다...</div>;
@@ -54,7 +45,7 @@ export const GameBoard = () => {
 
   return (
     // 배경 클릭 시 상호작용 취소
-    <div className="game-board" onClick={cancelInteraction}>
+    <div className="game-board" onClick={cancelInteraction} onMouseMove={handleMouseMove}>
       {/* 최상단 상태 바 */}
       <div className="status-bar">
         <span style={{ marginRight: "15px", color: "#f1c40f", fontWeight: "bold" }}>
@@ -79,6 +70,9 @@ export const GameBoard = () => {
                 <UnitSlot 
                   key={i} 
                   unit={unit} 
+                  ref={(el) => {
+                    if (unit) setUnitRef(unit.id, el);
+                  }}
                   onClick={(e) => {
                     e?.stopPropagation(); 
                     if (unit) handleEnemyClick(unit.id);
@@ -96,8 +90,12 @@ export const GameBoard = () => {
               key={i} 
               unit={unit} 
               isSelected={unit?.id === selectedAttackerId}
+              ref={(el) => {
+                if (unit) setUnitRef(unit.id, el);
+              }}
               onClick={(e) => {
                 e.stopPropagation();
+                setMousePos({ x: e.clientX, y: e.clientY }); // 클릭 즉시 화살표 시작점 설정
                 if (unit) handlePlayerUnitClick(unit);
               }}
               onActivateAbility={(idx) => {
@@ -111,10 +109,10 @@ export const GameBoard = () => {
       </div>
 
       {/* 3. 플레이어 영역 */}
-      <div className="player-area">
+      <div className="player-area" style={{ position: 'relative' }}>
         {/* 플레이어 상태 바 (아바타, 골드, 턴 종료) */}
         <div className="player-status-bar">
-           <div className="avatar player-avatar">
+           <div className="avatar player-avatar" ref={(el) => setUnitRef("player", el)}>
               {playerDamage && <div key={playerDamage.id} className="floating-damage">{playerDamage.text}</div>}
               HP {gameState.player.currentHp}
            </div>
@@ -138,12 +136,13 @@ export const GameBoard = () => {
           <div className="hand">
             {gameState.hand.map((card, index) => (
               <div 
-                key={index} 
-                className="card" 
+                key={card.id} 
+                className="card draw-effect" 
                 onClick={(e) => {
                   e.stopPropagation();
                   playCard(index);
                 }}
+                style={{ position: 'relative' }}
               >
                 <div className="card-cost">{card.cost}</div>
                 <div className="card-content">
@@ -151,12 +150,20 @@ export const GameBoard = () => {
                 </div>
                 {/* 유닛일 경우 스탯 표시 */}
                 {card.type === "UNIT" && (
-                   <div className="card-stats">
+                   <div className="card-stats" style={{
+                     position: 'absolute',
+                     bottom: '8px',
+                     left: 0,
+                     width: '100%',
+                     display: 'flex',
+                     justifyContent: 'space-around',
+                     zIndex: 2
+                   }}>
                       <div className="stat-badge" style={{background: "#e67e22"}}>
-                        {(card as any).attackPower}
+                        {(card as UnitCard).attackPower}
                       </div>
                       <div className="stat-badge" style={{background: "#e74c3c"}}>
-                        {(card as any).hp}
+                        {(card as UnitCard).maxHp}
                       </div>
                    </div>
                 )}
@@ -164,38 +171,65 @@ export const GameBoard = () => {
             ))}
           </div>
         </div>
+
+        {/* 덱 UI 표시 */}
+        <div className="deck-pile" style={{
+            position: 'absolute',
+            right: '20px',
+            bottom: '20px',
+            width: '80px',
+            height: '110px',
+            background: 'linear-gradient(135deg, #34495e 0%, #2c3e50 100%)',
+            border: '2px solid #95a5a6',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 5
+        }}>
+            <div style={{ color: '#bdc3c7', fontWeight: 'bold', fontSize: '12px' }}>DECK</div>
+            <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#e74c3c', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+              {gameState.deck.length}
+            </div>
+        </div>
       </div>
 
       {/* 에러 메시지 모달 */}
       {error && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-title" style={{ color: "#e74c3c" }}>ERROR</div>
-            <div className="modal-message">{error.message}</div>
-            <button className="modal-btn" onClick={clearError}>
-              확인
-            </button>
-          </div>
-        </div>
+        <ErrorModal error={error} onClose={clearError} />
       )}
+
+      {/* 공격 대상 지정 화살표 */}
+      {selectedAttackerId && (() => {
+        const start = getUnitCenter(selectedAttackerId);
+        return start ? <TargetingArrow start={start} end={mousePos} /> : null;
+      })()}
+
+      {/* 적 공격 화살표 (자동) */}
+      {enemyAttackArrow && (
+        <TargetingArrow start={enemyAttackArrow.start} end={enemyAttackArrow.end} />
+      )}
+
+      {/* 턴 시작 알림 */}
+      {showTurnNotification && (
+        <div className="turn-notification">YOUR TURN</div>
+      )}
+
+      {/* 라운드 승리 메시지 */}
+      {showRoundVictory && (
+        <RoundVictoryModal />
+      )}
+
+      {/* 상점 화면 (오버레이) */}
+      {gameState.gameStatus === GameStatus.SHOP && !showRoundVictory && <Shop />}
 
       {/* 게임 종료 모달 */}
       {(gameState.gameStatus === GameStatus.VICTORY || gameState.gameStatus === GameStatus.DEFEAT) && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className={`modal-title ${gameState.gameStatus}`}>
-              {gameState.gameStatus === GameStatus.VICTORY ? "VICTORY!" : "DEFEAT"}
-            </div>
-            <div className="modal-message">
-              {gameState.gameStatus === GameStatus.VICTORY 
-                ? "축하합니다! 모든 적을 물리쳤습니다." 
-                : "아쉽게도 패배했습니다. 다시 도전해보세요."}
-            </div>
-            <button className="modal-btn" onClick={resetGame}>
-              메인으로 돌아가기
-            </button>
-          </div>
-        </div>
+        <GameResultModal 
+          status={gameState.gameStatus} 
+          onReset={resetGame} 
+        />
       )}
     </div>
   );
