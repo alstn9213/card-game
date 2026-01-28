@@ -16,7 +16,8 @@ export const useGameEffects = (
 
   // 3. 적 공격 화살표 상태
   const [enemyAttackArrow, setEnemyAttackArrow] = useState<{ start: {x: number, y: number}, end: {x: number, y: number} } | null>(null);
-  const prevGameStateRef = useRef<GameState | null>(null);
+  const lastKnownPositions = useRef<Map<string, {x: number, y: number}>>(new Map());
+  const processedLogCount = useRef<number>(0);
 
   // 라운드 승리 효과
   useEffect(() => {
@@ -42,118 +43,76 @@ export const useGameEffects = (
     }
   }, [gameState]);
 
-  // 적 공격 감지 및 화살표 표시 효과
+  // 유닛 위치 캐싱 (유닛이 죽어서 사라져도 마지막 위치를 기억하기 위함)
   useEffect(() => {
-    const triggerAttackAnimation = (attackerId: string, targetId: string) => {
-      setTimeout(() => {
-        const start = getUnitCenter(attackerId);
-        const end = getUnitCenter(targetId);
-        const attackerEl = getUnitElement(attackerId);
+    if (!gameState) return;
 
-        if (start && end && attackerEl) {
-          // 돌진 애니메이션 계산
-          const dx = end.x - start.x;
-          const dy = end.y - start.y;
-
-          // 1. 목표지점으로 돌진
-          attackerEl.style.transition = "transform 0.2s cubic-bezier(0.2, 0, 0.6, 1)";
-          attackerEl.style.zIndex = "100"; // 다른 카드 위로 올라오게 설정
-          attackerEl.style.transform = `translate(${dx}px, ${dy}px)`;
-
-          // 2. 원위치로 복귀
-          setTimeout(() => {
-            attackerEl.style.transition = "transform 0.4s ease-out";
-            attackerEl.style.transform = "translate(0px, 0px)";
-            
-            // 3. 스타일 정리
-            setTimeout(() => {
-              attackerEl.style.zIndex = "";
-              attackerEl.style.transition = "";
-            }, 400);
-          }, 200);
-        } else if (start && end) {
-          // 엘리먼트를 찾지 못한 경우 기존 화살표 표시 (Fallback)
-          setEnemyAttackArrow({ start, end });
-          setTimeout(() => setEnemyAttackArrow(null), 800);
-        }
-      }, 50);
+    const cachePosition = (id: string) => {
+      const pos = getUnitCenter(id);
+      if (pos) {
+        lastKnownPositions.current.set(id, pos);
+      }
     };
 
-    if (gameState && prevGameStateRef.current) {
-      const prev = prevGameStateRef.current;
-      const curr = gameState;
+    // 플레이어, 적 유닛, 플레이어 본체 위치 저장
+    gameState.playerField.forEach(u => u && cachePosition(u.id));
+    gameState.enemyField.forEach(u => u && cachePosition(u.id));
+    cachePosition("player");
+  }, [gameState, getUnitCenter]);
 
-      if (curr.gameStatus === GameStatus.PLAYING) {
-        let attackerId: string | null = null;
-        let targetId: string | null = null;
+  // 공격 애니메이션 처리 (attackLogs 기반)
+  useEffect(() => {
+    if (!gameState) return;
 
-        // 1. 적 턴: 적 공격 감지
-        if (!curr.isPlayerTurn) {
-          // A. 서버에서 전달된 공격 로그가 있는 경우 (정확한 타겟팅)
-          if (curr.attackLogs && curr.attackLogs.length > 0) {
-            // 새로운 로그가 들어왔을 때만 실행 (단, 배열 참조가 바뀌므로 항상 실행되지만 턴 전환 시 초기화됨)
-            if (curr.attackLogs !== prev.attackLogs) {
-              curr.attackLogs.forEach((log, index) => {
-                setTimeout(() => {
-                  triggerAttackAnimation(log.attackerId, log.targetId);
-                }, index * 200);
-              });
-            }
-          } 
-          // B. 로그가 없는 경우 (기존 추론 로직 Fallback)
-          else {
-            const attackers = curr.enemyField.filter((unit) => {
-              if (!unit) return false;
-              const prevUnit = prev.enemyField.find(u => u?.id === unit.id);
-              return prevUnit && !prevUnit.hasAttacked && unit.hasAttacked;
-            });
-
-            attackers.forEach((attacker, index) => {
-              setTimeout(() => {
-                let targetId: string | null = null;
-                // 타겟 추정
-                if (curr.player.currentHp < prev.player.currentHp) {
-                  targetId = "player";
-                } else {
-                  const damagedUnit = curr.playerField.find((unit) => {
-                    if (!unit) return false;
-                    const prevUnit = prev.playerField.find(u => u?.id === unit.id);
-                    return prevUnit && unit.currentHp < prevUnit.currentHp;
-                  });
-                  if (damagedUnit) targetId = damagedUnit.id;
-                }
-
-                if (targetId) triggerAttackAnimation(attacker!.id, targetId);
-              }, index * 200);
-            });
-          }
-        } 
-        // 2. 플레이어 턴: 아군 공격 감지
-        else {
-          const attacker = curr.playerField.find((unit) => {
-            if (!unit) return false;
-            const prevUnit = prev.playerField.find(u => u?.id === unit.id);
-            return prevUnit && !prevUnit.hasAttacked && unit.hasAttacked;
-          });
-
-          if (attacker) {
-            attackerId = attacker.id;
-            const damagedEnemy = curr.enemyField.find((unit) => {
-              if (!unit) return false;
-              const prevUnit = prev.enemyField.find(u => u?.id === unit.id);
-              return prevUnit && unit.currentHp < prevUnit.currentHp;
-            });
-            if (damagedEnemy) targetId = damagedEnemy.id;
-          }
-        }
-
-        if (attackerId && targetId) {
-          triggerAttackAnimation(attackerId, targetId);
-        }
-      }
+    // 턴이 바뀌거나 로그가 초기화된 경우 카운트 리셋
+    if (gameState.attackLogs.length < processedLogCount.current) {
+      processedLogCount.current = 0;
     }
-    prevGameStateRef.current = gameState;
-  }, [gameState, getUnitCenter, getUnitElement]);
+
+    // 새로운 로그만 처리
+    const newLogs = gameState.attackLogs.slice(processedLogCount.current);
+    
+    if (newLogs.length > 0) {
+      newLogs.forEach((log, index) => {
+        setTimeout(() => {
+          triggerAttackAnimation(log.attackerId, log.targetId);
+        }, index * 200); // 동시 다발적 공격 시 순차 재생
+      });
+      processedLogCount.current = gameState.attackLogs.length;
+    }
+  }, [gameState]);
+
+  const triggerAttackAnimation = (attackerId: string, targetId: string) => {
+    // 현재 위치를 가져오거나, 없으면 캐시된 마지막 위치 사용
+    const start = getUnitCenter(attackerId) || lastKnownPositions.current.get(attackerId);
+    const end = getUnitCenter(targetId) || lastKnownPositions.current.get(targetId);
+    const attackerEl = getUnitElement(attackerId);
+
+    if (start && end && attackerEl) {
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+
+      // 1. 목표지점으로 돌진
+      attackerEl.style.transition = "transform 0.2s cubic-bezier(0.2, 0, 0.6, 1)";
+      attackerEl.style.zIndex = "100";
+      attackerEl.style.transform = `translate(${dx}px, ${dy}px)`;
+
+      // 2. 원위치로 복귀
+      setTimeout(() => {
+        attackerEl.style.transition = "transform 0.4s ease-out";
+        attackerEl.style.transform = "translate(0px, 0px)";
+        
+        setTimeout(() => {
+          attackerEl.style.zIndex = "";
+          attackerEl.style.transition = "";
+        }, 400);
+      }, 200);
+    } else if (start && end) {
+      // 엘리먼트가 없어도(죽었어도) 화살표는 표시 시도
+      setEnemyAttackArrow({ start, end });
+      setTimeout(() => setEnemyAttackArrow(null), 800);
+    }
+  };
 
   return {
     showRoundVictory,

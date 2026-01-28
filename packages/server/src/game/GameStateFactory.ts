@@ -1,6 +1,7 @@
-import { GameState, GameStatus, UNIT_CARDS, DeckRules, UnitCard, GameCard, validateDeck, FieldUnit } from "@card-game/shared";
+import { GameState, GameStatus, UNIT_CARDS, DeckRules, UnitCard, GameCard, validateDeck, FieldUnit, ErrorCode } from "@card-game/shared";
 import { v4 as uuidv4 } from 'uuid';
 import { GameUtils } from "./utils/GameUtils";
+import { createError } from "./GameErrors";
 
 export const initializeGame = (playerDeck?: string[]): GameState => {
   const state = createInitialGameState();
@@ -72,7 +73,6 @@ const generateDefaultDeck = (): string[] => {
     // 현재 덱에 포함된 해당 카드의 개수 확인
     const currentCount = deckIds.filter(id => id === randomCard.cardId).length;
 
-    // 최대 매수 제한(3장)을 넘지 않으면 추가
     if (currentCount < DeckRules.MAX_COPIES_PER_CARD) {
       deckIds.push(randomCard.cardId);
     }
@@ -83,10 +83,13 @@ const generateDefaultDeck = (): string[] => {
 
 // 게임 시작 시 덱 초기화 함수
 const initializeDeck = (deckCardIds: string[], playerId: string): GameCard[] => {
+  // 최적화: 반복적인 검색을 피하기 위해 Map 생성 (O(N * M) -> O(N))
+  const cardMap = new Map(UNIT_CARDS.map(card => [card.cardId, card]));
+
   return deckCardIds.map((cardId) => {
-    const originalData = Object.values(UNIT_CARDS).find((c: UnitCard) => c.cardId === cardId);
+    const originalData = cardMap.get(cardId);
     
-    if (!originalData) throw new Error(`Card not found: ${cardId}`);
+    if (!originalData) throw createError(ErrorCode.CARD_NOT_FOUND);
 
     const gameCard: GameCard = {
       ...originalData,        // 기본 스탯 복사

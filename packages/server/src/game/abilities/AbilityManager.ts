@@ -34,8 +34,7 @@ export class AbilityManager {
     const handler = this.handlers[ability.type];
     
     if (!handler) {
-      console.warn(`[AbilityManager] 핸들러가 없는 능력입니다: ${ability.type}`);
-      throw createError(ErrorCode.ABILITY_USE_FAILED, "지원하지 않는 능력입니다.");
+      throw createError(ErrorCode.ABILITY_USE_FAILED);
     }
 
     // 해당 핸들러에게 일임

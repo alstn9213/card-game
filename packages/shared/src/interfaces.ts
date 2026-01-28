@@ -26,7 +26,7 @@ export interface GameCard extends CardData {
 }
 
 // 몬스터 카드
-export interface UnitCard extends CardData, GameCard {
+export interface UnitCard extends CardData {
   attackPower: number;
   maxHp: number;
   abilities?: Ability[];

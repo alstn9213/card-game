@@ -9,7 +9,7 @@ export class DamageHandler implements AbilityHandler {
     const finalTargetId = targetId || ability.targetId;
 
     if (!ability.value || !finalTargetId) {
-      throw createError(ErrorCode.INVALID_ABILITY, "데미지 값이나 타겟이 없습니다.");
+      throw createError(ErrorCode.INVALID_ABILITY);
     }
 
     const targetResult = GameUtils.findTarget(gameState, finalTargetId);

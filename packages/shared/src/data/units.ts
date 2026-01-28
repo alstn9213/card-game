@@ -10,14 +10,7 @@ export const UNIT_CARDS: UnitCard[] = [
     type: CardType.UNIT,
     targetType: TargetType.SINGLE_ENEMY,
     attackPower: 300,
-    maxHp: 800,
-    abilities: [
-      {
-        type: EffectType.TRANSFORM,
-        targetId: "red_dragon", // 변신할 대상 ID
-        description: "붉은 용으로 변신합니다."
-      }
-    ]
+    maxHp: 500
   },
   {
     cardId: "red_dragon",
@@ -26,8 +19,8 @@ export const UNIT_CARDS: UnitCard[] = [
     cost: 2,
     type: CardType.UNIT,
     targetType: TargetType.ALL_ENEMIES,
-    attackPower: 1000,
-    maxHp: 2000
+    attackPower: 2500,
+    maxHp: 1500
   },
   {
     cardId: "mecha_soldier",
@@ -76,7 +69,7 @@ export const UNIT_CARDS: UnitCard[] = [
     cost: 3,
     type: CardType.UNIT,
     targetType: TargetType.SINGLE_ENEMY,
-    attackPower: 1500,
+    attackPower: 2500,
     maxHp: 3000,
   },
   

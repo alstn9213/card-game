@@ -16,11 +16,11 @@ export class TransformHandler implements AbilityHandler {
 
     // 2. 변신 대상 데이터 확인
     if (!ability.targetId) {
-      throw createError(ErrorCode.INVALID_ABILITY, "변신 대상 ID가 없습니다.");
+      throw createError(ErrorCode.INVALID_ABILITY);
     }
     const targetCardData = UNIT_CARDS.find(c => c.cardId === ability.targetId);
     if (!targetCardData) {
-      throw createError(ErrorCode.CARD_NOT_FOUND, "변신할 카드 데이터를 찾을 수 없습니다.");
+      throw createError(ErrorCode.CARD_NOT_FOUND);
     }
 
     const currentUnit = gameState.playerField[unitIndex]!;

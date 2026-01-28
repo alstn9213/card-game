@@ -7,7 +7,7 @@ import { useGameInteraction } from "../hooks/useGameInteraction";
 import { useGameInitialization } from "../hooks/useGameInitialization";
 import { usePlayerDamageAnimation } from "../hooks/usePlayerDamageAnimation";
 import { UnitSlot } from "../components/UnitSlot";
-import { GameStatus, type FieldUnit, type UnitCard } from "@card-game/shared";
+import { GameStatus, type FieldUnit } from "@card-game/shared";
 import { Shop } from "./Shop";
 import { GameResultModal } from "../components/GameResultModal";
 import { ErrorModal } from "../components/ErrorModal";
@@ -160,10 +160,10 @@ export const GameBoard = () => {
                      zIndex: 2
                    }}>
                       <div className="stat-badge" style={{background: "#e67e22"}}>
-                        {(card as UnitCard).attackPower}
+                        {(card as FieldUnit).attackPower}
                       </div>
                       <div className="stat-badge" style={{background: "#e74c3c"}}>
-                        {(card as UnitCard).maxHp}
+                        {(card as FieldUnit).maxHp}
                       </div>
                    </div>
                 )}
@@ -173,23 +173,9 @@ export const GameBoard = () => {
         </div>
 
         {/* 덱 UI 표시 */}
-        <div className="deck-pile" style={{
-            position: 'absolute',
-            right: '20px',
-            bottom: '20px',
-            width: '80px',
-            height: '110px',
-            background: 'linear-gradient(135deg, #34495e 0%, #2c3e50 100%)',
-            border: '2px solid #95a5a6',
-            borderRadius: '8px',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.4)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 5
-        }}>
-            <div style={{ color: '#bdc3c7', fontWeight: 'bold', fontSize: '12px' }}>DECK</div>
-            <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#e74c3c', color: 'white', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '12px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+        <div className="deck-pile">
+            <div className="deck-label">DECK</div>
+            <div className="deck-count-badge">
               {gameState.deck.length}
             </div>
         </div>

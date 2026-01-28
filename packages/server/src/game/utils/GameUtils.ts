@@ -1,4 +1,5 @@
-import { GameState, Entity, FieldUnit, TargetSource } from "@card-game/shared";
+import { GameState, Entity, FieldUnit, TargetSource, UnitCard } from "@card-game/shared";
+import { v4 as uuidv4 } from 'uuid';
 
 export interface TargetResult {
   target: Entity | FieldUnit | undefined;
@@ -10,7 +11,7 @@ export class GameUtils {
 
   /**
    * 게임 상태(GameState)에서 ID를 기반으로 대상을 찾는 함수.
-   * 적 본체, 적 유닛, 플레이어 본체, 플레이어 유닛 순으로 검색.
+   * 적 유닛, 플레이어 본체, 플레이어 유닛 순으로 검색.
    */
   public static findTarget(state: GameState, targetId: string): TargetResult {
    
@@ -21,7 +22,7 @@ export class GameUtils {
     }
 
     // 플레이어 본체 확인
-    if (targetId === "player" || targetId === state.player.id) {
+    if (targetId === state.player.id) {
       return { target: state.player, index: -1, source: TargetSource.PLAYER };
     }
 
@@ -63,5 +64,44 @@ export class GameUtils {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
+  }
+
+  /**
+   * 덱에서 카드를 드로우하여 핸드에 추가합니다.
+   * 핸드가 가득 차거나(5장) 덱이 비어있으면 중단합니다.
+   */
+  public static drawCard(state: GameState, count: number = 1): void {
+    for (let i = 0; i < count; i++) {
+      if (state.hand.length >= 5) break;
+      if (state.deck.length === 0) break;
+
+      const card = state.deck.shift();
+      if (card) state.hand.push(card);
+    }
+  }
+
+  /**
+   * 플레이어 필드의 빈 슬롯에 유닛을 소환합니다.
+   */
+  public static summonUnit(state: GameState, cardData: UnitCard): FieldUnit | null {
+    const emptySlotIndex = state.playerField.findIndex(slot => slot === null);
+    if (emptySlotIndex === -1) return null;
+
+    const newUnit: FieldUnit = {
+      id: uuidv4(),
+      ownerId: state.player.id,
+      cardId: cardData.cardId,
+      name: cardData.name,
+      cost: cardData.cost,
+      type: cardData.type,
+      targetType: cardData.targetType,
+      description: cardData.description,
+      attackPower: cardData.attackPower,
+      maxHp: cardData.maxHp,
+      currentHp: cardData.maxHp,
+      hasAttacked: false, 
+    };
+    state.playerField[emptySlotIndex] = newUnit;
+    return newUnit;
   }
 }

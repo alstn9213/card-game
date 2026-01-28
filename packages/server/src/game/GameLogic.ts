@@ -4,6 +4,7 @@ import {
 import { EnemyManager } from "./enemy/EnemyManager";
 import { PlayerManager } from "./player/PlayerManager";
 import { AbilityManager } from "./abilities/AbilityManager";
+import { ShopManager } from "./shop/ShopManager";
 import { initializeGame } from "./GameStateFactory";
 import { TurnManager } from "./TurnManager";
 
@@ -12,17 +13,16 @@ export class GameLogic {
   private playerManager: PlayerManager;
   private enemyManager: EnemyManager;
   private abilityManager: AbilityManager;
+  private shopManager: ShopManager;
   private turnManager: TurnManager;
 
-  constructor(playerDeck: string[] | undefined, private broadcast: () => void) {
+  constructor(playerDeck: string[] | undefined) {
     this.state = initializeGame(playerDeck);
     this.enemyManager = new EnemyManager(() => this.state);
 
     this.turnManager = new TurnManager(
       () => this.state,
-      this.enemyManager,
-      // TurnManager가 직접 상태를 전파할 수 있도록 콜백 전달
-      this.broadcast
+      this.enemyManager
     );
 
     this.playerManager = new PlayerManager(
@@ -34,26 +34,19 @@ export class GameLogic {
     this.turnManager.setPlayerManager(this.playerManager);
 
     this.abilityManager = new AbilityManager();
+    this.shopManager = new ShopManager(() => this.state);
     this.enemyManager.spawnRandomEnemies(this.state);
   }
+
+  // --- getter ---
 
   public getState(): GameState {
     return this.state;
   }
 
-  public getPlayerManager(): PlayerManager {
-    return this.playerManager;
-  }
-
-  public getTurnManager(): TurnManager {
-    return this.turnManager;
-  }
-
-  public getAbilityManager(): AbilityManager {
-    return this.abilityManager;
-  }
-
   // --- Facade Methods ---
+
+  public onDisconnect(): void {}
 
   public playCard(cardIndex: number): void {
     this.playerManager.playCard(cardIndex);
@@ -68,12 +61,16 @@ export class GameLogic {
   }
 
   public endTurn(): void {
-    // TurnManager가 전체 턴 전환 사이클을 담당
     this.turnManager.endTurn();
   }
 
-  public onDisconnect(): void {
-    this.turnManager.clearTimers();
+
+  public processEnemyTurn(): void {
+    this.turnManager.processEnemyTurn();
+  }
+
+  public startPlayerTurn(): void {
+    this.turnManager.startPlayerTurn();
   }
 
   public continueRound(): void {
@@ -81,6 +78,6 @@ export class GameLogic {
   }
 
   public buyCard(cardIndex: number): void {
-    this.playerManager.buyCard(cardIndex);
+    this.shopManager.buyCard(cardIndex);
   }
 }

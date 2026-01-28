@@ -4,13 +4,10 @@ import { EnemyManager } from "./enemy/EnemyManager";
 
 export class TurnManager {
   private playerManager!: PlayerManager;
-  private enemyTurnTimeout: NodeJS.Timeout | null = null;
 
   constructor(
     private getState: () => GameState,
-    private enemyManager: EnemyManager,
-    // GameSession의 broadcastState를 주입받음
-    private broadcast: () => void
+    private enemyManager: EnemyManager
   ) {}
 
   // 순환 의존성 해결을 위해 Setter로 주입
@@ -35,15 +32,6 @@ export class TurnManager {
     if (!state.isPlayerTurn) return;
 
     state.isPlayerTurn = false;
-    // 플레이어 턴이 종료된 중간 상태를 즉시 전파
-    this.broadcast();
-
-    // 기존 타이머를 정리하고 적 턴을 예약
-    this.clearTimers();
-    this.enemyTurnTimeout = setTimeout(() => {
-      this.enemyTurnTimeout = null;
-      this.processEnemyTurn();
-    }, 1000);
   }
 
   public processEnemyTurn() {
@@ -52,16 +40,6 @@ export class TurnManager {
 
     state.attackLogs = []; // 적 행동 전 로그 초기화
     this.enemyManager.executeTurn();
-    // 1. 적 공격 결과 전송 (아직 적 턴인 상태)
-    this.broadcast();
-
-    // 2. 애니메이션 재생 시간을 위해 딜레이 후 플레이어 턴으로 전환
-    // 공격 횟수에 따라 대기 시간 조정 (기본 1.5초 + 공격당 0.3초)
-    const delay = 1500 + (state.attackLogs.length * 300);
-    setTimeout(() => {
-      this.startPlayerTurn();
-      this.broadcast();
-    }, delay);
   }
 
   public checkGameOver() {
@@ -89,20 +67,9 @@ export class TurnManager {
     }
   }
 
-  // 게임 종료 또는 재시작 시 타이머를 정리하기 위한 메서드
-  public clearTimers() {
-    if (this.enemyTurnTimeout) {
-      clearTimeout(this.enemyTurnTimeout);
-      this.enemyTurnTimeout = null;
-    }
-  }
-
   // 라운드 클리어 처리: 체력 회복 및 상점 단계 준비
   private onRoundClear() {
     const state = this.getState();
-    
-    // 턴 진행 중이던 타이머 제거 (적 턴 예약 취소)
-    this.clearTimers();
 
     //  플레이어 체력 회복 (예: 최대 체력의 10%)
     const healAmount = Math.floor(state.player.maxHp * 0.1) || 1;
@@ -113,7 +80,6 @@ export class TurnManager {
     state.shopItems = [...state.currentRoundEnemies];
     
     state.gameStatus = GameStatus.SHOP;
-    this.broadcast();
   }
 
   public startNextRound() {
@@ -125,6 +91,5 @@ export class TurnManager {
     
     // 새 라운드 시작 시 플레이어 턴으로 초기화 (카드 드로우, 공격권 리셋 등)
     this.startPlayerTurn();
-    this.broadcast();
   }
 }
