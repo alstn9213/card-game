@@ -1,4 +1,4 @@
-import { GameState, GameStatus } from "@card-game/shared";
+import { GameState, GameStatus, ErrorCode, createError } from "@card-game/shared";
 import { PlayerManager } from "./player/PlayerManager";
 import { EnemyManager } from "./enemy/EnemyManager";
 
@@ -26,6 +26,9 @@ export class TurnManager {
 
   public endTurn() {
     const state = this.getState();
+    if (state.gameStatus !== GameStatus.PLAYING) {
+      throw createError(ErrorCode.NOT_YOUR_TURN);
+    }
     if (!state.isPlayerTurn) return;
     state.isPlayerTurn = false;
   }

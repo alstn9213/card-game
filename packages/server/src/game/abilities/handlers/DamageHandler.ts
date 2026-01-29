@@ -1,7 +1,6 @@
 import { AbilityHandler } from "../types";
-import { Ability, GameState, ErrorCode } from "@card-game/shared";
+import { Ability, GameState, ErrorCode, createError } from "@card-game/shared";
 import { GameUtils } from "../../utils/GameUtils";
-import { createError } from "../../GameErrors";
 
 export class DamageHandler implements AbilityHandler {
   execute(gameState: GameState, playerId: string, cardInstanceId: string, ability: Ability, targetId?: string): void {

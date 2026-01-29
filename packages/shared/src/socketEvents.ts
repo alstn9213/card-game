@@ -1,4 +1,5 @@
-import type { GameState, GameError } from "./interfaces";
+import type { GameState } from "./interfaces";
+import type { GameError } from "./errors";
 
 export const ClientEvents = {
   JOIN_GAME: "joinGame",

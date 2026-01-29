@@ -1,4 +1,4 @@
-import { GameState, Entity, FieldUnit, TargetSource, UnitCard } from "@card-game/shared";
+import { GameState, Entity, FieldUnit, TargetSource, UnitCard, createError, ErrorCode } from "@card-game/shared";
 import { v4 as uuidv4 } from 'uuid';
 
 export interface TargetResult {
@@ -14,20 +14,21 @@ export class GameUtils {
    * 적 유닛, 플레이어 본체, 플레이어 유닛 순으로 검색.
    */
   public static findTarget(state: GameState, targetId: string): TargetResult {
-   
-    // 적 유닛 확인
+  
     const enemyIndex = state.enemyField.findIndex(u => u?.id === targetId);
+    const playerIndex = state.playerField.findIndex(u => u?.id === targetId);
+    
+    // 적 유닛 확인
     if (enemyIndex !== -1) {
       return { target: state.enemyField[enemyIndex]!, index: enemyIndex, source: TargetSource.ENEMY_FIELD };
     }
-
+    
     // 플레이어 본체 확인
     if (targetId === state.player.id) {
       return { target: state.player, index: -1, source: TargetSource.PLAYER };
     }
-
+    
     // 플레이어 유닛 확인
-    const playerIndex = state.playerField.findIndex(u => u?.id === targetId);
     if (playerIndex !== -1) {
       return { target: state.playerField[playerIndex]!, index: playerIndex, source: TargetSource.PLAYER_FIELD };
     }
@@ -48,8 +49,9 @@ export class GameUtils {
       const reward = enemyUnit.cost; 
       state.currentGold += reward;
       state.enemyField[index] = null;
-      
-    } else if (source === TargetSource.PLAYER_FIELD) {
+    } 
+    
+    else if (source === TargetSource.PLAYER_FIELD) {
       state.playerField[index] = null;
     }
   }
@@ -67,7 +69,7 @@ export class GameUtils {
   }
 
   /**
-   * 덱에서 카드를 드로우하여 핸드에 추가합니다.
+   * 덱에서 카드를 1장 드로우하여 핸드에 추가합니다.
    * 핸드가 가득 차거나(5장) 덱이 비어있으면 중단합니다.
    */
   public static drawCard(state: GameState, count: number = 1): void {
@@ -83,9 +85,11 @@ export class GameUtils {
   /**
    * 플레이어 필드의 빈 슬롯에 유닛을 소환합니다.
    */
-  public static summonUnit(state: GameState, cardData: UnitCard): FieldUnit | null {
+  public static summonUnit(state: GameState, cardData: UnitCard): FieldUnit {
     const emptySlotIndex = state.playerField.findIndex(slot => slot === null);
-    if (emptySlotIndex === -1) return null;
+    if (emptySlotIndex === -1) {
+      throw createError(ErrorCode.FIELD_FULL);
+    }
 
     const newUnit: FieldUnit = {
       id: uuidv4(),
@@ -104,4 +108,5 @@ export class GameUtils {
     state.playerField[emptySlotIndex] = newUnit;
     return newUnit;
   }
+
 }

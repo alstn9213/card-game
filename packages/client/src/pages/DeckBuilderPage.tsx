@@ -1,6 +1,7 @@
 import { DeckRules } from "@card-game/shared";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import "../css/DeckBuilder.css";
+import { Toast } from "../components/Toast";
 
 
 interface DeckBuilderPageProps {
@@ -9,9 +10,11 @@ interface DeckBuilderPageProps {
 }
 
 export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) => {
-  const { deck, allCards, getCardCount, addToDeck, removeFromDeck, groupedDeck, validation} = useDeckBuilder();
+  const { deck, allCards, getCardCount, addToDeck, removeFromDeck, groupedDeck, validation, toastError, setToastError } = useDeckBuilder();
   return (
     <div className="deck-builder-container">
+      {toastError && <Toast error={toastError} onClose={() => setToastError(null)} />}
+
       {/* 왼쪽: 카드 라이브러리 */}
       <div className="library-section">
         <div className="section-header">
@@ -28,6 +31,10 @@ export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) =
                 key={card.cardId} 
                 className={`library-card ${isMaxed ? "disabled" : ""}`}
                 onClick={() => addToDeck(card)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  removeFromDeck(card.cardId);
+                }}
               >
                 <div className="card-cost-badge">{card.cost}</div>
                 <div className="card-name">{card.name}</div>
@@ -44,7 +51,7 @@ export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) =
         <div className="deck-header">
           <h2>나의 덱</h2>
           <div className={`deck-count ${validation.isValid ? "valid" : "invalid"}`} title={validation.message}>
-            {deck.length} / {DeckRules.MIN_DECK_SIZE}
+            {deck.length} / {DeckRules.MAX_DECK_SIZE}
           </div>
         </div>
 
@@ -57,6 +64,10 @@ export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) =
               key={card.cardId} 
               className="deck-list-item"
               onClick={() => removeFromDeck(card.cardId)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                removeFromDeck(card.cardId);
+              }}
               title="클릭하여 제거"
             >
               <div className="item-cost">{card.cost}</div>

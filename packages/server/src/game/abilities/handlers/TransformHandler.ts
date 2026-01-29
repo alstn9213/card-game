@@ -1,6 +1,5 @@
-import { Ability, GameState, UNIT_CARDS, ErrorCode } from "@card-game/shared";
+import { Ability, GameState, UNIT_CARDS, ErrorCode, createError } from "@card-game/shared";
 import { AbilityHandler } from "../types";
-import { createError } from "../../GameErrors";
 
 export class TransformHandler implements AbilityHandler {
   execute(gameState: GameState, playerId: string, cardInstanceId: string, ability: Ability, targetId?: string) {

@@ -1,41 +1,25 @@
-import { ClientToServerEvents, ServerToClientEvents, validateDeck, ClientEvents, ServerEvents, ErrorCode, GameStatus } from "@card-game/shared";
+import { ClientToServerEvents, ServerToClientEvents, validateDeck, ClientEvents, ServerEvents, ErrorCode, createError, GameState } from "@card-game/shared";
 import { Socket } from "socket.io";
-import { GameLogic } from "./GameLogic";
-import { createError } from "./GameErrors";
 import { GameLoopManager } from "./GameLoopManager";
-
+import { GameUtils } from "./utils/GameUtils";
+import { ErrorHandler } from "./ErrorHandler";
+import { createGameContext, GameContext } from "./GameContextFactory";
 
 export class GameSession {
   private socket: Socket<ClientToServerEvents, ServerToClientEvents>;
-  private gameLogic: GameLogic | null = null;
+  private gameContext: GameContext | null = null;
   private gameLoopManager: GameLoopManager;
+  private errorHandler: ErrorHandler;
 
   constructor(socket: Socket) {
-    this.socket = socket;    
+    this.socket = socket;
+    this.errorHandler = new ErrorHandler(this.socket);
     this.gameLoopManager = new GameLoopManager(
-      () => this.gameLogic,
+      () => this.gameContext?.turnManager ?? null,
+      () => this.gameContext?.state ?? null,
       () => this.broadcastState()
     );
     this.setupListeners();
-  }
-
-  // 게임 상태 getter 메서드
-  public getGameState() {
-    return this.gameLogic?.getState();
-  }
-
-  // 게임 시작 메서드
-  public startGame(playerDeck: string[]) {
-    // 이전 게임의 타이머가 남아있을 수 있으므로 정리
-    this.gameLogic?.onDisconnect();
-    this.gameLoopManager.clearTimers();
-    
-    if (playerDeck && playerDeck.length > 0) {
-      validateDeck(playerDeck);
-    }
-
-    this.gameLogic = new GameLogic(playerDeck);
-    this.broadcastState();
   }
 
   // --- 헬퍼 메서드 ---
@@ -44,9 +28,8 @@ export class GameSession {
     this.socket.on(ClientEvents.JOIN_GAME, (deck: string[]) => {
       try {
         this.startGame(deck);
-      } catch (err: any) {
-        const error = err.code ? err : createError(ErrorCode.UNKNOWN_ERROR);
-        this.socket.emit(ServerEvents.ERROR, error);
+      } catch (err: unknown) {
+        this.errorHandler.handleError(err, ErrorCode.UNKNOWN_ERROR);
       }
     });
 
@@ -76,97 +59,97 @@ export class GameSession {
 
     this.socket.on("disconnect", () => {
       this.gameLoopManager.clearTimers();
-      this.gameLogic?.onDisconnect();
-      this.gameLogic = null;
+      this.gameContext = null;
     });
+  }
+
+  // 게임 시작 헬퍼 메서드
+  private startGame(playerDeck: string[]) {
+    // 이전 게임의 타이머가 남아있을 수 있으므로 정리
+    this.gameLoopManager.clearTimers();
+    
+    if (playerDeck && playerDeck.length > 0) {
+      validateDeck(playerDeck);
+    }
+
+    this.gameContext = createGameContext(playerDeck);
+    this.broadcastState();
   }
 
   // 반복되는 액션 실행 및 에러 처리 로직을 공통화
   private executeGameAction(
-    action: (gameLogic: GameLogic) => void,
-    failCode: ErrorCode,
-    skipBroadcast: boolean = false
-  ) {
-    const gameLogic = this.validateGameLogic();
-    if (!gameLogic) return;
+    action: (context: GameContext) => void
+  ): boolean {
+    const context = this.validateGameContext();
+    if (!context) return false;
 
     try {
-      action(gameLogic);
-      // 동기적인 액션(카드 내기, 공격) 후에는 즉시 상태를 전파.
-      if (!skipBroadcast) {
-        this.broadcastState();
-      }
-    } catch (error: any) {
-      // 의도된 게임 에러인 경우 그대로 전달
-      if (error.code) {
-        this.socket.emit(ServerEvents.ERROR, error);
-      } else {
-        // 예상치 못한 에러인 경우 서버 로그에 남기고, 클라이언트에는 실패 코드로 전달
-        console.error(`[GameAction Error] ${failCode}:`, error);
-        this.socket.emit(ServerEvents.ERROR, createError(failCode));
-      }
+      action(context);      
+      context.turnManager.checkGameOver();
+      this.broadcastState();
+      return true;  
+    } 
+    catch (error: unknown) {
+      this.errorHandler.handleError(error, ErrorCode.UNKNOWN_ERROR);
+      return false;
     }
   }
 
-  private validateGameLogic(): GameLogic | null {
-    if (!this.gameLogic) {
+  private validateGameContext(): GameContext | null {
+    if (!this.gameContext) {
       this.socket.emit(ServerEvents.ERROR, createError(ErrorCode.GAME_NOT_STARTED));
       return null;
     }
-    return this.gameLogic;
+    return this.gameContext;
   }
 
 
   private handleActivateAbility(cardInstanceId: string, abilityIndex: number, targetId?: string) {
-    this.executeGameAction((logic) => {
-      logic.activateAbility(cardInstanceId, abilityIndex, targetId);
-    }, ErrorCode.ABILITY_USE_FAILED);
+    this.executeGameAction((context) => {
+      context.abilityManager.executeAbility(context.state, context.state.player.id, cardInstanceId, abilityIndex, targetId);
+    });
   }
 
   private handlePlayCard(cardIndex: number) {
     this.executeGameAction(
-      (logic) => logic.playCard(cardIndex),
-      ErrorCode.PLAY_CARD_FAILED
+      (context) => context.playerManager.playCard(cardIndex)
     );
   }
 
   private handleAttack(attackerId: string, targetId: string) {
     this.executeGameAction(
-      (logic) => logic.attack(attackerId, targetId),
-      ErrorCode.ATTACK_FAILED
+      (context) => context.playerManager.attack(attackerId, targetId)
     );
   }
 
   private handleContinueRound() {
     this.executeGameAction(
-      (logic) => logic.continueRound(),
-      ErrorCode.UNKNOWN_ERROR
+      (context) => context.turnManager.startNextRound()
     );
   }
 
   private handleBuyCard(cardIndex: number) {
     this.executeGameAction(
-      (logic) => logic.buyCard(cardIndex),
-      ErrorCode.UNKNOWN_ERROR
+      (context) => context.shopManager.buyCard(cardIndex)
     );
   }
 
+  // 플레이어 턴이 끝나면 상대 로직 실행
   private handleEndTurn() {
-    this.executeGameAction((logic) => {
-      // 플레이어 턴이 아닐 때 요청이 오면 에러 발생 -> executeGameAction의 catch에서 처리됨
-      if (!logic.getState().isPlayerTurn) {
-        throw createError(ErrorCode.NOT_YOUR_TURN);
-      }
-      logic.endTurn();
-    }, ErrorCode.UNKNOWN_ERROR);
+    const success = this.executeGameAction(
+      (context) => context.turnManager.endTurn()
+    );
 
-    this.gameLoopManager.startEnemyTurnSequence();
+    if (success) {
+      this.gameLoopManager.startEnemyTurnSequence();
+    }
   }
 
   private broadcastState() {
-    if (!this.gameLogic) {
+    if (!this.gameContext) {
+      console.warn("[GameSession] broadcastState called without gameContext");
       return;
     }
-    this.socket.emit(ServerEvents.GAME_STATE_UPDATE, this.gameLogic.getState());
+    this.socket.emit(ServerEvents.GAME_STATE_UPDATE, this.gameContext.state);
   }
 }

@@ -1,9 +1,10 @@
-import { DeckRules, UNIT_CARDS, validateDeck, type CardData, DeckErrorMessages } from '@card-game/shared';
+import { DeckRules, UNIT_CARDS, validateDeck, type CardData, createError, ErrorCode, type GameError } from '@card-game/shared';
 import { useState,  useMemo } from 'react';
 
 export const useDeckBuilder = () => {
   // 선택된 카드의 ID 목록 (중복 허용)
   const [deck, setDeck] = useState<string[]>([]);
+  const [toastError, setToastError] = useState<GameError | null>(null);
 
   // 전체 카드 목록 (배열로 변환)
   const allCards = useMemo(() => Object.values(UNIT_CARDS), []);
@@ -14,11 +15,11 @@ export const useDeckBuilder = () => {
   // 덱 추가 로직
   const addToDeck = (card: CardData) => {
     if (deck.length >= DeckRules.MAX_DECK_SIZE) {
-      alert(DeckErrorMessages.MAX_DECK_SIZE(DeckRules.MAX_DECK_SIZE));
+      setToastError(createError(ErrorCode.MAX_DECK_SIZE));
       return;
     }
     if (getCardCount(card.cardId) >= DeckRules.MAX_COPIES_PER_CARD) {
-      alert(DeckErrorMessages.MAX_COPIES_PER_CARD(card.name, DeckRules.MAX_COPIES_PER_CARD));
+      setToastError(createError(ErrorCode.MAX_COPIES_PER_CARD));
       return;
     }
     setDeck([...deck, card.cardId]);
@@ -68,6 +69,8 @@ export const useDeckBuilder = () => {
     removeFromDeck,
     validation,
     groupedDeck,
-    getCardCount, 
+    getCardCount,
+    toastError,
+    setToastError
     };
 };

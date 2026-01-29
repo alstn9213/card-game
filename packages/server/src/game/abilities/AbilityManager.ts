@@ -1,9 +1,8 @@
-import { GameState, UNIT_CARDS, ErrorCode } from "@card-game/shared";
+import { GameState, UNIT_CARDS, ErrorCode, createError, GameStatus } from "@card-game/shared";
 import { AbilityHandler } from "./types";
 import { EffectType } from "@card-game/shared";
 import { TransformHandler } from "./handlers/TransformHandler";
 import { DamageHandler } from "./handlers/DamageHandler";
-import { createError } from "../GameErrors";
 
 export class AbilityManager {
   private handlers: Record<string, AbilityHandler> = {};
@@ -18,6 +17,10 @@ export class AbilityManager {
   }
 
   public executeAbility(gameState: GameState, playerId: string, cardInstanceId: string, abilityIndex: number, targetId?: string) {
+    if (gameState.gameStatus !== GameStatus.PLAYING) {
+      throw createError(ErrorCode.NOT_YOUR_TURN);
+    }
+
     // 1. 유닛 찾기
     const unitInstance = gameState.playerField.find(u => u?.id === cardInstanceId);
     if (!unitInstance) {

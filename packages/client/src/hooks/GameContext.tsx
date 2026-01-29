@@ -64,6 +64,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  // 에러 발생 시 3초 후 자동 소멸 (Toast 효과)
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const startGame = useCallback((deck: string[]) => {
     if (socket) {
       socket.emit(ClientEvents.JOIN_GAME, deck);

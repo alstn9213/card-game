@@ -1,11 +1,9 @@
-import { GameState, GameStatus, ErrorCode, TargetSource } from "@card-game/shared";
+import { GameState, GameStatus, ErrorCode, TargetSource, createError } from "@card-game/shared";
 import { GameUtils } from "../../utils/GameUtils";
-import { createError } from "../../GameErrors";
 
 export class AttackHandler {
   constructor(
-    private getState: () => GameState,
-    private checkGameOver: () => void
+    private getState: () => GameState
   ) {}
 
   public execute(attackerId: string, targetId: string): void {
@@ -28,16 +26,11 @@ export class AttackHandler {
     attacker.hasAttacked = true;
 
     GameUtils.processUnitDeath(state, targetResult);
-
-    this.checkGameOver();
   }
 
   // 헬퍼 메서드
   
   private validate(state: GameState, attackerId: string, targetId: string): void {
-    if (!state.isPlayerTurn || state.gameStatus !== GameStatus.PLAYING) {
-      throw createError(ErrorCode.NOT_YOUR_TURN);
-    }
     const attacker = state.playerField.find(u => u?.id === attackerId);
     if (!attacker) throw createError(ErrorCode.NO_UNIT_TO_ATTACK);
     if (attacker.hasAttacked) throw createError(ErrorCode.ALREADY_ATTACKED);

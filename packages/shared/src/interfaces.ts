@@ -1,5 +1,4 @@
 import { CardType, EffectType, TargetType, GameStatus } from "./types";
-import { ErrorCode } from "./errors";
 
 // 플레이어의 상태
 export interface Entity {
@@ -70,9 +69,4 @@ export interface GameState {
   shopItems: UnitCard[];        // 상점에서 판매 중인 카드 목록
   currentRoundEnemies: UnitCard[]; // 현재 라운드에 등장한 적 목록 (라운드 종료 후 상점 등록용)
   attackLogs: AttackLog[];      // 이번 턴(또는 액션)에 발생한 공격 로그
-}
-
-export interface GameError {
-  code: ErrorCode;
-  message: string;
 }

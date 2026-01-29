@@ -26,7 +26,7 @@ export type EffectType = (typeof EffectType)[keyof typeof EffectType];
 export const DeckRules = {
   MAX_COPIES_PER_CARD: 3, // 동일 카드 최대 매수
   MIN_DECK_SIZE: 15,      // 최소 덱 매수
-  MAX_DECK_SIZE: 30       // 최대 덱 매수
+  MAX_DECK_SIZE: 20       // 최대 덱 매수
 } as const;
 export type DeckRules = (typeof DeckRules)[keyof typeof DeckRules];
 

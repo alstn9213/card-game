@@ -9,6 +9,7 @@ export const useGameEffects = (
   // 1. 라운드 승리 감지 상태
   const [showRoundVictory, setShowRoundVictory] = useState(false);
   const prevStatusRef = useRef<GameStatus | null>(null);
+  const lastVictoryRoundRef = useRef<number>(-1);
 
   // 2. 턴 시작 알림 상태
   const [showTurnNotification, setShowTurnNotification] = useState(false);
@@ -22,14 +23,31 @@ export const useGameEffects = (
   // 라운드 승리 효과
   useEffect(() => {
     if (gameState) {
-      if (prevStatusRef.current !== null && prevStatusRef.current !== GameStatus.SHOP && gameState.gameStatus === GameStatus.SHOP) {
+      // 새 게임 시작 시 리셋
+      if (gameState.round < lastVictoryRoundRef.current) {
+        lastVictoryRoundRef.current = -1;
+      }
+
+      const isShop = gameState.gameStatus === GameStatus.SHOP;
+      const wasNotShop = prevStatusRef.current !== GameStatus.SHOP;
+      const isTransition = prevStatusRef.current !== null && wasNotShop && isShop;
+      const isNewVictory = lastVictoryRoundRef.current !== gameState.round;
+
+      if (isTransition && isNewVictory) {
         setShowRoundVictory(true);
-        const timer = setTimeout(() => setShowRoundVictory(false), 2000);
-        return () => clearTimeout(timer);
+        lastVictoryRoundRef.current = gameState.round;
       }
       prevStatusRef.current = gameState.gameStatus;
     }
   }, [gameState]);
+
+  // 승리 메시지 타이머 별도 관리
+  useEffect(() => {
+    if (showRoundVictory) {
+      const timer = setTimeout(() => setShowRoundVictory(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showRoundVictory]);
 
   // 턴 시작 알림 효과
   useEffect(() => {

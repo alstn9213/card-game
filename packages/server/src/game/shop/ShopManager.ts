@@ -1,6 +1,5 @@
-import { GameState, GameStatus, ErrorCode, GameCard, DeckRules } from "@card-game/shared";
+import { GameState, GameStatus, ErrorCode, GameCard, DeckRules, createError } from "@card-game/shared";
 import { v4 as uuidv4 } from 'uuid';
-import { createError } from "../GameErrors";
 
 export class ShopManager {
   constructor(private getState: () => GameState) {}

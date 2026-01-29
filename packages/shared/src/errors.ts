@@ -1,3 +1,5 @@
+import { DeckRules } from "./types";
+
 // 에러 코드
 export const ErrorCode = {
   GAME_NOT_STARTED: "게임이 시작되지 않았습니다.",
@@ -17,13 +19,19 @@ export const ErrorCode = {
   TARGET_NOT_FOUND: "대상을 찾을 수 없습니다.",
   ATTACK_ENEMY_ONLY: "적군만 공격할 수 있습니다.",
   DECK_FULL: "덱이 가득 찼습니다.",
-  UNKNOWN_ERROR: "알 수 없는 오류가 발생했습니다."
+  UNKNOWN_ERROR: "알 수 없는 오류가 발생했습니다.",
+  MIN_DECK_SIZE: `덱은 최소 ${DeckRules.MIN_DECK_SIZE}장 이상이어야 합니다.`,
+  MAX_DECK_SIZE: `덱은 최대 ${DeckRules.MAX_DECK_SIZE}장 까지만 구성할 수 있습니다.`,
+  MAX_COPIES_PER_CARD: `동일 카드는 ${DeckRules.MAX_COPIES_PER_CARD}장까지만 넣을 수 있습니다.`
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
-// 덱 에러 메시지
-export const DeckErrorMessages = {
-  MIN_DECK_SIZE: (min: number) => `덱은 최소 ${min}장 이상이어야 합니다.`,
-  MAX_DECK_SIZE: (max: number) => `덱은 최대 ${max}장까지만 구성할 수 있습니다.`,
-  MAX_COPIES_PER_CARD: (cardName: string, max: number) => `'${cardName}' 카드는 최대 ${max}장까지만 넣을 수 있습니다.`
-} as const;
+export interface GameError {
+  code: ErrorCode;
+  message: string;
+}
+
+export const createError = (code: ErrorCode): GameError => ({
+  code,
+  message: code
+});

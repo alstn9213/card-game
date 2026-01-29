@@ -1,11 +1,9 @@
-import { CardType, GameState, GameStatus, ErrorCode, UnitCard } from "@card-game/shared";
-import { createError } from "../../GameErrors";
+import { CardType, GameState, GameStatus, ErrorCode, UnitCard, createError } from "@card-game/shared";
 import { GameUtils } from "../../utils/GameUtils";
 
 export class PlayCardHandler {
   constructor(
-    private getState: () => GameState,
-    private checkGameOver: () => void
+    private getState: () => GameState
   ) {}
 
   public execute(cardIndex: number): void {
@@ -22,17 +20,13 @@ export class PlayCardHandler {
     state.currentGold -= card.cost;
     state.hand.splice(cardIndex, 1);
     state.discardPile.push(card);
-
-    this.checkGameOver();
   }
 
   // --- 헬퍼 메서드 ---
   private validate(state: GameState, cardIndex: number): void {
-    if (!state.isPlayerTurn || state.gameStatus !== GameStatus.PLAYING) {
-       throw createError(ErrorCode.NOT_YOUR_TURN);
-    }
     const card = state.hand[cardIndex];
     if (!card) throw createError(ErrorCode.CARD_NOT_FOUND);
+    
     if (state.currentGold < card.cost) throw createError(ErrorCode.NOT_ENOUGH_GOLD);
     
     if (card.type === CardType.UNIT) {

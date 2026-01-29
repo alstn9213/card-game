@@ -1,4 +1,4 @@
-import { GameState } from "@card-game/shared";
+import { GameState, ErrorCode, createError, GameStatus } from "@card-game/shared";
 import { PlayCardHandler } from "./handlers/PlayCardHandler";
 import { AttackHandler } from "./handlers/AttackHandler";
 import { GameUtils } from "../utils/GameUtils";
@@ -8,19 +8,27 @@ export class PlayerManager {
   private attackHandler: AttackHandler;
 
   constructor(
-    private getState: () => GameState,
-    private checkGameOver: () => void
+    private getState: () => GameState
   ) {
-    this.playCardHandler = new PlayCardHandler(getState, checkGameOver);
-    this.attackHandler = new AttackHandler(getState, checkGameOver);
+    this.playCardHandler = new PlayCardHandler(getState);
+    this.attackHandler = new AttackHandler(getState);
   }
 
+  // 카드 소환 함수
   public playCard(cardIndex: number): void {
+    const state = this.getState();
+    if (state.gameStatus !== GameStatus.PLAYING) {
+      throw createError(ErrorCode.NOT_YOUR_TURN);
+    }
     this.playCardHandler.execute(cardIndex);
   }
 
   // 공격 함수
   public attack(attackerId: string, targetId: string): void {
+    const state = this.getState();
+    if (state.gameStatus !== GameStatus.PLAYING) {
+      throw createError(ErrorCode.NOT_YOUR_TURN);
+    }
     this.attackHandler.execute(attackerId, targetId);
   }
 
