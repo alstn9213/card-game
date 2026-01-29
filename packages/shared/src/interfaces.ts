@@ -1,4 +1,5 @@
-import { CardType, EffectType, TargetType, GameStatus, ErrorCode } from "./types";
+import { CardType, EffectType, TargetType, GameStatus } from "./types";
+import { ErrorCode } from "./errors";
 
 // 플레이어의 상태
 export interface Entity {

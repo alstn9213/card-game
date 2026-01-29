@@ -64,7 +64,6 @@ export class GameLogic {
     this.turnManager.endTurn();
   }
 
-
   public processEnemyTurn(): void {
     this.turnManager.processEnemyTurn();
   }

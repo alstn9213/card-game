@@ -1,5 +1,7 @@
 import { UNIT_CARDS } from "../data/units";
-import { DeckRules, DeckErrorMessages } from "../types";
+import { DeckErrorMessages } from "../errors";
+import { UnitCard } from "../interfaces";
+import { DeckRules } from "../types";
 
 export const validateDeck = (deckCardIds: string[]): void => {
   if (deckCardIds.length < DeckRules.MIN_DECK_SIZE) {
@@ -15,7 +17,7 @@ export const validateDeck = (deckCardIds: string[]): void => {
 
   for (const cardId of deckCardIds) {
     const count = (cardCounts.get(cardId) || 0) + 1;
-    const cardData = allCards.find((c: any) => c.cardId === cardId);
+    const cardData = allCards.find((c: UnitCard) => c.cardId === cardId);
     const cardName = cardData ? cardData.name : cardId;
     
     // 3장 초과 체크

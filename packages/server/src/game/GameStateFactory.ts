@@ -19,11 +19,7 @@ export const initializeGame = (playerDeck?: string[]): GameState => {
   // ID 목록을 실제 게임 카드 인스턴스로 변환
   const rawDeck = initializeDeck(deckCardIds, state.player.id);
   const deck = GameUtils.shuffleArray(rawDeck);
-
-  // 핸드 드로우 (5장)
   const hand = deck.splice(0, 5);
-
-  // 생성된 상태에 덱과 핸드 정보 업데이트
   state.deck = deck;
   state.hand = hand;
 

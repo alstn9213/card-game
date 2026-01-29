@@ -46,7 +46,7 @@ export const UNIT_CARDS: UnitCard[] = [
     cardId: "tank",
     name: "시즈 탱크",
     description: "강력한 탱크",
-    cost: 5,
+    cost: 3,
     type: CardType.UNIT,
     targetType: TargetType.SINGLE_ENEMY,
     attackPower: 2000,
@@ -72,5 +72,16 @@ export const UNIT_CARDS: UnitCard[] = [
     attackPower: 2500,
     maxHp: 3000,
   },
+  {
+    cardId: "battle_cruiser",
+    name: "배틀크루저",
+    description: "최강 유닛",
+    cost: 5,
+    type: CardType.UNIT,
+    targetType: TargetType.SINGLE_ENEMY,
+    attackPower: 3000,
+    maxHp: 4000,
+  },
+  
   
 ];
