@@ -16,7 +16,7 @@ export const Shop = () => {
   return (
     <div className="shop-overlay">
       <div className="shop-container">
-        <h2 className="shop-title">🏕️ 휴식처</h2>
+        <h2 className="shop-title">🏕️ 상점</h2>
         
         <div className="shop-stats">
           <div className="shop-stat-item">

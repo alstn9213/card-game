@@ -26,12 +26,12 @@ export const GameBoard = () => {
     attack,
     activateAbility
   );
-
+  
   useGameInitialization(isConnected, startGame);
   
   const playerDamage = usePlayerDamageAnimation(gameState);
   const { mousePos, setMousePos, handleMouseMove, getUnitCenter, setUnitRef, getUnitElement } = useTargetingArrow(!!selectedAttackerId);
-  const { showRoundVictory, showTurnNotification, enemyAttackArrow } = useGameEffects(gameState, getUnitCenter, getUnitElement);
+  const { showRoundVictory, showTurnNotification, enemyAttackArrow, handleVictoryConfirm } = useGameEffects(gameState, getUnitCenter, getUnitElement);
 
   if (!isConnected) {
     return <div className="loading">서버에 연결 중입니다...</div>;
@@ -111,7 +111,7 @@ export const GameBoard = () => {
 
       {/* 라운드 승리 메시지 */}
       {showRoundVictory && (
-        <RoundVictoryModal />
+        <RoundVictoryModal onConfirm={handleVictoryConfirm} />
       )}
 
       {/* 상점 화면 (오버레이) */}

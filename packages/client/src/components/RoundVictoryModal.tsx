@@ -1,7 +1,11 @@
 import "../css/GameModal.css";
 import "../css/GameEffects.css";
 
-export const RoundVictoryModal = () => {
+interface RoundVictoryModalProps {
+  onConfirm: () => void;
+}
+
+export const RoundVictoryModal = ({ onConfirm }: RoundVictoryModalProps) => {
   return (
     <div className="modal-overlay">
       {/* 폭죽 효과 */}
@@ -15,8 +19,15 @@ export const RoundVictoryModal = () => {
         <div className="modal-title" style={{ color: "#f1c40f" }}>ROUND CLEAR!</div>
         <div className="modal-message">
           모든 적을 물리쳤습니다!<br />
-          잠시 후 상점으로 이동합니다...
+          상점에서 정비 후 다음 라운드를 준비하세요.
         </div>
+        <button 
+          className="modal-btn"
+          onClick={onConfirm}
+          style={{ backgroundColor: "#f1c40f", color: "#2c3e50", fontWeight: "bold" }}
+        >
+          확인
+        </button>
       </div>
     </div>
   );

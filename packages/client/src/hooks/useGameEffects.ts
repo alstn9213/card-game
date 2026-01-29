@@ -20,8 +20,18 @@ export const useGameEffects = (
   const lastKnownPositions = useRef<Map<string, {x: number, y: number}>>(new Map());
   const processedLogCount = useRef<number>(0);
 
+  // 컴포넌트 마운트 상태 추적
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   // 라운드 승리 효과
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+
     if (gameState) {
       // 새 게임 시작 시 리셋
       if (gameState.round < lastVictoryRoundRef.current) {
@@ -34,20 +44,20 @@ export const useGameEffects = (
       const isNewVictory = lastVictoryRoundRef.current !== gameState.round;
 
       if (isTransition && isNewVictory) {
-        setShowRoundVictory(true);
+        timer = setTimeout(() => {
+          setShowRoundVictory(true);
+        }, 500);
         lastVictoryRoundRef.current = gameState.round;
       }
       prevStatusRef.current = gameState.gameStatus;
     }
+
+    return () => clearTimeout(timer);
   }, [gameState]);
 
-  // 승리 메시지 타이머 별도 관리
-  useEffect(() => {
-    if (showRoundVictory) {
-      const timer = setTimeout(() => setShowRoundVictory(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showRoundVictory]);
+  const handleVictoryConfirm = () => {
+    setShowRoundVictory(false);
+  };
 
   // 턴 시작 알림 효과
   useEffect(() => {
@@ -93,6 +103,7 @@ export const useGameEffects = (
     if (newLogs.length > 0) {
       newLogs.forEach((log, index) => {
         setTimeout(() => {
+          if (!isMounted.current) return;
           triggerAttackAnimation(log.attackerId, log.targetId);
         }, index * 200); // 동시 다발적 공격 시 순차 재생
       });
@@ -127,14 +138,19 @@ export const useGameEffects = (
       }, 200);
     } else if (start && end) {
       // 엘리먼트가 없어도(죽었어도) 화살표는 표시 시도
-      setEnemyAttackArrow({ start, end });
-      setTimeout(() => setEnemyAttackArrow(null), 800);
+      if (isMounted.current) {
+        setEnemyAttackArrow({ start, end });
+        setTimeout(() => {
+          if (isMounted.current) setEnemyAttackArrow(null);
+        }, 800);
+      }
     }
   };
 
   return {
     showRoundVictory,
     showTurnNotification,
-    enemyAttackArrow
+    enemyAttackArrow,
+    handleVictoryConfirm
   };
 };

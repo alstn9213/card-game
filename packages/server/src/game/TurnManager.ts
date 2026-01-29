@@ -63,13 +63,9 @@ export class TurnManager {
     }
   }
 
-  // 라운드 클리어 -> 체력 회복 및 상점 단계 준비
+  // 라운드 클리어 -> 상점 단계 준비
   private onRoundClear() {
     const state = this.getState();
-
-    //  플레이어 체력 회복 (예: 최대 체력의 10%)
-    const healAmount = Math.floor(state.player.maxHp * 0.1) || 1;
-    state.player.currentHp = Math.min(state.player.maxHp, state.player.currentHp + healAmount);
     state.shopItems = [...state.currentRoundEnemies];
     state.gameStatus = GameStatus.SHOP;
   }

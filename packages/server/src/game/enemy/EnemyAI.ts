@@ -35,7 +35,7 @@ export class EnemyAI {
         if (targetUnit.currentHp <= 0) {
           const overkillDamage = enemyUnit.attackPower - targetHpBeforeAttack;
           if (overkillDamage > 0) {
-            state.player.currentHp -= overkillDamage;
+            state.player.currentHp = Math.max(0, state.player.currentHp - overkillDamage);
             state.attackLogs.push({ attackerId: enemyUnit.id, targetId: "player", damage: overkillDamage });
           }
         }
@@ -48,7 +48,7 @@ export class EnemyAI {
       } 
       
       else {
-        state.player.currentHp -= enemyUnit.attackPower;
+        state.player.currentHp = Math.max(0, state.player.currentHp - enemyUnit.attackPower);
 
         state.attackLogs.push({
           attackerId: enemyUnit.id,
