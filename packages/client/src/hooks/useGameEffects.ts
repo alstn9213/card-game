@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { GameStatus, type GameState } from "@card-game/shared";
 
 export const useGameEffects = (
@@ -15,23 +15,13 @@ export const useGameEffects = (
   const [showTurnNotification, setShowTurnNotification] = useState(false);
   const lastNotifiedTurnRef = useRef<number>(-1);
 
-  // 3. 적 공격 화살표 상태
-  const [enemyAttackArrow, setEnemyAttackArrow] = useState<{ start: {x: number, y: number}, end: {x: number, y: number} } | null>(null);
   const lastKnownPositions = useRef<Map<string, {x: number, y: number}>>(new Map());
   const processedLogCount = useRef<number>(0);
 
-  // 컴포넌트 마운트 상태 추적
-  const isMounted = useRef(true);
-  useEffect(() => {
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+  
 
   // 라운드 승리 효과
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-
+  useLayoutEffect(() => {
     if (gameState) {
       // 새 게임 시작 시 리셋
       if (gameState.round < lastVictoryRoundRef.current) {
@@ -44,15 +34,11 @@ export const useGameEffects = (
       const isNewVictory = lastVictoryRoundRef.current !== gameState.round;
 
       if (isTransition && isNewVictory) {
-        timer = setTimeout(() => {
-          setShowRoundVictory(true);
-        }, 500);
+        setShowRoundVictory(true);
         lastVictoryRoundRef.current = gameState.round;
       }
       prevStatusRef.current = gameState.gameStatus;
     }
-
-    return () => clearTimeout(timer);
   }, [gameState]);
 
   const handleVictoryConfirm = () => {
@@ -103,7 +89,6 @@ export const useGameEffects = (
     if (newLogs.length > 0) {
       newLogs.forEach((log, index) => {
         setTimeout(() => {
-          if (!isMounted.current) return;
           triggerAttackAnimation(log.attackerId, log.targetId);
         }, index * 200); // 동시 다발적 공격 시 순차 재생
       });
@@ -136,21 +121,12 @@ export const useGameEffects = (
           attackerEl.style.transition = "";
         }, 400);
       }, 200);
-    } else if (start && end) {
-      // 엘리먼트가 없어도(죽었어도) 화살표는 표시 시도
-      if (isMounted.current) {
-        setEnemyAttackArrow({ start, end });
-        setTimeout(() => {
-          if (isMounted.current) setEnemyAttackArrow(null);
-        }, 800);
-      }
-    }
+    } 
   };
 
   return {
     showRoundVictory,
     showTurnNotification,
-    enemyAttackArrow,
     handleVictoryConfirm
   };
 };

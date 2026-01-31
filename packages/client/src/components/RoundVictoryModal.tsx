@@ -6,14 +6,16 @@ interface RoundVictoryModalProps {
 }
 
 export const RoundVictoryModal = ({ onConfirm }: RoundVictoryModalProps) => {
+  // 폭죽 개수만큼 배열 생성 (5개)
+  const fireworks = Array.from({ length: 5 });
+
   return (
     <div className="modal-overlay">
+      
       {/* 폭죽 효과 */}
-      <div className="firework-effect" style={{ top: '30%', left: '20%', animationDelay: '0s' }}></div>
-      <div className="firework-effect" style={{ top: '25%', left: '80%', animationDelay: '0.2s' }}></div>
-      <div className="firework-effect" style={{ top: '60%', left: '15%', animationDelay: '0.4s' }}></div>
-      <div className="firework-effect" style={{ top: '55%', left: '85%', animationDelay: '0.6s' }}></div>
-      <div className="firework-effect" style={{ top: '15%', left: '50%', animationDelay: '0.3s' }}></div>
+      {fireworks.map((_, index) => (
+        <div key={index} className="firework-effect"></div>
+      ))}
 
       <div className="modal-content">
         <div className="modal-title" style={{ color: "#f1c40f" }}>ROUND CLEAR!</div>

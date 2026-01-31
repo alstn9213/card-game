@@ -1,47 +1,7 @@
 import type { UnitCard } from "../interfaces";
-import { CardType, EffectType, TargetType } from "../types";
+import { CardType, TargetType } from "../types";
 
 export const UNIT_CARDS: UnitCard[] = [
-  {
-    cardId: "baby_dragon",
-    name: "아기 용",
-    description: "작은 용입니다.",
-    cost: 1,
-    type: CardType.UNIT,
-    targetType: TargetType.SINGLE_ENEMY,
-    attackPower: 300,
-    maxHp: 500
-  },
-  {
-    cardId: "red_dragon",
-    name: "붉은 용",
-    description: "아기용 성장시 소환합니다.",
-    cost: 2,
-    type: CardType.UNIT,
-    targetType: TargetType.ALL_ENEMIES,
-    attackPower: 2500,
-    maxHp: 1500
-  },
-  {
-    cardId: "mecha_soldier",
-    name: "기계 전사",
-    description: "고철로 만든 전사",
-    cost: 1,
-    type: CardType.UNIT,
-    targetType: TargetType.SINGLE_ENEMY,
-    attackPower: 500,
-    maxHp: 1000,
-  },
-  {
-    cardId: "big_mecha_soldier",
-    name: "기계 거인 전사",
-    description: "많은 고철로 만든 거인",
-    cost: 3,
-    type: CardType.UNIT,
-    targetType: TargetType.SINGLE_ENEMY,
-    attackPower: 1500,
-    maxHp: 2000,
-  },
   {
     cardId: "tank",
     name: "시즈 탱크",
@@ -51,6 +11,16 @@ export const UNIT_CARDS: UnitCard[] = [
     targetType: TargetType.SINGLE_ENEMY,
     attackPower: 2000,
     maxHp: 3000,
+  },
+  {
+    cardId: "val",
+    name: "발키리",
+    description: "공중 유닛",
+    cost: 2,
+    type: CardType.UNIT,
+    targetType: TargetType.SINGLE_ENEMY,
+    attackPower: 1500,
+    maxHp: 2000,
   },
    {
     cardId: "marine",

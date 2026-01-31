@@ -12,7 +12,7 @@ export const GameResultModal = ({ status, onReset }: GameResultModalProps) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <div className={`modal-title ${status}`}>
-          {isVictory ? "VICTORY!" : "DEFEAT"}
+          {isVictory ? "승리" : "패배"}
         </div>
         <div className="modal-message">
           {isVictory 

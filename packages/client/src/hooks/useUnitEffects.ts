@@ -9,7 +9,7 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
   useEffect(() => {
     const prevUnit = prevUnitRef.current;
     
-    // 1. 유닛이 있고 체력이 감소한 경우
+    // 유닛이 있고 체력이 감소한 경우
     if (unit && prevUnit && unit.id === prevUnit.id && unit.currentHp < prevUnit.currentHp) {
       const damage = prevUnit.currentHp - unit.currentHp;
       triggerDamageEffect(damage);

@@ -31,7 +31,7 @@ export const GameBoard = () => {
   
   const playerDamage = usePlayerDamageAnimation(gameState);
   const { mousePos, setMousePos, handleMouseMove, getUnitCenter, setUnitRef, getUnitElement } = useTargetingArrow(!!selectedAttackerId);
-  const { showRoundVictory, showTurnNotification, enemyAttackArrow, handleVictoryConfirm } = useGameEffects(gameState, getUnitCenter, getUnitElement);
+  const { showRoundVictory, showTurnNotification, handleVictoryConfirm } = useGameEffects(gameState, getUnitCenter, getUnitElement);
 
   if (!isConnected) {
     return <div className="loading">서버에 연결 중입니다...</div>;
@@ -98,11 +98,6 @@ export const GameBoard = () => {
         const start = getUnitCenter(selectedAttackerId);
         return start ? <TargetingArrow start={start} end={mousePos} /> : null;
       })()}
-
-      {/* 적 공격 화살표 (자동) */}
-      {enemyAttackArrow && (
-        <TargetingArrow start={enemyAttackArrow.start} end={enemyAttackArrow.end} />
-      )}
 
       {/* 턴 시작 알림 */}
       {showTurnNotification && (
