@@ -1,4 +1,4 @@
-import { DeckRules, UNIT_CARDS, validateDeck, type CardData, createError, ErrorCode, type GameError } from '@card-game/shared';
+import { DeckRules, UNIT_CARDS, SPELL_CARDS, validateDeck, type CardData, createError, ErrorCode, type GameError } from '@card-game/shared';
 import { useState,  useMemo } from 'react';
 
 export const useDeckBuilder = () => {
@@ -7,7 +7,7 @@ export const useDeckBuilder = () => {
   const [toastError, setToastError] = useState<GameError | null>(null);
 
   // 전체 카드 목록 (배열로 변환)
-  const allCards = useMemo(() => Object.values(UNIT_CARDS), []);
+  const allCards = useMemo(() => [...UNIT_CARDS, ...SPELL_CARDS], []);
 
   // 덱에 포함된 특정 카드의 개수 계산
   const getCardCount = (cardId: string) => deck.filter((id) => id === cardId).length;

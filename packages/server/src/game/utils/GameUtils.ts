@@ -109,4 +109,8 @@ export class GameUtils {
     return newUnit;
   }
 
+  public static earnGold(state: GameState, amount: number) {
+    state.currentGold += amount;
+  }
+  
 }

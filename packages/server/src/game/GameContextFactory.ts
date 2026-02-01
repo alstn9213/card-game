@@ -33,6 +33,6 @@ export const createGameContext = (playerDeck: string[]): GameContext => {
     enemyManager,
     turnManager,
     shopManager,
-    abilityManager
+    abilityManager,
   };
 };

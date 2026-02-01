@@ -3,7 +3,7 @@ import './App.css'
 import { MainMenu } from './pages/MainMenu'
 import { DeckBuilderPage } from './pages/DeckBuilderPage'
 import { GameBoard } from './pages/GameBoard'
-import { GameProvider } from './hooks/GameContext'
+import { GameProvider } from './hooks/GameProvider'
 
 const DeckBuilderWithNavigation = () => {
   const navigate = useNavigate();

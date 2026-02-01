@@ -1,20 +1,26 @@
-import { CardType, GameState, GameStatus, ErrorCode, UnitCard, createError } from "@card-game/shared";
+import { CardType, GameState, ErrorCode, UnitCard, SpellCard, createError } from "@card-game/shared";
 import { GameUtils } from "../../utils/GameUtils";
+import { SpellManager } from "../../spells/SpellManager";
 
 export class PlayCardHandler {
   constructor(
-    private getState: () => GameState
+    private getState: () => GameState,
+    private spellManager: SpellManager
   ) {}
 
-  public execute(cardIndex: number): void {
+  public execute(cardIndex: number, targetId: string): void {
     const state = this.getState();
     this.validate(state, cardIndex);
 
     const card = state.hand[cardIndex]!;
 
     if (card.type === CardType.UNIT) {
-       GameUtils.summonUnit(state, card as unknown as UnitCard);
+      GameUtils.summonUnit(state, card as unknown as UnitCard);
     } 
+
+    else if (card.type === CardType.SPELL) {
+      this.spellManager.execute(card as unknown as SpellCard, cardIndex, targetId);
+    }
 
     // 자원 소모 및 뒷정리
     state.currentGold -= card.cost;

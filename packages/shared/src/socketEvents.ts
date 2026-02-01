@@ -13,7 +13,7 @@ export const ClientEvents = {
 
 export type ClientToServerEvents = {
   [ClientEvents.JOIN_GAME]: (deck: string[]) => void;
-  [ClientEvents.PLAY_CARD]: (cardIndex: number) => void;
+  [ClientEvents.PLAY_CARD]: (cardIndex: number, targetId?: string) => void;
   [ClientEvents.END_TURN]: () => void;
   [ClientEvents.ATTACK]: (attackerId: string, targetId: string) => void;
   [ClientEvents.ACTIVATE_ABILITY]: (cardInstanceId: string, abilityIndex: number, targetId?: string) => void;

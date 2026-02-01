@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "../css/GameBoard.css";
 import "../css/Card.css";
 import "../css/GameModal.css";
@@ -30,6 +32,9 @@ export const GameBoard = () => {
     error, 
     clearError 
   } = useGameState();
+
+  const location = useLocation();
+  const deck = location.state?.deck || [];
   
   const { 
     selectedAttackerId, 
@@ -42,6 +47,11 @@ export const GameBoard = () => {
   );
   
   useGameInitialization(isConnected, startGame);
+  useEffect(() => {
+    if (isConnected) {
+      startGame(deck);
+    }
+  }, [isConnected, startGame]);
   
   const playerDamage = usePlayerDamageAnimation(gameState);
 

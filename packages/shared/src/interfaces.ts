@@ -29,7 +29,7 @@ export interface GameCard extends CardData {
 export interface UnitCard extends CardData {
   attackPower: number;
   maxHp: number;
-  abilities?: Ability[];
+  abilities?: Ability;
 }
 
 
@@ -47,6 +47,14 @@ export interface Ability {
   value?: number;          // 데미지나 회복량 등 수치 (선택)
   targetId?: string;       // 변신할 대상의 ID 등 (선택)
 }
+
+// 마법 카드
+export interface SpellCard extends CardData {
+  effectType: EffectType;
+  value?: number;          // 데미지나 회복량 등 수치 (선택)
+  targetId?: string; 
+}
+
 
 export interface AttackLog {
   attackerId: string;

@@ -1,4 +1,4 @@
-import { GameState, GameStatus, UNIT_CARDS, DeckRules, UnitCard, GameCard, validateDeck, FieldUnit, ErrorCode, createError } from "@card-game/shared";
+import { GameState, GameStatus, UNIT_CARDS, SPELL_CARDS, DeckRules, GameCard, validateDeck, FieldUnit, ErrorCode, createError } from "@card-game/shared";
 import { v4 as uuidv4 } from 'uuid';
 import { GameUtils } from "./utils/GameUtils";
 
@@ -55,10 +55,10 @@ const createInitialGameState = (): GameState => {
   };
 };
 
-// 기본 덱 생성 (랜덤하게 20장 채우기)
+// 기본 덱 생성 (랜덤하게 15장 채우기)
 const generateDefaultDeck = (): string[] => {
   const deckIds: string[] = [];
-  const availableCards = Object.values(UNIT_CARDS); 
+  const availableCards = [...UNIT_CARDS, ...SPELL_CARDS];
 
   if (availableCards.length === 0) return [];
 
@@ -78,7 +78,8 @@ const generateDefaultDeck = (): string[] => {
 
 // 게임 시작 시 덱 초기화 함수
 const initializeDeck = (deckCardIds: string[], playerId: string): GameCard[] => {
-  const cardMap = new Map(UNIT_CARDS.map(card => [card.cardId, card]));
+  const allCards = [...UNIT_CARDS, ...SPELL_CARDS];
+  const cardMap = new Map(allCards.map(card => [card.cardId, card]));
 
   return deckCardIds.map((cardId) => {
     const originalData = cardMap.get(cardId);

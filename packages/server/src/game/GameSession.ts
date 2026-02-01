@@ -1,7 +1,6 @@
 import { ClientToServerEvents, ServerToClientEvents, validateDeck, ClientEvents, ServerEvents, ErrorCode, createError, GameState } from "@card-game/shared";
 import { Socket } from "socket.io";
 import { GameLoopManager } from "./GameLoopManager";
-import { GameUtils } from "./utils/GameUtils";
 import { ErrorHandler } from "./ErrorHandler";
 import { createGameContext, GameContext } from "./GameContextFactory";
 
@@ -33,8 +32,8 @@ export class GameSession {
       }
     });
 
-    this.socket.on(ClientEvents.PLAY_CARD, (cardIndex: number) => {
-      this.handlePlayCard(cardIndex);
+    this.socket.on(ClientEvents.PLAY_CARD, (cardIndex: number, targetId?: string) => {
+      this.handlePlayCard(cardIndex, targetId);
     });
 
     this.socket.on(ClientEvents.END_TURN, () => {
@@ -110,9 +109,9 @@ export class GameSession {
     });
   }
 
-  private handlePlayCard(cardIndex: number) {
+  private handlePlayCard(cardIndex: number, targetId?: string) {
     this.executeGameAction(
-      (context) => context.playerManager.playCard(cardIndex)
+      (context) => context.playerManager.playCard(cardIndex, targetId)
     );
   }
 
