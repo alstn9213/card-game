@@ -1,4 +1,5 @@
 import type { GameState, FieldUnit } from "@card-game/shared";
+import { Card } from "./Card";
 
 interface PlayerAreaProps {
   gameState: GameState;
@@ -44,39 +45,16 @@ export const PlayerArea = ({
       <div className="hand-container">
         <div className="hand">
           {gameState.hand.map((card, index) => (
-            <div 
+            <Card 
               key={card.id} 
-              className="card draw-effect" 
+              card={card}
+              variant="hand"
               onClick={(e) => {
                 e.stopPropagation();
                 onPlayCard(index);
               }}
               style={{ position: 'relative' }}
-            >
-              <div className="card-cost">{card.cost}</div>
-              <div className="card-content">
-                <div className="card-name">{card.name}</div>
-              </div>
-              {/* 유닛일 경우 스탯 표시 */}
-              {card.type === "UNIT" && (
-                 <div className="card-stats" style={{
-                   position: 'absolute',
-                   bottom: '8px',
-                   left: 0,
-                   width: '100%',
-                   display: 'flex',
-                   justifyContent: 'space-around',
-                   zIndex: 2
-                 }}>
-                    <div className="stat-badge" style={{background: "#e67e22"}}>
-                      {(card as FieldUnit).attackPower}
-                    </div>
-                    <div className="stat-badge" style={{background: "#e74c3c"}}>
-                      {(card as FieldUnit).maxHp}
-                    </div>
-                 </div>
-              )}
-            </div>
+            />
           ))}
         </div>
       </div>

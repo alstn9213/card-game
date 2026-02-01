@@ -1,7 +1,7 @@
 /* 필드 슬롯 스타일 */
 .field-slot {
-  width: 90px;
-  height: 110px;
+  width: 120px;
+  height: 160px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -17,13 +17,11 @@
 }
 
 /* 유닛 토큰 디자인 */
-.field-unit {
-  width: 90px;
-  height: 110px;
-  background: radial-gradient(circle at center, #4a69bd, #2c3e50);
-  border: 3px solid #bdc3c7;
-  border-radius: 50% / 40%;
-  position: relative;
+.card.field {
+  width: 120px;
+  height: 160px;
+  /* Card.css의 .card 스타일을 상속받되 크기만 조정 */
+  
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -33,13 +31,13 @@
   animation: spawnPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.field-unit:hover {
+.card.field:hover {
   transform: scale(1.05);
   z-index: 10;
   border-color: #f1c40f;
 }
 
-.field-unit::after {
+.card.field::after {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -51,14 +49,29 @@
   z-index: 15;
 }
 
-.field-unit.selected {
+.card.field.selected {
   border-color: #f1c40f;
   box-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
 }
 
-.field-unit.exhausted {
+.card.field.exhausted {
   filter: grayscale(0.8);
   opacity: 0.8;
+}
+
+/* 필드 카드 텍스트 스타일 재정의 */
+.card.field .card-name {
+  font-size: 0.75rem;
+  margin-top: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.card.field .stat-badge {
+  font-size: 0.7rem;
+  padding: 1px 3px;
 }
 
 .unit-image-placeholder {
@@ -78,69 +91,7 @@
   text-overflow: ellipsis;
 }
 
-/* 유닛 스탯 버블 */
-.unit-stat {
-  position: absolute;
-  bottom: 5px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 0.9rem;
-  color: white;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-}
 
-.unit-stat.atk {
-  left: 0;
-  background-color: #e67e22;
-}
-
-.unit-stat.hp {
-  right: 0;
-  background-color: #e74c3c;
-}
-
-/* 능력 사용 오버레이 */
-.ability-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  border-radius: 50% / 40%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  z-index: 20;
-  animation: fadeIn 0.2s;
-}
-
-.ability-btn {
-  font-size: 0.7rem;
-  padding: 4px 8px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
-  max-width: 80%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ability-btn:hover {
-  background-color: #2980b9;
-  transform: scale(1.05);
-}
 
 @keyframes spawnPop {
   0% { opacity: 0; transform: scale(0); }
@@ -184,19 +135,4 @@
   margin-bottom: 8px;
   line-height: 1.4;
   color: #ddd;
-}
-
-.tooltip-abilities {
-  border-top: 1px solid #555;
-  padding-top: 6px;
-  margin-top: 4px;
-}
-
-.tooltip-ability-item {
-  margin-bottom: 4px;
-}
-
-.tooltip-ability-type {
-  color: #3498db;
-  font-weight: bold;
 }

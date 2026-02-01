@@ -1,20 +1,18 @@
 import { UnitSlot } from "./UnitSlot";
-import type { FieldUnit, Ability } from "@card-game/shared";
+import type { FieldUnit } from "@card-game/shared";
 
 interface BattleZoneProps {
   playerField: (FieldUnit | null)[];
   selectedAttackerId: string | null;
   setUnitRef: (id: string, el: HTMLDivElement | null) => void;
   onUnitClick: (unit: FieldUnit, clientX: number, clientY: number) => void;
-  onActivateAbility: (unitId: string, abilityIndex: number, ability: Ability) => void;
 }
 
 export const BattleZone = ({ 
   playerField, 
   selectedAttackerId, 
   setUnitRef, 
-  onUnitClick, 
-  onActivateAbility 
+  onUnitClick
 }: BattleZoneProps) => {
   return (
     <div className="battle-zone">
@@ -32,9 +30,7 @@ export const BattleZone = ({
               if (unit) onUnitClick(unit, e.clientX, e.clientY);
             }}
             onActivateAbility={(idx) => {
-              if (unit && unit.abilities) {
-                onActivateAbility(unit.id, idx, unit.abilities[idx]);
-              }
+              // Ability logic removed
             }}
           />
         ))}

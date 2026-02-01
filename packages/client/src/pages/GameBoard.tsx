@@ -19,12 +19,11 @@ import { BattleZone } from "../components/BattleZone";
 import { PlayerArea } from "../components/PlayerArea";
 
 export const GameBoard = () => {
-  const { gameState, isConnected, playCard, endTurn, attack, startGame, activateAbility, resetGame, error, clearError } = useGameState();
+  const { gameState, isConnected, playCard, endTurn, attack, startGame, resetGame, error, clearError } = useGameState();
   
-  const { selectedAttackerId, pendingAbility, handlePlayerUnitClick, handleEnemyClick, handleAbilityClick, cancelInteraction } = useGameInteraction(
+  const { selectedAttackerId, handlePlayerUnitClick, handleEnemyClick, cancelInteraction } = useGameInteraction(
     gameState?.isPlayerTurn ?? false,
-    attack,
-    activateAbility
+    attack
   );
   
   useGameInitialization(isConnected, startGame);
@@ -54,9 +53,6 @@ export const GameBoard = () => {
           ROUND {gameState.round}
         </span>
         <span>TURN {gameState.turn} — {isPlayerTurn ? "YOUR TURN" : "ENEMY TURN"}</span>
-        {pendingAbility && (
-          <span style={{ marginLeft: "20px", color: "#3498db", fontWeight: "bold" }}>🎯 대상을 선택하세요</span>
-        )}
       </div>
 
       {/* 1. 적 영역 */}
@@ -75,7 +71,6 @@ export const GameBoard = () => {
           setMousePos({ x, y });
           handlePlayerUnitClick(unit);
         }}
-        onActivateAbility={(unitId, idx, ability) => handleAbilityClick(unitId, idx, ability)}
       />
 
       {/* 3. 플레이어 영역 */}
