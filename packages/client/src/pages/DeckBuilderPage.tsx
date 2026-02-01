@@ -2,6 +2,7 @@ import { DeckRules } from "@card-game/shared";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import "../css/DeckBuilder.css";
 import { Toast } from "../components/Toast";
+import { Card } from "../components/Card";
 
 
 interface DeckBuilderPageProps {
@@ -27,20 +28,16 @@ export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) =
             const isMaxed = count >= DeckRules.MAX_COPIES_PER_CARD;
             
             return (
-              <div 
+              <Card
                 key={card.cardId} 
+                card={card}
+                variant="hand"
                 className={`library-card ${isMaxed ? "disabled" : ""}`}
                 onClick={() => addToDeck(card)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  removeFromDeck(card.cardId);
-                }}
               >
-                <div className="card-cost-badge">{card.cost}</div>
-                <div className="card-name">{card.name}</div>
                 <div className="card-desc">{card.description}</div>
                 <div className="card-count-badge">{count}/{DeckRules.MAX_COPIES_PER_CARD}</div>
-              </div>
+              </Card>
             );
           })}
         </div>

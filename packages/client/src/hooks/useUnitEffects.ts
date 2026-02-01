@@ -15,13 +15,12 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
       triggerDamageEffect(damage);
       triggerShake();
     }
-    // 2. 유닛이 파괴된 경우 (이전에는 있었는데 지금은 null)
+    // 유닛이 파괴된 경우 (이전에는 있었는데 지금은 null)
     else if (!unit && prevUnit) {
-      // 죽기 직전 체력만큼 데미지를 입었다고 가정하고 표시
       triggerDamageEffect(prevUnit.currentHp);
     }
 
-    // 3. 유닛이 공격을 수행한 경우 (공격 모션 효과)
+    // 유닛이 공격을 수행한 경우 (공격 모션 효과)
     if (unit && prevUnit && unit.id === prevUnit.id && !prevUnit.hasAttacked && unit.hasAttacked) {
       triggerShake();
     }

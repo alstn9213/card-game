@@ -18,8 +18,6 @@ export const useGameEffects = (
   const lastKnownPositions = useRef<Map<string, {x: number, y: number}>>(new Map());
   const processedLogCount = useRef<number>(0);
 
-  
-
   // 라운드 승리 효과
   useLayoutEffect(() => {
     if (gameState) {

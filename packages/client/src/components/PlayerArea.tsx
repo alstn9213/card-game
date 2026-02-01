@@ -1,4 +1,4 @@
-import type { GameState, FieldUnit } from "@card-game/shared";
+import type { GameState } from "@card-game/shared";
 import { Card } from "./Card";
 
 interface PlayerAreaProps {

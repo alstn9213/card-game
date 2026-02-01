@@ -9,17 +9,16 @@ export const useGameInteraction = (
 
   const handlePlayerUnitClick = (unit: FieldUnit) => {
     if (!isPlayerTurn) return;
-    
     if (unit.hasAttacked) return;
     if (selectedAttackerId === unit.id) {
       setSelectedAttackerId(null);
-    } else {
+    } 
+    else {
       setSelectedAttackerId(unit.id);
     }
   };
 
   const handleEnemyClick = (targetId: string) => {
-    // 일반 공격 처리
     if (selectedAttackerId) {
       attack(selectedAttackerId, targetId);
       setSelectedAttackerId(null);
@@ -31,5 +30,10 @@ export const useGameInteraction = (
     setSelectedAttackerId(null);
   };
 
-  return { selectedAttackerId, handlePlayerUnitClick, handleEnemyClick, cancelInteraction };
+  return { 
+    selectedAttackerId,
+    handlePlayerUnitClick,
+    handleEnemyClick, 
+    cancelInteraction 
+  };
 };

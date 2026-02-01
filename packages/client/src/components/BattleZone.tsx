@@ -16,7 +16,7 @@ export const BattleZone = ({
 }: BattleZoneProps) => {
   return (
     <div className="battle-zone">
-      <div className="field-row player-field">
+      <div className="field-row">
         {playerField && playerField.map((unit, i) => (
           <UnitSlot 
             key={i} 
@@ -28,9 +28,6 @@ export const BattleZone = ({
             onClick={(e) => {
               e.stopPropagation();
               if (unit) onUnitClick(unit, e.clientX, e.clientY);
-            }}
-            onActivateAbility={(idx) => {
-              // Ability logic removed
             }}
           />
         ))}

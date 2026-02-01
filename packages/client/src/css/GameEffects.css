@@ -25,7 +25,7 @@
 }
 
 /* --- 라운드/턴 알림 텍스트 --- */
-.round-notification, .turn-notification {
+.turn-notification {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -35,15 +35,6 @@
   pointer-events: none;
   white-space: nowrap;
   animation: roundPop 2s ease-in-out forwards;
-}
-
-.round-notification {
-  font-size: 6rem;
-  color: #f1c40f;
-  text-shadow: 0 0 20px rgba(241, 196, 15, 0.5), 4px 4px 0 #000;
-}
-
-.turn-notification {
   font-size: 5rem;
   color: #3498db;
   text-shadow: 0 0 20px rgba(52, 152, 219, 0.5), 4px 4px 0 #000;

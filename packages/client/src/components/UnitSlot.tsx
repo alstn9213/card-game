@@ -10,7 +10,6 @@ interface UnitSlotProps {
   unit: FieldUnit | null;
   onClick?: (e: MouseEvent<HTMLDivElement>) => void;
   isSelected?: boolean;
-  onActivateAbility?: (abilityIndex: number) => void;
 }
 
 export const UnitSlot = forwardRef<HTMLDivElement, UnitSlotProps>(({ unit, onClick, isSelected }, ref) => {

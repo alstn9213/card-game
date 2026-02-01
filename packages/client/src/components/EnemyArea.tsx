@@ -14,7 +14,7 @@ export const EnemyArea = ({ enemyField, onEnemyClick, setUnitRef }: EnemyAreaPro
       onEnemyClick("enemy");
     }}>
       {/* 적 필드 */}
-      <div className="field-row enemy-field">
+      <div className="field-row">
         {enemyField && enemyField.map((unit, i) => (
           <UnitSlot 
             key={i} 

@@ -2,7 +2,6 @@ import "../css/GameBoard.css";
 import "../css/Card.css";
 import "../css/GameModal.css";
 import "../css/GameEffects.css";
-import { useGameState } from "../hooks/useGameState";
 import { useGameInteraction } from "../hooks/useGameInteraction";
 import { useGameInitialization } from "../hooks/useGameInitialization";
 import { usePlayerDamageAnimation } from "../hooks/usePlayerDamageAnimation";
@@ -17,11 +16,27 @@ import { RoundVictoryModal } from "../components/RoundVictoryModal";
 import { EnemyArea } from "../components/EnemyArea";
 import { BattleZone } from "../components/BattleZone";
 import { PlayerArea } from "../components/PlayerArea";
+import { useGameState } from "../hooks/GameContext";
 
 export const GameBoard = () => {
-  const { gameState, isConnected, playCard, endTurn, attack, startGame, resetGame, error, clearError } = useGameState();
+  const { 
+    gameState, 
+    isConnected, 
+    playCard, 
+    endTurn, 
+    attack, 
+    startGame, 
+    resetGame, 
+    error, 
+    clearError 
+  } = useGameState();
   
-  const { selectedAttackerId, handlePlayerUnitClick, handleEnemyClick, cancelInteraction } = useGameInteraction(
+  const { 
+    selectedAttackerId, 
+    handlePlayerUnitClick, 
+    handleEnemyClick, 
+    cancelInteraction 
+  } = useGameInteraction(
     gameState?.isPlayerTurn ?? false,
     attack
   );
@@ -29,8 +44,21 @@ export const GameBoard = () => {
   useGameInitialization(isConnected, startGame);
   
   const playerDamage = usePlayerDamageAnimation(gameState);
-  const { mousePos, setMousePos, handleMouseMove, getUnitCenter, setUnitRef, getUnitElement } = useTargetingArrow(!!selectedAttackerId);
-  const { showRoundVictory, showTurnNotification, handleVictoryConfirm } = useGameEffects(gameState, getUnitCenter, getUnitElement);
+
+  const { 
+    mousePos, 
+    setMousePos, 
+    handleMouseMove, 
+    getUnitCenter, 
+    setUnitRef, 
+    getUnitElement 
+  } = useTargetingArrow(!!selectedAttackerId);
+
+  const { 
+    showRoundVictory, 
+    showTurnNotification, 
+    handleVictoryConfirm 
+  } = useGameEffects(gameState, getUnitCenter, getUnitElement);
 
   if (!isConnected) {
     return <div className="loading">서버에 연결 중입니다...</div>;

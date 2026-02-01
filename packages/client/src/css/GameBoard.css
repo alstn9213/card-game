@@ -15,6 +15,16 @@
   user-select: none; /* 드래그 방지 */
 }
 
+/* 상태바 (최상단 턴 정보) */
+.status-bar {
+  background-color: #000;
+  color: white;
+  padding: 5px;
+  text-align: center;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
 /* --- 상단: 적 영역 --- */
 .enemy-area {
   flex: 0 0 25%; /* 고정 비율 (약 1/4) */
@@ -28,32 +38,6 @@
   position: relative;
 }
 
-.enemy-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 10px;
-}
-
-.avatar {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 0.9rem;
-  border: 3px solid #7f8c8d;
-  background-color: #34495e;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  z-index: 2;
-}
-
-.enemy-avatar {
-  border-color: #c0392b;
-  background-color: #581b1b;
-}
 
 /* --- 중앙: 전장 (배틀 존) --- */
 .battle-zone {
@@ -99,6 +83,26 @@
   padding: 0 20px;
 }
 
+.avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border: 3px solid #7f8c8d;
+  background-color: #34495e;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  z-index: 2;
+}
+
+.player-avatar {
+  border-color: #3498db;
+  background-color: #1b3a4b;
+}
+
 .resource-display {
   font-size: 1.2rem;
   color: #f1c40f;
@@ -107,11 +111,6 @@
   display: flex;
   align-items: center;
   gap: 5px;
-}
-
-.player-avatar {
-  border-color: #3498db;
-  background-color: #1b3a4b;
 }
 
 /* 턴 종료 버튼 */
@@ -137,15 +136,26 @@
   box-shadow: 0 2px 0 #b7950b;
 }
 
-/* 상태바 (최상단 턴 정보) */
-.status-bar {
-  background-color: #000;
-  color: white;
-  padding: 5px;
-  text-align: center;
-  font-size: 0.9rem;
-  letter-spacing: 1px;
+/* --- 핸드 (카드 영역) --- */
+.hand-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 20px;
+  perspective: 1000px;
 }
+
+.hand {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 5px; 
+  height: 100%;
+  max-width: 1000px;
+}
+
 
 /* --- 덱 UI --- */
 .deck-pile {
