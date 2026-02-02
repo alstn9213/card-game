@@ -44,14 +44,14 @@ export interface Ability {
   type: EffectType;
   description: string;
   targetType: TargetType;
-  value?: number;          // 데미지나 회복량 등 수치 (선택)
-  targetId?: string;       // 변신할 대상의 ID 등 (선택)
+  value?: number;
+  targetId?: string;       
 }
 
 // 마법 카드
 export interface SpellCard extends CardData {
   effectType: EffectType;
-  value?: number;          // 데미지나 회복량 등 수치 (선택)
+  value?: number;
   targetId?: string; 
 }
 

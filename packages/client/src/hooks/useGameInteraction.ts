@@ -1,4 +1,4 @@
-import { type FieldUnit } from "@card-game/shared";
+import { type FieldUnit, createError, ErrorCode, type GameError } from "@card-game/shared";
 import { useState } from "react";
 
 export const useGameInteraction = (
@@ -6,10 +6,19 @@ export const useGameInteraction = (
   attack: (attackerId: string, targetId: string) => void
 ) => {
   const [selectedAttackerId, setSelectedAttackerId] = useState<string | null>(null);
+  const [error, setError] = useState<GameError | null>(null);
 
   const handlePlayerUnitClick = (unit: FieldUnit) => {
-    if (!isPlayerTurn) return;
-    if (unit.hasAttacked) return;
+    if (!isPlayerTurn) {
+      setError(createError(ErrorCode.NOT_YOUR_TURN));
+      return;
+    }
+
+    if (unit.hasAttacked) {
+      setError(createError(ErrorCode.ALREADY_ATTACKED));
+      return;
+    }
+
     if (selectedAttackerId === unit.id) {
       setSelectedAttackerId(null);
     } 
@@ -30,10 +39,14 @@ export const useGameInteraction = (
     setSelectedAttackerId(null);
   };
 
+  const clearError = () => setError(null);
+
   return { 
     selectedAttackerId,
     handlePlayerUnitClick,
     handleEnemyClick, 
-    cancelInteraction 
+    cancelInteraction,
+    error,
+    clearError
   };
 };

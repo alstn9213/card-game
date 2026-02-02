@@ -6,12 +6,10 @@ export const useGameEffects = (
   getUnitCenter: (id: string) => { x: number; y: number } | null,
   getUnitElement: (id: string) => HTMLElement | null
 ) => {
-  // 1. 라운드 승리 감지 상태
   const [showRoundVictory, setShowRoundVictory] = useState(false);
   const prevStatusRef = useRef<GameStatus | null>(null);
   const lastVictoryRoundRef = useRef<number>(-1);
 
-  // 2. 턴 시작 알림 상태
   const [showTurnNotification, setShowTurnNotification] = useState(false);
   const lastNotifiedTurnRef = useRef<number>(-1);
 
@@ -35,6 +33,7 @@ export const useGameEffects = (
         setShowRoundVictory(true);
         lastVictoryRoundRef.current = gameState.round;
       }
+      
       prevStatusRef.current = gameState.gameStatus;
     }
   }, [gameState]);
@@ -57,7 +56,10 @@ export const useGameEffects = (
 
   // 유닛 위치 캐싱 (유닛이 죽어서 사라져도 마지막 위치를 기억하기 위함)
   useEffect(() => {
-    if (!gameState) return;
+    if (!gameState) {
+      console.warn("[useGameEffects] gameState가 없습니다.");
+      return;
+    }
 
     const cachePosition = (id: string) => {
       const pos = getUnitCenter(id);
@@ -74,7 +76,10 @@ export const useGameEffects = (
 
   // 공격 애니메이션 처리 (attackLogs 기반)
   useEffect(() => {
-    if (!gameState) return;
+    if (!gameState) {
+      console.warn("[useGameEffects] gameState가 없습니다.");
+      return;
+    }
 
     // 턴이 바뀌거나 로그가 초기화된 경우 카운트 리셋
     if (gameState.attackLogs.length < processedLogCount.current) {
@@ -88,11 +93,11 @@ export const useGameEffects = (
       newLogs.forEach((log, index) => {
         setTimeout(() => {
           triggerAttackAnimation(log.attackerId, log.targetId);
-        }, index * 200); // 동시 다발적 공격 시 순차 재생
+        }, index * 600); // 애니메이션 전체 시간(600ms)에 맞춰 순차 재생
       });
       processedLogCount.current = gameState.attackLogs.length;
     }
-  }, [gameState]);
+  }, [gameState?.attackLogs]);
 
   const triggerAttackAnimation = (attackerId: string, targetId: string) => {
     // 현재 위치를 가져오거나, 없으면 캐시된 마지막 위치 사용

@@ -12,10 +12,16 @@ export class DrawHandler {
     GameUtils.drawCard(state, amount);
   }
 
+  // --- 헬퍼 메서드 ---
+  
   private validate(state: GameState, cardIndex: number): void {
     const card = state.hand[cardIndex];
-    if (!card) throw createError(ErrorCode.CARD_NOT_FOUND);
+    if (!card) {
+      throw createError(ErrorCode.CARD_NOT_FOUND);
+    }
     
-    if (state.currentGold < card.cost) throw createError(ErrorCode.NOT_ENOUGH_GOLD);
+    if (state.currentGold < card.cost) {
+      throw createError(ErrorCode.NOT_ENOUGH_GOLD);
+    }
   }
 }

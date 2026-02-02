@@ -1,14 +1,14 @@
-import { GameState, UNIT_CARDS, FieldUnit } from "@card-game/shared";
+import { GameState, UNIT_CARDS } from "@card-game/shared";
 import { v4 as uuidv4 } from 'uuid';
-import { EnemyAI } from "./EnemyAI";
 import { GameUtils } from "../utils/GameUtils";
+import { AiAttackHandler } from "./handlers/AiAttackHandler";
 
 
 export class EnemyManager {
-  private ai: EnemyAI;
+  private aiAttackHandler: AiAttackHandler;
 
   constructor(private getState: () => GameState) {
-    this.ai = new EnemyAI();
+    this.aiAttackHandler = new AiAttackHandler(getState);
   }
 
   // 몬스터 카드 소환
@@ -44,7 +44,6 @@ export class EnemyManager {
       if (unit) unit.hasAttacked = false;
     });
 
-    // AI에게 턴 실행 위임
-    this.ai.executeTurn(state);
+    this.aiAttackHandler.execute(state);
   }
 }

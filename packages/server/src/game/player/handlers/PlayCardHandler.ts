@@ -8,6 +8,7 @@ export class PlayCardHandler {
     private spellManager: SpellManager
   ) {}
 
+  // 카드 소환 함수
   public execute(cardIndex: number, targetId: string): void {
     const state = this.getState();
     this.validate(state, cardIndex);
@@ -31,13 +32,20 @@ export class PlayCardHandler {
   // --- 헬퍼 메서드 ---
   private validate(state: GameState, cardIndex: number): void {
     const card = state.hand[cardIndex];
-    if (!card) throw createError(ErrorCode.CARD_NOT_FOUND);
+
+    if (!card) {
+      throw createError(ErrorCode.CARD_NOT_FOUND);
+    }
     
-    if (state.currentGold < card.cost) throw createError(ErrorCode.NOT_ENOUGH_GOLD);
+    if (state.currentGold < card.cost) {
+      throw createError(ErrorCode.NOT_ENOUGH_GOLD);
+    }
     
     if (card.type === CardType.UNIT) {
        const hasEmptySlot = state.playerField.some(slot => slot === null);
-       if (!hasEmptySlot) throw createError(ErrorCode.FIELD_FULL);
+       if (!hasEmptySlot) {
+        throw createError(ErrorCode.FIELD_FULL);
+       }
     }
   }
 }

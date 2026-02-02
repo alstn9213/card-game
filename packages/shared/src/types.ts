@@ -1,6 +1,6 @@
 // 카드 종류
 export const CardType = {
-  UNIT: "UNIT",     // 유희왕의 몬스터 같은 소환수
+  UNIT: "UNIT",
   SPELL: "SPELL"
 } as const;
 export type CardType = (typeof CardType)[keyof typeof CardType];
@@ -17,7 +17,6 @@ export type TargetType = (typeof TargetType)[keyof typeof TargetType];
 
 // 효과의 종류.
 export const EffectType = {
-  TRANSFORM: "TRANSFORM", // 변신 (진화)
   DAMAGE: "DAMAGE",       // 데미지
   HEAL: "HEAL",            // 회복
   GOLD: "GOLD",

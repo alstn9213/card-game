@@ -22,7 +22,19 @@ export class GameSession {
   }
 
   // --- 헬퍼 메서드 ---
+
+  // 게임 상태 최신화 전파 헬퍼
+  private broadcastState() {
+    if (!this.gameContext) {
+      console.warn("[GameSession] broadcastState가 gameContext를 찾을 수 없습니다.");
+      return;
+    }
+    else {
+      this.socket.emit(ServerEvents.GAME_STATE_UPDATE, this.gameContext.state);
+    }
+  }
   
+  // 소켓 전파 헬퍼
   private setupListeners() {
     this.socket.on(ClientEvents.JOIN_GAME, (deck: string[]) => {
       try {
@@ -44,10 +56,6 @@ export class GameSession {
       this.handleAttack(attackerId, targetId);
     });
 
-    this.socket.on(ClientEvents.ACTIVATE_ABILITY, (cardInstanceId: string, abilityIndex: number, targetId?: string) => {
-      this.handleActivateAbility(cardInstanceId, abilityIndex, targetId);
-    });
-
     this.socket.on(ClientEvents.CONTINUE_ROUND, () => {
       this.handleContinueRound();
     });
@@ -62,52 +70,14 @@ export class GameSession {
     });
   }
 
-  // 게임 시작 헬퍼 메서드
+  // 게임 시작 헬퍼
   private startGame(playerDeck: string[]) {
     // 이전 게임의 타이머가 남아있을 수 있으므로 정리
     this.gameLoopManager.clearTimers();
-    
-    if (playerDeck && playerDeck.length > 0) {
-      validateDeck(playerDeck);
-    }
-
     this.gameContext = createGameContext(playerDeck);
     this.broadcastState();
   }
 
-  // 반복되는 액션 실행 및 에러 처리 로직을 공통화
-  private executeGameAction(
-    action: (context: GameContext) => void
-  ): boolean {
-    const context = this.validateGameContext();
-    if (!context) return false;
-
-    try {
-      action(context);      
-      context.turnManager.checkGameOver();
-      this.broadcastState();
-      return true;  
-    } 
-    catch (error: unknown) {
-      this.errorHandler.handleError(error, ErrorCode.UNKNOWN_ERROR);
-      return false;
-    }
-  }
-
-  private validateGameContext(): GameContext | null {
-    if (!this.gameContext) {
-      this.socket.emit(ServerEvents.ERROR, createError(ErrorCode.GAME_NOT_STARTED));
-      return null;
-    }
-    return this.gameContext;
-  }
-
-
-  private handleActivateAbility(cardInstanceId: string, abilityIndex: number, targetId?: string) {
-    this.executeGameAction((context) => {
-      context.abilityManager.executeAbility(context.state, context.state.player.id, cardInstanceId, abilityIndex, targetId);
-    });
-  }
 
   private handlePlayCard(cardIndex: number, targetId?: string) {
     this.executeGameAction(
@@ -133,7 +103,7 @@ export class GameSession {
     );
   }
 
-  // 플레이어 턴이 끝나면 상대 로직 실행
+  // 플레이어 턴이 끝나면 상대 로직 실행 헬퍼
   private handleEndTurn() {
     const success = this.executeGameAction(
       (context) => context.turnManager.endTurn()
@@ -144,11 +114,37 @@ export class GameSession {
     }
   }
 
-  private broadcastState() {
-    if (!this.gameContext) {
-      console.warn("[GameSession] broadcastState called without gameContext");
-      return;
+  // 반복되는 액션 실행 및 에러 처리 헬퍼
+  private executeGameAction(
+    action: (context: GameContext) => void
+  ): boolean {
+    const context = this.validateGameContext();
+
+    if (!context) {
+      console.warn("[GameSession] executeGameAction이 gameContext를 찾을 수 없습니다");
+      return false;
     }
-    this.socket.emit(ServerEvents.GAME_STATE_UPDATE, this.gameContext.state);
+
+    try {
+      action(context);      
+      context.turnManager.updateGameStatus();
+      this.broadcastState();
+      return true;  
+    } 
+    catch (error: unknown) {
+      this.errorHandler.handleError(error, ErrorCode.UNKNOWN_ERROR);
+      return false;
+    }
+  }
+  
+  // 매니저 반환 및 유효성 검사 헬퍼
+  private validateGameContext(): GameContext | null {
+    if (!this.gameContext) {
+      this.socket.emit(ServerEvents.ERROR, createError(ErrorCode.GAME_NOT_STARTED));
+      return null;
+    }
+    else {
+      return this.gameContext;
+    }
   }
 }

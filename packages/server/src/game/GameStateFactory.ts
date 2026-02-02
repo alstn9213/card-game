@@ -11,7 +11,9 @@ export const initializeGame = (playerDeck?: string[]): GameState => {
   if (playerDeck && playerDeck.length > 0) {
     validateDeck(playerDeck);
     deckCardIds = playerDeck;
-  } else {
+  } 
+  
+  else {
     deckCardIds = generateDefaultDeck();
   }
 
@@ -25,6 +27,8 @@ export const initializeGame = (playerDeck?: string[]): GameState => {
   return state;
 };
 
+// --- 내부 메서드 ---
+
 const createInitialGameState = (): GameState => {
   const emptyField: FieldUnit[] = [null, null, null, null, null];
 
@@ -32,8 +36,8 @@ const createInitialGameState = (): GameState => {
     player: {
       id: uuidv4(),
       name: "Player",
-      maxHp: 4000,
-      currentHp: 4000,
+      maxHp: 500,
+      currentHp: 500,
     },
         
     playerField: [...emptyField],
@@ -60,15 +64,17 @@ const generateDefaultDeck = (): string[] => {
   const deckIds: string[] = [];
   const availableCards = [...UNIT_CARDS, ...SPELL_CARDS];
 
-  if (availableCards.length === 0) return [];
+  if (availableCards.length === 0) {
+    console.log(`[GameStateFactory] 플레이어가 덱을 구성하지않아 기본 덱을 생성합니다.`)
+    return [];
+  }
 
   while (deckIds.length < DeckRules.MIN_DECK_SIZE) {
     const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
     
-    // 현재 덱에 포함된 해당 카드의 개수 확인
-    const currentCount = deckIds.filter(id => id === randomCard.cardId).length;
+    const currentCardCount = deckIds.filter(id => id === randomCard.cardId).length;
 
-    if (currentCount < DeckRules.MAX_COPIES_PER_CARD) {
+    if (currentCardCount < DeckRules.MAX_COPIES_PER_CARD) {
       deckIds.push(randomCard.cardId);
     }
   }

@@ -1,5 +1,5 @@
+import type { SpellCard } from '../interfaces';
 import { CardType, EffectType, TargetType } from '../types';
-import { SpellCard } from '../interfaces';
 
 export const SPELL_CARDS: SpellCard[] = [
   {

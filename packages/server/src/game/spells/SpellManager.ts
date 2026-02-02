@@ -10,7 +10,6 @@ export class SpellManager {
   ) {
       this.goldHandler = new GoldHandler(getState);
       this.drawHandler = new DrawHandler(getState);
-    
     }
 
   public execute(card: SpellCard, cardIndex: number, targetId?: string): void {

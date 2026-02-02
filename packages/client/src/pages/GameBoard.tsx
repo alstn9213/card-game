@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../css/GameBoard.css";
 import "../css/Card.css";
 import "../css/GameModal.css";
@@ -34,13 +34,16 @@ export const GameBoard = () => {
   } = useGameState();
 
   const location = useLocation();
+  const navigate = useNavigate();
   const deck = location.state?.deck || [];
   
   const { 
     selectedAttackerId, 
     handlePlayerUnitClick, 
     handleEnemyClick, 
-    cancelInteraction 
+    cancelInteraction,
+    error: interactionError,
+    clearError: clearInteractionError
   } = useGameInteraction(
     gameState?.isPlayerTurn ?? false,
     attack
@@ -70,13 +73,27 @@ export const GameBoard = () => {
     handleVictoryConfirm 
   } = useGameEffects(gameState, getUnitCenter, getUnitElement);
 
-  if (!isConnected) {
-    return <div className="loading">서버에 연결 중입니다...</div>;
-  }
+  // 연결 중이거나 게임 상태가 없을 때 처리
+  if (!isConnected || !gameState) {
+    // 초기화 단계에서 에러가 발생한 경우 (예: 연결 실패)
+    if (error) {
+      return (
+        <div className="error-screen">
+          <h2>게임 연결 오류</h2>
+          <p>{error.message}</p>
+          <button className="return-main-btn" onClick={() => navigate('/')}>
+            메인 메뉴로 돌아가기
+          </button>
+        </div>
+      );
+    }
 
-  if (!gameState) {
+    // 정상적인 로딩 상태
     return (
-      <div className="loading">게임 준비 중...</div>
+      <div className="loading-screen">
+        <div className="loading-spinner"></div>
+        <h2>{!isConnected ? "서버에 연결 중입니다..." : "전장을 준비하는 중..."}</h2>
+      </div>
     );
   }
  
@@ -122,8 +139,14 @@ export const GameBoard = () => {
       />
 
       {/* 에러 메시지 토스트 */}
-      {error && (
-        <Toast error={error} onClose={clearError} />
+      {(error || interactionError) && (
+        <Toast 
+          error={(error || interactionError)!} 
+          onClose={() => {
+            if (error) clearError();
+            if (interactionError) clearInteractionError();
+          }} 
+        />
       )}
 
       {/* 공격 대상 지정 화살표 */}

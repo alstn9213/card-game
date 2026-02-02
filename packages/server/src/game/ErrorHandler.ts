@@ -15,12 +15,11 @@ export class ErrorHandler {
     if (this.isGameError(error)) {
       this.socket.emit(ServerEvents.ERROR, error);
     } else {
-      console.error(`[GameAction Error] ${failCode}:`, error);
       this.socket.emit(ServerEvents.ERROR, createError(failCode));
     }
   }
 
   private isGameError(error: unknown): error is GameError {
-    return typeof error === "object" && error !== null && "code" in error;
+    return typeof error === "object" && error !== null && "code" in error && "message" in error;
   }
 }

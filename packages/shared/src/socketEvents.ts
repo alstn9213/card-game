@@ -6,7 +6,6 @@ export const ClientEvents = {
   PLAY_CARD: "playCard",
   END_TURN: "endTurn",
   ATTACK: "attack",
-  ACTIVATE_ABILITY: "activateAbility",
   CONTINUE_ROUND: "continueRound",
   BUY_CARD: "buyCard",
 } as const;
@@ -16,7 +15,6 @@ export type ClientToServerEvents = {
   [ClientEvents.PLAY_CARD]: (cardIndex: number, targetId?: string) => void;
   [ClientEvents.END_TURN]: () => void;
   [ClientEvents.ATTACK]: (attackerId: string, targetId: string) => void;
-  [ClientEvents.ACTIVATE_ABILITY]: (cardInstanceId: string, abilityIndex: number, targetId?: string) => void;
   [ClientEvents.CONTINUE_ROUND]: () => void;
   [ClientEvents.BUY_CARD]: (cardIndex: number) => void;
 };

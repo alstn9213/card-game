@@ -1,4 +1,4 @@
-import { GameState, GameStatus, ErrorCode, TargetSource, createError } from "@card-game/shared";
+import { GameState, ErrorCode, TargetSource, createError } from "@card-game/shared";
 import { GameUtils } from "../../utils/GameUtils";
 
 export class AttackHandler {
@@ -6,6 +6,7 @@ export class AttackHandler {
     private getState: () => GameState
   ) {}
 
+  // 공격 함수
   public execute(attackerId: string, targetId: string): void {
     const state = this.getState();
     this.validate(state, attackerId, targetId);
@@ -28,17 +29,27 @@ export class AttackHandler {
     GameUtils.processUnitDeath(state, targetResult);
   }
 
-  // 헬퍼 메서드
+  // --- 헬퍼 메서드 ---
   
   private validate(state: GameState, attackerId: string, targetId: string): void {
     const attacker = state.playerField.find(u => u?.id === attackerId);
-    if (!attacker) throw createError(ErrorCode.NO_UNIT_TO_ATTACK);
-    if (attacker.hasAttacked) throw createError(ErrorCode.ALREADY_ATTACKED);
+
+    if (!attacker) {
+      throw createError(ErrorCode.CARD_NOT_FOUND);
+    }
+
+    if (attacker.hasAttacked) {
+      throw createError(ErrorCode.ALREADY_ATTACKED);
+    }
 
     const { target, source } = GameUtils.findTarget(state, targetId);
 
-    if (!target) throw createError(ErrorCode.TARGET_NOT_FOUND);
+    if (!target) {
+      throw createError(ErrorCode.TARGET_NOT_FOUND);
+    }
     
-    if (source !== TargetSource.ENEMY_FIELD) throw createError(ErrorCode.ATTACK_ENEMY_ONLY);
+    if (source !== TargetSource.ENEMY_FIELD) {
+      throw createError(ErrorCode.ATTACK_ENEMY_ONLY);
+    }
   }
 }

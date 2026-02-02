@@ -42,9 +42,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     socket?.emit(ClientEvents.ATTACK, attackerId, targetId);
   }, [socket]);
 
-  const activateAbility = useCallback((cardInstanceId: string, abilityIndex: number, targetId?: string) => {
-    socket?.emit(ClientEvents.ACTIVATE_ABILITY, cardInstanceId, abilityIndex, targetId);
-  }, [socket]);
+  
 
   const resetGame = useCallback(() => {
     setGameState(null);
@@ -65,7 +63,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         playCard, 
         endTurn, 
         attack, 
-        activateAbility, 
         resetGame, 
         clearError 
       }}

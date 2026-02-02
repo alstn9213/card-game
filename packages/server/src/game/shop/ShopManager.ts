@@ -1,5 +1,6 @@
 import { GameState, GameStatus, ErrorCode, GameCard, DeckRules, createError } from "@card-game/shared";
 import { v4 as uuidv4 } from 'uuid';
+import { GameUtils } from "../utils/GameUtils";
 
 export class ShopManager {
   constructor(private getState: () => GameState) {}
@@ -8,20 +9,22 @@ export class ShopManager {
     const state = this.getState();
     
     if (state.gameStatus !== GameStatus.SHOP) {
-      throw createError(ErrorCode.UNKNOWN_ERROR);
+      throw createError(ErrorCode.GAME_NOT_SHOP);
     }
 
     const cardData = state.shopItems[cardIndex];
+
     if (!cardData) {
       throw createError(ErrorCode.CARD_NOT_FOUND);
     }
 
-    const currentCount = state.deck.filter(c => c.cardId === cardData.cardId).length;
-    if (currentCount >= DeckRules.MAX_COPIES_PER_CARD) {
-      throw createError(ErrorCode.UNKNOWN_ERROR);
+    const currentCardCount = state.deck.filter(c => c.cardId === cardData.cardId).length;
+
+    if (currentCardCount >= DeckRules.MAX_COPIES_PER_CARD) {
+      throw createError(ErrorCode.MAX_COPIES_PER_CARD);
     }
 
-    if (state.currentGold < cardData.cost) {
+    else if (state.currentGold < cardData.cost) {
       throw createError(ErrorCode.NOT_ENOUGH_GOLD);
     }
 
@@ -34,8 +37,8 @@ export class ShopManager {
       ownerId: state.player.id 
     };
     
-    // 덱의 맨 뒤에 추가 (다음 드로우 사이클에 등장)
     state.deck.push(newCard);
+    GameUtils.shuffleArray(state.deck);
     state.shopItems.splice(cardIndex, 1); // 구매한 카드는 목록에서 제거
   }
 }

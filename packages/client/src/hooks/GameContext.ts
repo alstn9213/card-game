@@ -16,7 +16,6 @@ export interface GameContextType {
   playCard: (cardIndex: number) => void;
   endTurn: () => void;
   attack: (attackerId: string, targetId: string) => void;
-  activateAbility: (cardInstanceId: string, abilityIndex: number, targetId?: string) => void;
   resetGame: () => void;
   clearError: () => void;
 }

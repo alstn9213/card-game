@@ -10,7 +10,7 @@ export interface TargetResult {
 export class GameUtils {
 
   /**
-   * 게임 상태(GameState)에서 ID를 기반으로 대상을 찾는 함수.
+   * ID를 기반으로 대상을 찾는 메서드.
    * 적 유닛, 플레이어 본체, 플레이어 유닛 순으로 검색.
    */
   public static findTarget(state: GameState, targetId: string): TargetResult {
@@ -37,7 +37,7 @@ export class GameUtils {
   }
 
   /**
-   * 유닛의 체력이 0 이하일 경우 필드에서 제거하는 함수.
+   * 유닛의 체력이 0 이하일 경우 필드에서 제거하는 메서드.
    * 플레이어는 제거되지 않음 (게임 종료 조건에서 처리).
    */
   public static processUnitDeath(state: GameState, result: TargetResult): void {
@@ -57,7 +57,7 @@ export class GameUtils {
   }
 
   /**
-   * Fisher-Yates 알고리즘을 사용한 배열 셔플 함수
+   * Fisher-Yates 알고리즘을 사용한 배열 셔플 메서드
    */
   public static shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array]; // 원본 보존을 위해 복사
@@ -69,8 +69,7 @@ export class GameUtils {
   }
 
   /**
-   * 덱에서 카드를 1장 드로우하여 핸드에 추가합니다.
-   * 핸드가 가득 차거나(5장) 덱이 비어있으면 중단합니다.
+   * 덱에서 카드를 1장 드로우하여 핸드에 추가하는 메서드.
    */
   public static drawCard(state: GameState, count: number = 1): void {
     for (let i = 0; i < count; i++) {
@@ -82,9 +81,7 @@ export class GameUtils {
     }
   }
 
-  /**
-   * 플레이어 필드의 빈 슬롯에 유닛을 소환합니다.
-   */
+  // 유닛 소환 메서드
   public static summonUnit(state: GameState, cardData: UnitCard): FieldUnit {
     const emptySlotIndex = state.playerField.findIndex(slot => slot === null);
     if (emptySlotIndex === -1) {
@@ -109,6 +106,7 @@ export class GameUtils {
     return newUnit;
   }
 
+  // 골드 획득 메서드
   public static earnGold(state: GameState, amount: number) {
     state.currentGold += amount;
   }
