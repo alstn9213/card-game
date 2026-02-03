@@ -1,14 +1,33 @@
-import { GameState, ErrorCode, createError, FieldUnit, UnitCard } from "@card-game/shared";
+import { GameState, ErrorCode, createError, FieldUnit, UnitCard, TargetSource } from "@card-game/shared";
+import { GameUtils } from "../../utils/GameUtils";
 
 export class MergeHandler {
   constructor(private getState: () => GameState) {}
 
-  public execute(cardIndex: number, targetUnit: FieldUnit): void {
+  public execute(source: number | string, targetId: string): FieldUnit {
+    if (typeof source === "number") {
+      return this.handleHandMerge(source, targetId);
+    } else {
+      return this.handleFieldMerge(source, targetId);
+    }
+  }
+
+  private handleHandMerge(cardIndex: number, targetId: string): FieldUnit {
     const state = this.getState();
     const card = state.hand[cardIndex];
 
     if (!card) {
       throw createError(ErrorCode.CARD_NOT_FOUND);
+    }
+
+    const targetResult = GameUtils.findTarget(state, targetId);
+    if (targetResult.source !== TargetSource.PLAYER_FIELD || !targetResult.target) {
+      throw createError(ErrorCode.TARGET_NOT_FOUND);
+    }
+
+    const targetUnit = targetResult.target as FieldUnit;
+    if (targetUnit.cardId !== card.cardId) {
+      throw createError(ErrorCode.TARGET_NOT_FOUND);
     }
 
     if (state.currentGold < card.cost) {
@@ -18,15 +37,17 @@ export class MergeHandler {
     state.currentGold -= card.cost;
     state.hand.splice(cardIndex, 1);
 
-    // 패의 카드를 재료로 사용하여 스탯 증가
     const materialCard = card as unknown as UnitCard;
-    targetUnit.maxHp += materialCard.maxHp;
-    targetUnit.currentHp += materialCard.maxHp; // 최대 체력 증가분만큼 현재 체력 회복
-    targetUnit.attackPower += materialCard.attackPower;
-    targetUnit.cardStack++;
+    this.applyMergeStats(targetUnit, {
+      maxHp: materialCard.maxHp,
+      attackPower: materialCard.attackPower,
+      currentHp: materialCard.maxHp,
+      stack: 1
+    });
+    return targetUnit;
   }
 
-  public executeFieldMerge(sourceUnitId: string, targetUnitId: string): void {
+  private handleFieldMerge(sourceUnitId: string, targetUnitId: string): FieldUnit {
     const state = this.getState();
     
     const sourceIndex = state.playerField.findIndex(u => u?.id === sourceUnitId);
@@ -40,15 +61,24 @@ export class MergeHandler {
     const targetUnit = state.playerField[targetIndex]!;
 
     if (sourceUnit.cardId !== targetUnit.cardId) {
-      console.warn("[MergeHandler] cardId가 다릅니다.");
-      return;
+      throw createError(ErrorCode.TARGET_NOT_FOUND);
     }
 
-    targetUnit.maxHp += sourceUnit.maxHp;
-    targetUnit.currentHp = Math.min(targetUnit.currentHp + sourceUnit.currentHp, targetUnit.maxHp);
-    targetUnit.attackPower += sourceUnit.attackPower;
-    targetUnit.cardStack += sourceUnit.cardStack;
+    this.applyMergeStats(targetUnit, {
+      maxHp: sourceUnit.maxHp,
+      attackPower: sourceUnit.attackPower,
+      currentHp: sourceUnit.currentHp,
+      stack: sourceUnit.cardStack || 1
+    });
 
     state.playerField[sourceIndex] = null;
+    return targetUnit;
+  }
+
+  private applyMergeStats(target: FieldUnit, source: { maxHp: number, attackPower: number, currentHp: number, stack: number }): void {
+    target.maxHp += source.maxHp;
+    target.attackPower += source.attackPower;
+    target.currentHp = Math.min(target.currentHp + source.currentHp, target.maxHp);
+    target.cardStack = (target.cardStack || 1) + source.stack;
   }
 }

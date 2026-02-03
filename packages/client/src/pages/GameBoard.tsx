@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/GameBoard.css";
 import "../css/Card.css";
@@ -6,14 +6,18 @@ import "../css/GameModal.css";
 import "../css/GameEffects.css";
 import { useGameInteraction } from "../hooks/useGameInteraction";
 import { useGameInitialization } from "../hooks/useGameInitialization";
+import { useGameDragDrop } from "../hooks/useGameDragDrop";
 import { usePlayerDamageAnimation } from "../hooks/usePlayerDamageAnimation";
-import { GameStatus, type CardData, type FieldUnit, ClientEvents } from "@card-game/shared";
+import { GameStatus } from "@card-game/shared";
 import { Shop } from "./Shop";
 import { GameResultModal } from "../components/GameResultModal";
 import { Toast } from "../components/Toast";
 import { TargetingArrow } from "../components/TargetingArrow";
 import { useTargetingArrow } from "../hooks/useTargetingArrow";
 import { useGameEffects } from "../hooks/useGameEffects";
+import { useAttackEffects } from "../hooks/useAttackEffects";
+import { useSpellCastEffect } from "../hooks/useSpellCastEffect";
+import { SpellCastAnimation } from "../components/SpellCastAnimation";
 import { RoundVictoryModal } from "../components/RoundVictoryModal";
 import { EnemyArea } from "../components/EnemyArea";
 import { BattleZone } from "../components/BattleZone";
@@ -38,9 +42,6 @@ export const GameBoard = () => {
   const navigate = useNavigate();
   const deck = location.state?.deck || [];
 
-  const [draggedCard, setDraggedCard] = useState<CardData | null>(null);
-  const isDragging = !!draggedCard;
-  
   const { 
     selectedAttackerId, 
     handlePlayerUnitClick, 
@@ -53,6 +54,16 @@ export const GameBoard = () => {
     attack
   );
   
+  const {
+    draggedCard,
+    isDragging,
+    setDraggedCard,
+    handleDragOver,
+    handleDrop,
+    handleUnitDragStart,
+    handleUnitDrop
+  } = useGameDragDrop(playCard, socket);
+
   useGameInitialization(isConnected, startGame);
   useEffect(() => {
     if (isConnected) {
@@ -75,49 +86,11 @@ export const GameBoard = () => {
     showRoundVictory, 
     showTurnNotification, 
     handleVictoryConfirm 
-  } = useGameEffects(gameState, getUnitCenter, getUnitElement);
+  } = useGameEffects(gameState);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
+  useAttackEffects(gameState, getUnitCenter, getUnitElement);
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDraggedCard(null);
-    const cardIndexStr = e.dataTransfer.getData("cardIndex");
-    if (cardIndexStr) {
-      const index = parseInt(cardIndexStr, 10);
-      if (!isNaN(index)) {
-        playCard(index);
-      }
-    }
-  };
-
-  const handleUnitDragStart = (e: React.DragEvent, unit: FieldUnit) => {
-    e.dataTransfer.setData("sourceUnitId", unit.id);
-    e.dataTransfer.effectAllowed = "move";
-    setDraggedCard(unit);
-  };
-
-  const handleUnitDrop = (e: React.DragEvent, unitId: string) => {
-    e.preventDefault();
-    e.stopPropagation(); // BattleZone의 일반 드롭 방지
-    setDraggedCard(null);
-    const cardIndexStr = e.dataTransfer.getData("cardIndex");
-    const sourceUnitId = e.dataTransfer.getData("sourceUnitId");
-
-    if (cardIndexStr) {
-      const index = parseInt(cardIndexStr, 10);
-      if (!isNaN(index)) {
-        playCard(index, unitId); // 타겟 유닛 ID와 함께 호출하여 병합 시도
-      }
-    } else if (sourceUnitId) {
-      if (sourceUnitId !== unitId && socket) {
-        socket.emit(ClientEvents.MERGE_FIELD_UNITS, sourceUnitId, unitId);
-      }
-    }
-  };
+  const spellEffect = useSpellCastEffect();
 
   // 연결 중이거나 게임 상태가 없을 때 처리
   if (!isConnected || !gameState) {
@@ -216,6 +189,10 @@ export const GameBoard = () => {
       {showTurnNotification && (
         <div className="turn-notification">YOUR TURN</div>
       )}
+
+      
+      {/* 스펠 사용 이펙트 */}
+      {spellEffect && <SpellCastAnimation key={spellEffect.key} cardId={spellEffect.cardId} />}
 
       {/* 라운드 승리 메시지 */}
       {showRoundVictory && (

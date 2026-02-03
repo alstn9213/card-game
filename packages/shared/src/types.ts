@@ -41,7 +41,7 @@ export const GameStatus = {
 } as const;
 export type GameStatus = (typeof GameStatus)[keyof typeof GameStatus];
 
-// 타겟 
+// 타겟 영역
 export const TargetSource = {
   ENEMY_FIELD: "enemy-field",
   PLAYER: "player",

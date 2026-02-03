@@ -25,10 +25,14 @@ export const ServerEvents = {
   GAME_STATE_UPDATE: "gameStateUpdate",
   ERROR: "error",
   GAME_LOG: "gameLog",
+  MERGE_SUCCESS: "mergeSuccess",
+  SPELL_CAST: "spellCast",
 } as const;
 
 export type ServerToClientEvents = {
   [ServerEvents.GAME_STATE_UPDATE]: (state: GameState) => void;
   [ServerEvents.ERROR]: (error: GameError) => void;
   [ServerEvents.GAME_LOG]: (message: string) => void;
+  [ServerEvents.MERGE_SUCCESS]: (data: { unitId: string; level: number }) => void;
+  [ServerEvents.SPELL_CAST]: (data: { cardId: string; targetId?: string }) => void;
 };

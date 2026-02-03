@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import { GameSession } from "./game/GameSession";
 
 const httpServer = createServer();
+
 const io = new Server(httpServer, {
   cors: {
     origin: "http://localhost:5173", // 클라이언트 주소

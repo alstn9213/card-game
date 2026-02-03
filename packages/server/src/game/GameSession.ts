@@ -1,4 +1,4 @@
-import { ClientToServerEvents, ServerToClientEvents, validateDeck, ClientEvents, ServerEvents, ErrorCode, createError, GameState } from "@card-game/shared";
+import { ClientToServerEvents, ServerToClientEvents, validateDeck, ClientEvents, ServerEvents, ErrorCode, createError, GameState, CardType, FieldUnit, GameCard } from "@card-game/shared";
 import { Socket } from "socket.io";
 import { GameLoopManager } from "./GameLoopManager";
 import { ErrorHandler } from "./ErrorHandler";
@@ -84,9 +84,40 @@ export class GameSession {
 
 
   private handlePlayCard(cardIndex: number, targetId?: string) {
-    this.executeGameAction(
-      (context) => context.playerManager.playCard(cardIndex, targetId)
-    );
+    let mergedUnit: FieldUnit | undefined;
+    let playedCard: GameCard | null = null;
+
+    this.executeGameAction((context) => {
+      const state = context.state;
+      const card = state.hand[cardIndex];
+
+      if (!card) {
+        console.warn("[GameSession] card가 없습니다.");
+        return;
+      }
+
+      // [패 -> 필드 병합 로직]
+      if (card.type === CardType.UNIT && targetId) {
+        mergedUnit = context.playerManager.mergeHandCard(cardIndex, targetId);
+      } else {
+        // [일반 카드 플레이 로직]
+        playedCard = context.playerManager.playCard(cardIndex, targetId);
+      }
+    });
+
+    if (mergedUnit) {
+      this.socket.emit(ServerEvents.MERGE_SUCCESS, {
+        unitId: mergedUnit.id,
+        level: mergedUnit.cardStack
+      });
+    }
+
+    if (playedCard && playedCard.type === CardType.SPELL) {
+      this.socket.emit(ServerEvents.SPELL_CAST, {
+        cardId: playedCard.cardId,
+        targetId: targetId
+      });
+    }
   }
 
   private handleAttack(attackerId: string, targetId: string) {
@@ -108,9 +139,20 @@ export class GameSession {
   }
 
   private handleMergeFieldUnits(sourceId: string, targetId: string) {
+    let mergedUnit: FieldUnit | undefined;
+
     this.executeGameAction(
-      (context) => context.playerManager.mergeFieldUnits(sourceId, targetId)
+      (context) => {
+        mergedUnit = context.playerManager.mergeFieldUnits(sourceId, targetId);
+      }
     );
+
+    if (mergedUnit) {
+      this.socket.emit(ServerEvents.MERGE_SUCCESS, {
+        unitId: mergedUnit.id,
+        level: mergedUnit.cardStack
+      });
+    }
   }
 
   // 플레이어 턴이 끝나면 상대 로직 실행 헬퍼

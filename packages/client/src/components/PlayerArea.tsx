@@ -18,7 +18,6 @@ export const PlayerArea = ({
   playerDamage, 
   setUnitRef, 
   onEndTurn, 
-  onPlayCard,
   onDragStateChange
 }: PlayerAreaProps) => {
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -67,10 +66,6 @@ export const PlayerArea = ({
               key={card.id} 
               card={card}
               variant="hand"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPlayCard(index);
-              }}
               style={{ position: 'relative', cursor: 'grab' }}
               draggable={true}
               onDragStart={(e) => handleDragStart(e, index)}

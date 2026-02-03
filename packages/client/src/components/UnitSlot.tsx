@@ -28,9 +28,11 @@ export const UnitSlot = forwardRef<HTMLDivElement, UnitSlotProps>(({ unit, onCli
       style={{ position: 'relative' }}
       onDrop={onDrop}
       onDragOver={(e) => {
+        e.preventDefault();
         if (isMergeTarget) {
-          e.preventDefault();
           e.dataTransfer.dropEffect = "move";
+        } else {
+          e.dataTransfer.dropEffect = "none";
         }
       }}
     >

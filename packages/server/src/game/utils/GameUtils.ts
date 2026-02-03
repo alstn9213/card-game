@@ -100,6 +100,7 @@ export class GameUtils {
       attackPower: cardData.attackPower,
       maxHp: cardData.maxHp,
       currentHp: cardData.maxHp,
+      cardStack: 1,
       hasAttacked: false, 
     };
     state.playerField[emptySlotIndex] = newUnit;

@@ -30,8 +30,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [socket]);
 
-  const playCard = useCallback((cardIndex: number) => {
-    socket?.emit(ClientEvents.PLAY_CARD, cardIndex);
+  const playCard = useCallback((cardIndex: number, targetId?: string) => {
+    socket?.emit(ClientEvents.PLAY_CARD, cardIndex, targetId);
   }, [socket]);
 
   const endTurn = useCallback(() => {
