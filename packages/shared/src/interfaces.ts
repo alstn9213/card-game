@@ -37,7 +37,7 @@ export interface UnitCard extends CardData {
 export interface FieldUnit extends GameCard, UnitCard {
   currentHp: number;
   hasAttacked: boolean;
-  
+  cardStack: number;
 }
 
 export interface Ability {

@@ -1,5 +1,5 @@
 import type { CardData, FieldUnit } from "@card-game/shared";
-import { type MouseEvent, type ReactNode } from "react";
+import { type MouseEvent, type ReactNode, type DragEvent } from "react";
 import "../css/Card.css";
 import "../css/UnitSlot.css";
 
@@ -15,6 +15,9 @@ interface CardProps {
   children?: ReactNode;
   style?: React.CSSProperties;
   className?: string;
+  draggable?: boolean;
+  onDragStart?: (e: DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: (e: DragEvent<HTMLDivElement>) => void;
 }
 
 export const Card = ({
@@ -29,6 +32,9 @@ export const Card = ({
   children,
   style,
   className = "",
+  draggable,
+  onDragStart,
+  onDragEnd,
 }: CardProps) => {
   const isHand = variant === "hand";
   const isField = variant === "field";
@@ -53,6 +59,9 @@ export const Card = ({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       style={style}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
     >
       {!isField && <div className="card-cost">💰 {card.cost}</div>}
       <div className="card-content">

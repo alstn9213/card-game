@@ -1,4 +1,5 @@
-import type { GameState } from "@card-game/shared";
+import React from "react";
+import type { GameState, CardData } from "@card-game/shared";
 import { Card } from "./Card";
 
 interface PlayerAreaProps {
@@ -8,6 +9,7 @@ interface PlayerAreaProps {
   setUnitRef: (id: string, el: HTMLDivElement | null) => void;
   onEndTurn: () => void;
   onPlayCard: (index: number) => void;
+  onDragStateChange?: (card: CardData | null) => void;
 }
 
 export const PlayerArea = ({ 
@@ -16,10 +18,26 @@ export const PlayerArea = ({
   playerDamage, 
   setUnitRef, 
   onEndTurn, 
-  onPlayCard 
+  onPlayCard,
+  onDragStateChange
 }: PlayerAreaProps) => {
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData("cardIndex", index.toString());
+    e.dataTransfer.effectAllowed = "move";
+    onDragStateChange?.(gameState.hand[index]);
+  };
+
+  const handleDragEnd = () => {
+    onDragStateChange?.(null);
+  };
+
   return (
-    <div className="player-area" style={{ position: 'relative' }}>
+    <div 
+      className="player-area" 
+      style={{ position: 'relative' }}
+      onDragOver={(e) => e.stopPropagation()}
+      onDrop={(e) => e.stopPropagation()}
+    >
       {/* 플레이어 상태 바 (아바타, 골드, 턴 종료) */}
       <div className="player-status-bar">
          <div className="avatar player-avatar" ref={(el) => setUnitRef("player", el)}>
@@ -53,7 +71,10 @@ export const PlayerArea = ({
                 e.stopPropagation();
                 onPlayCard(index);
               }}
-              style={{ position: 'relative' }}
+              style={{ position: 'relative', cursor: 'grab' }}
+              draggable={true}
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragEnd={handleDragEnd}
             />
           ))}
         </div>

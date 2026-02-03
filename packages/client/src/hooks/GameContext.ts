@@ -13,7 +13,7 @@ export interface GameContextType {
   isConnected: boolean;
   error: GameError | null;
   startGame: (deck: string[]) => void;
-  playCard: (cardIndex: number) => void;
+  playCard: (cardIndex: number, unitId?: string) => void;
   endTurn: () => void;
   attack: (attackerId: string, targetId: string) => void;
   resetGame: () => void;

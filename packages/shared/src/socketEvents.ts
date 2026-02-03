@@ -8,6 +8,7 @@ export const ClientEvents = {
   ATTACK: "attack",
   CONTINUE_ROUND: "continueRound",
   BUY_CARD: "buyCard",
+  MERGE_FIELD_UNITS: "mergeFieldUnits",
 } as const;
 
 export type ClientToServerEvents = {
@@ -17,6 +18,7 @@ export type ClientToServerEvents = {
   [ClientEvents.ATTACK]: (attackerId: string, targetId: string) => void;
   [ClientEvents.CONTINUE_ROUND]: () => void;
   [ClientEvents.BUY_CARD]: (cardIndex: number) => void;
+  [ClientEvents.MERGE_FIELD_UNITS]: (sourceUnitId: string, targetUnitId: string) => void;
 };
 
 export const ServerEvents = {

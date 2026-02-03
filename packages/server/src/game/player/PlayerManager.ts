@@ -1,12 +1,14 @@
 import { SpellManager } from './../spells/SpellManager';
-import { GameState, ErrorCode, createError, GameStatus, CardType } from "@card-game/shared";
+import { GameState, ErrorCode, createError, GameStatus, CardType, FieldUnit, TargetSource } from "@card-game/shared";
 import { PlayCardHandler } from "./handlers/PlayCardHandler";
 import { AttackHandler } from "./handlers/AttackHandler";
+import { MergeHandler } from "./handlers/MergeHandler";
 import { GameUtils } from "../utils/GameUtils";
 
 export class PlayerManager {
   private playCardHandler: PlayCardHandler;
   private attackHandler: AttackHandler;
+  private mergeHandler: MergeHandler;
   private spellManager: SpellManager;
 
 
@@ -16,6 +18,7 @@ export class PlayerManager {
     this.spellManager = new SpellManager(getState);
     this.playCardHandler = new PlayCardHandler(getState, this.spellManager);
     this.attackHandler = new AttackHandler(getState);
+    this.mergeHandler = new MergeHandler(getState);
 
   }
 
@@ -31,6 +34,21 @@ export class PlayerManager {
 
     if (!card) {
       throw createError(ErrorCode.CARD_NOT_FOUND);
+    }
+
+    // 유닛 카드이고 타겟이 지정된 경우 병합(Merge) 로직 시도
+    if (card.type === CardType.UNIT && targetId) {
+      const targetResult = GameUtils.findTarget(state, targetId);
+
+      // 타겟이 내 필드의 유닛이고, 카드의 종류가 같다면 병합 진행
+      if (targetResult.source === TargetSource.PLAYER_FIELD && targetResult.target) {
+        const targetUnit = targetResult.target as FieldUnit;
+
+        if (targetUnit.cardId === card.cardId) {
+          this.mergeHandler.execute(cardIndex, targetUnit);
+          return;
+        }
+      }
     }
 
     if (card.type === CardType.UNIT || card.type === CardType.SPELL) {
@@ -58,5 +76,13 @@ export class PlayerManager {
     });
 
     GameUtils.drawCard(state);
+  }
+
+  public mergeFieldUnits(sourceId: string, targetId: string): void {
+    const state = this.getState();
+    if (state.gameStatus !== GameStatus.PLAYING) {
+      throw createError(ErrorCode.NOT_YOUR_TURN);
+    }
+    this.mergeHandler.executeFieldMerge(sourceId, targetId);
   }
 }

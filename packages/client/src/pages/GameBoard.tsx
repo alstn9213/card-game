@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/GameBoard.css";
 import "../css/Card.css";
@@ -7,7 +7,7 @@ import "../css/GameEffects.css";
 import { useGameInteraction } from "../hooks/useGameInteraction";
 import { useGameInitialization } from "../hooks/useGameInitialization";
 import { usePlayerDamageAnimation } from "../hooks/usePlayerDamageAnimation";
-import { GameStatus } from "@card-game/shared";
+import { GameStatus, type CardData, type FieldUnit, ClientEvents } from "@card-game/shared";
 import { Shop } from "./Shop";
 import { GameResultModal } from "../components/GameResultModal";
 import { Toast } from "../components/Toast";
@@ -23,6 +23,7 @@ import { useGameState } from "../hooks/GameContext";
 export const GameBoard = () => {
   const { 
     gameState, 
+    socket,
     isConnected, 
     playCard, 
     endTurn, 
@@ -36,6 +37,9 @@ export const GameBoard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const deck = location.state?.deck || [];
+
+  const [draggedCard, setDraggedCard] = useState<CardData | null>(null);
+  const isDragging = !!draggedCard;
   
   const { 
     selectedAttackerId, 
@@ -73,6 +77,48 @@ export const GameBoard = () => {
     handleVictoryConfirm 
   } = useGameEffects(gameState, getUnitCenter, getUnitElement);
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDraggedCard(null);
+    const cardIndexStr = e.dataTransfer.getData("cardIndex");
+    if (cardIndexStr) {
+      const index = parseInt(cardIndexStr, 10);
+      if (!isNaN(index)) {
+        playCard(index);
+      }
+    }
+  };
+
+  const handleUnitDragStart = (e: React.DragEvent, unit: FieldUnit) => {
+    e.dataTransfer.setData("sourceUnitId", unit.id);
+    e.dataTransfer.effectAllowed = "move";
+    setDraggedCard(unit);
+  };
+
+  const handleUnitDrop = (e: React.DragEvent, unitId: string) => {
+    e.preventDefault();
+    e.stopPropagation(); // BattleZone의 일반 드롭 방지
+    setDraggedCard(null);
+    const cardIndexStr = e.dataTransfer.getData("cardIndex");
+    const sourceUnitId = e.dataTransfer.getData("sourceUnitId");
+
+    if (cardIndexStr) {
+      const index = parseInt(cardIndexStr, 10);
+      if (!isNaN(index)) {
+        playCard(index, unitId); // 타겟 유닛 ID와 함께 호출하여 병합 시도
+      }
+    } else if (sourceUnitId) {
+      if (sourceUnitId !== unitId && socket) {
+        socket.emit(ClientEvents.MERGE_FIELD_UNITS, sourceUnitId, unitId);
+      }
+    }
+  };
+
   // 연결 중이거나 게임 상태가 없을 때 처리
   if (!isConnected || !gameState) {
     // 초기화 단계에서 에러가 발생한 경우 (예: 연결 실패)
@@ -101,7 +147,11 @@ export const GameBoard = () => {
 
   return (
     // 배경 클릭 시 상호작용 취소
-    <div className="game-board" onClick={cancelInteraction} onMouseMove={handleMouseMove}>
+    <div 
+      className="game-board" 
+      onClick={cancelInteraction} 
+      onMouseMove={handleMouseMove}
+    >
       {/* 최상단 상태 바 */}
       <div className="status-bar">
         <span style={{ marginRight: "15px", color: "#f1c40f", fontWeight: "bold" }}>
@@ -126,6 +176,12 @@ export const GameBoard = () => {
           setMousePos({ x, y });
           handlePlayerUnitClick(unit);
         }}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        isDragging={isDragging}
+        draggedCard={draggedCard}
+        onUnitDrop={handleUnitDrop}
+        onUnitDragStart={handleUnitDragStart}
       />
 
       {/* 3. 플레이어 영역 */}
@@ -136,6 +192,7 @@ export const GameBoard = () => {
         setUnitRef={setUnitRef}
         onEndTurn={endTurn}
         onPlayCard={playCard}
+        onDragStateChange={setDraggedCard}
       />
 
       {/* 에러 메시지 토스트 */}

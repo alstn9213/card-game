@@ -64,6 +64,10 @@ export class GameSession {
       this.handleBuyCard(cardIndex);
     });
 
+    this.socket.on(ClientEvents.MERGE_FIELD_UNITS, (sourceId: string, targetId: string) => {
+      this.handleMergeFieldUnits(sourceId, targetId);
+    });
+
     this.socket.on("disconnect", () => {
       this.gameLoopManager.clearTimers();
       this.gameContext = null;
@@ -100,6 +104,12 @@ export class GameSession {
   private handleBuyCard(cardIndex: number) {
     this.executeGameAction(
       (context) => context.shopManager.buyCard(cardIndex)
+    );
+  }
+
+  private handleMergeFieldUnits(sourceId: string, targetId: string) {
+    this.executeGameAction(
+      (context) => context.playerManager.mergeFieldUnits(sourceId, targetId)
     );
   }
 
