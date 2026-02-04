@@ -7,7 +7,6 @@ export const initializeGame = (playerDeck?: string[]): GameState => {
   
   let deckCardIds: string[] = [];
 
-  //  덱이 없으면 기본 덱 생성
   if (playerDeck && playerDeck.length > 0) {
     validateDeck(playerDeck);
     deckCardIds = playerDeck;
@@ -46,6 +45,7 @@ const createInitialGameState = (): GameState => {
     hand: [],
     deck: [],
     discardPile: [],
+    exhaustPile: [],
     
     currentGold: 5,
     turn: 1,

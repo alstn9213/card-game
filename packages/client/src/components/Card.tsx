@@ -69,7 +69,9 @@ export const Card = ({
       </div>
       {card.type === "UNIT" && (
         <>
-          <div className="stat-badge atk">⚔️ {(card as FieldUnit).attackPower}</div>
+          <div className="stat-badge atk">
+            ⚔️ {(card as FieldUnit).attackPower}
+          </div>
           <div className="stat-badge hp">
             ❤️ {isField ? `${unit.currentHp}/${unit.maxHp}` : (card as FieldUnit).maxHp}
           </div>

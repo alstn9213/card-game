@@ -1,5 +1,6 @@
 import { GameStatus, GameState } from "@card-game/shared";
 import { TurnManager } from "./TurnManager";
+import { EnemyManager } from "./enemy/EnemyManager";
 
 export class GameLoopManager {
   private timers: NodeJS.Timeout[] = [];
@@ -7,6 +8,7 @@ export class GameLoopManager {
   constructor(
     private getTurnManager: () => TurnManager | null,
     private getGameState: () => GameState | null,
+    private getEnemyManager: () => EnemyManager | null,
     private broadcastState: () => void
   ) {}
 
@@ -16,17 +18,24 @@ export class GameLoopManager {
     try {
       // 적 턴 시작 연출 대기 (1초)
       await this.wait(1000);
-
-      const turnManager = this.getTurnManager();
+      
       const state = this.getGameState();
+      const turnManager = this.getTurnManager();
+      const enemyManager = this.getEnemyManager();
 
-      if (!turnManager || !state) {
-        console.warn("[GameLoopManager] turnManager 또는 state가 없습니다.");
+      if (!turnManager || !state || !enemyManager) {
+        console.warn("[GameLoopManager] 매니저 또는 state가 없습니다.");
         return;
       }
 
       // 적 행동 계산 및 결과 전송
-      turnManager.processEnemyTurn();
+      if (state.gameStatus === GameStatus.PLAYING) {
+        state.attackLogs = [];
+        enemyManager.executeTurn();
+        turnManager.updateGameStatus();
+      }
+      
+      // 비동기 시간(1초)동안 게임이 끊기는 경우 변경된 상태를 클라이언트에게 전파
       this.broadcastState();
 
       // 게임이 계속 진행 중이라면 플레이어 턴 전환 대기
@@ -41,6 +50,7 @@ export class GameLoopManager {
           this.broadcastState();
         }
       }
+      
     } catch (error) {
       console.error("[GameLoopManager] 적 턴 처리중 에러 발생:", error);
       // 에러 발생 시 복구 로직

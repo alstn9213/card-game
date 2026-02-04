@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/GameBoard.css";
 import "../css/Card.css";
@@ -23,6 +23,7 @@ import { EnemyArea } from "../components/EnemyArea";
 import { BattleZone } from "../components/BattleZone";
 import { PlayerArea } from "../components/PlayerArea";
 import { useGameState } from "../hooks/GameContext";
+import { ExhaustPileModal } from "../components/ExhaustPileModal";
 
 export const GameBoard = () => {
   const { 
@@ -41,6 +42,7 @@ export const GameBoard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const deck = location.state?.deck || [];
+  const [showExhaustPile, setShowExhaustPile] = useState(false);
 
   const { 
     selectedAttackerId, 
@@ -140,6 +142,16 @@ export const GameBoard = () => {
         setUnitRef={setUnitRef}
       />
 
+      {/* 중앙 정보 영역 (소멸 목록) */}
+      <div className="exhaust-pile-container">
+        <button 
+          onClick={() => setShowExhaustPile(true)}
+          className="exhaust-pile-btn"
+        >
+          💀 묘지 ({gameState.exhaustPile.length})
+        </button>
+      </div>
+
       {/* 2. 중앙 전장 (플레이어 필드) */}
       <BattleZone 
         playerField={gameState.playerField}
@@ -207,6 +219,14 @@ export const GameBoard = () => {
         <GameResultModal 
           status={gameState.gameStatus} 
           onReset={resetGame} 
+        />
+      )}
+
+      {/* 소멸 카드 목록 모달 */}
+      {showExhaustPile && (
+        <ExhaustPileModal 
+          cards={gameState.exhaustPile} 
+          onClose={() => setShowExhaustPile(false)} 
         />
       )}
     </div>

@@ -16,6 +16,7 @@ export class GameSession {
     this.gameLoopManager = new GameLoopManager(
       () => this.gameContext?.turnManager ?? null,
       () => this.gameContext?.state ?? null,
+      () => this.gameContext?.enemyManager ?? null,
       () => this.broadcastState()
     );
     this.setupListeners();
@@ -36,12 +37,9 @@ export class GameSession {
   
   // 소켓 전파 헬퍼
   private setupListeners() {
+    // 클라이언트에서 게임 시작 상태를 전파받으면 게임 진행
     this.socket.on(ClientEvents.JOIN_GAME, (deck: string[]) => {
-      try {
-        this.startGame(deck);
-      } catch (err: unknown) {
-        this.errorHandler.handleError(err, ErrorCode.UNKNOWN_ERROR);
-      }
+      this.handleStartGame(deck);
     });
 
     this.socket.on(ClientEvents.PLAY_CARD, (cardIndex: number, targetId?: string) => {
@@ -75,14 +73,20 @@ export class GameSession {
   }
 
   // 게임 시작 헬퍼
-  private startGame(playerDeck: string[]) {
-    // 이전 게임의 타이머가 남아있을 수 있으므로 정리
-    this.gameLoopManager.clearTimers();
-    this.gameContext = createGameContext(playerDeck);
-    this.broadcastState();
+  private handleStartGame(playerDeck: string[]) {
+    try {
+      // 이전 게임의 타이머가 남아있을 수 있으므로 정리
+      this.gameLoopManager.clearTimers();
+      this.gameContext = createGameContext(playerDeck);
+      this.broadcastState();
+    } 
+    
+    catch (err: unknown) {
+      this.errorHandler.handleError(err, ErrorCode.UNKNOWN_ERROR);
+    }
   }
 
-
+  // 카드소환 및 병합 핸들러
   private handlePlayCard(cardIndex: number, targetId?: string) {
     let mergedUnit: FieldUnit | undefined;
     let playedCard: GameCard | null = null;
@@ -99,8 +103,10 @@ export class GameSession {
       // [패 -> 필드 병합 로직]
       if (card.type === CardType.UNIT && targetId) {
         mergedUnit = context.playerManager.mergeHandCard(cardIndex, targetId);
-      } else {
-        // [일반 카드 플레이 로직]
+      } 
+      
+      // [일반 카드 플레이 로직]
+      else {
         playedCard = context.playerManager.playCard(cardIndex, targetId);
       }
     });
@@ -120,24 +126,42 @@ export class GameSession {
     }
   }
 
+  // 플레이어의 상대 공격 핸들러
   private handleAttack(attackerId: string, targetId: string) {
     this.executeGameAction(
       (context) => context.playerManager.attack(attackerId, targetId)
     );
   }
 
-  private handleContinueRound() {
-    this.executeGameAction(
-      (context) => context.turnManager.startNextRound()
+   // 플레이어 턴이 끝나면 상대 로직 실행 핸들러
+  private handleEndTurn() {
+    const success = this.executeGameAction(
+      (context) => context.turnManager.endTurn()
     );
+
+    if (success) {
+      this.gameLoopManager.startEnemyTurnSequence();
+    }
   }
 
+  // 상점에서 카드 구매 핸들러  
   private handleBuyCard(cardIndex: number) {
     this.executeGameAction(
       (context) => context.shopManager.buyCard(cardIndex)
     );
   }
 
+  // 다음 라운드 진행 핸들러
+  private handleContinueRound() {
+    this.executeGameAction(
+      (context) => {
+        context.turnManager.startNextRound();
+        context.enemyManager.spawnRandomEnemies(context.state);
+      }
+    );
+  }
+
+  // 필드에서 카드 병합 핸들러
   private handleMergeFieldUnits(sourceId: string, targetId: string) {
     let mergedUnit: FieldUnit | undefined;
 
@@ -155,17 +179,7 @@ export class GameSession {
     }
   }
 
-  // 플레이어 턴이 끝나면 상대 로직 실행 헬퍼
-  private handleEndTurn() {
-    const success = this.executeGameAction(
-      (context) => context.turnManager.endTurn()
-    );
-
-    if (success) {
-      this.gameLoopManager.startEnemyTurnSequence();
-    }
-  }
-
+ 
   // 반복되는 액션 실행 및 에러 처리 헬퍼
   private executeGameAction(
     action: (context: GameContext) => void
@@ -183,6 +197,7 @@ export class GameSession {
       this.broadcastState();
       return true;  
     } 
+
     catch (error: unknown) {
       this.errorHandler.handleError(error, ErrorCode.UNKNOWN_ERROR);
       return false;

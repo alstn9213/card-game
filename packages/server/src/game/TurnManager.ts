@@ -1,22 +1,10 @@
 import { GameState, GameStatus, ErrorCode, createError } from "@card-game/shared";
-import { PlayerManager } from "./player/PlayerManager";
-import { EnemyManager } from "./enemy/EnemyManager";
+import { GameUtils } from "./utils/GameUtils";
 
 export class TurnManager {
-  private playerManager: PlayerManager;
-  private enemyManager: EnemyManager
-
   constructor(
     private getState: () => GameState,
   ) {}
-
-  public setPlayerManager(playerManager: PlayerManager) {
-    this.playerManager = playerManager;
-  }
-
-  public setEnemyManager(enemyManager: EnemyManager) {
-    this.enemyManager = enemyManager;
-  }
 
   // 플레이어의 턴을 시작하는 메서드
   public startPlayerTurn() {
@@ -24,7 +12,14 @@ export class TurnManager {
     state.turn++;
     state.isPlayerTurn = true;
     state.attackLogs = [];
-    this.playerManager.onTurnStart();
+
+    // 유닛 공격권 초기화
+    state.playerField.forEach(unit => {
+      if (unit) unit.hasAttacked = false;
+    });
+
+    GameUtils.drawCard(state);
+
     this.updateGameStatus();
   }
 
@@ -39,19 +34,6 @@ export class TurnManager {
       return;
     }
     state.isPlayerTurn = false;
-  }
-
-  // 적의 턴을 진행하는 메서드
-  public processEnemyTurn() {
-    const state = this.getState();
-    if (state.gameStatus !== GameStatus.PLAYING) {
-      console.warn(`[TurnManager] 상대 턴이 스킵되었습니다. GameStatus: ${state.gameStatus}`);
-      return;
-    }
-
-    state.attackLogs = [];
-    this.enemyManager.executeTurn();
-    this.updateGameStatus();
   }
 
   // 게임 상태 업데이트 (승패 체크 및 라운드 클리어 체크)
@@ -108,7 +90,6 @@ export class TurnManager {
 
     state.gameStatus = GameStatus.PLAYING;
     state.round++;
-    this.enemyManager.spawnRandomEnemies(state);    
     this.startPlayerTurn();
   }
 }

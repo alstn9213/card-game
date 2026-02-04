@@ -26,7 +26,13 @@ export class PlayCardHandler {
     // 자원 소모 및 뒷정리
     state.currentGold -= card.cost;
     state.hand.splice(cardIndex, 1);
-    state.discardPile.push(card);
+
+    // 소멸(Exhaust) 카드 처리
+    if (card.exhaust) {
+      state.exhaustPile.push(card);
+    } else {
+      state.discardPile.push(card);
+    }
   }
 
   // --- 헬퍼 메서드 ---

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGameState } from './GameContext';
 import { ServerEvents } from '@card-game/shared';
 
+
 export const useSpellCastEffect = () => {
     const { socket } = useGameState();
     const [spellEffect, setSpellEffect] = useState<{ cardId: string, targetId?: string, key: number } | null>(null);

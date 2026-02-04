@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import type { FieldUnit } from "@card-game/shared";
+import { v4 as uuidv4 } from 'uuid';
 
 export const useUnitEffects = (unit: FieldUnit | null) => {
-  const [damageText, setDamageText] = useState<{ id: number; text: string } | null>(null);
+  const [damageText, setDamageText] = useState<{ id: string; text: string } | null>(null);
   const [isShaking, setIsShaking] = useState(false);
   const [isLevelUp, setIsLevelUp] = useState(false);
-  const [floatingTexts, setFloatingTexts] = useState<{ id: number; text: string; color: string }[]>([]);
+  const [floatingTexts, setFloatingTexts] = useState<{ id: string; text: string; color: string }[]>([]);
   const prevUnitRef = useRef<FieldUnit | null>(unit);
   const prevStackRef = useRef<number>(unit?.cardStack || 1);
 
@@ -52,7 +53,7 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
   }, [unit]);
 
   const triggerDamageEffect = (amount: number) => {
-    setDamageText({ id: Date.now(), text: `-${amount}` });
+    setDamageText({ id: uuidv4(), text: `-${amount}` });
     setTimeout(() => setDamageText(null), 1000);
   };
 
@@ -67,7 +68,7 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
   };
 
   const addFloatingText = (text: string, color: string) => {
-    const id = Date.now() + Math.random();
+    const id = uuidv4();
     setFloatingTexts(prev => [...prev, { id, text, color }]);
     setTimeout(() => {
       setFloatingTexts(prev => prev.filter(item => item.id !== id));

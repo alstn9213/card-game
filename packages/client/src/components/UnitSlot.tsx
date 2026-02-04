@@ -1,7 +1,7 @@
 import "../css/GameEffects.css";
 import "../css/UnitSlot.css";
 import type { FieldUnit } from "@card-game/shared";
-import { type MouseEvent, type DragEvent, useState, forwardRef, type CSSProperties } from "react";
+import { type MouseEvent, type DragEvent, useState, useEffect, forwardRef, type CSSProperties } from "react";
 import { useUnitEffects } from "../hooks/useUnitEffects";
 import { UnitTooltip } from "./UnitTooltip";
 import { Card } from "./Card";
@@ -19,6 +19,11 @@ interface UnitSlotProps {
 export const UnitSlot = forwardRef<HTMLDivElement, UnitSlotProps>(({ unit, onClick, isSelected, isMergeTarget, onDrop, draggable, onDragStart }, ref) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const { damageText, isShaking, isLevelUp, floatingTexts } = useUnitEffects(unit);
+
+  // 유닛 정보가 바뀌면(라운드 전환 등) 툴팁 닫기
+  useEffect(() => {
+    setShowTooltip(false);
+  }, [unit]);
 
   return (
     <div 

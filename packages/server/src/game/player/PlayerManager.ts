@@ -3,7 +3,6 @@ import { GameState, ErrorCode, createError, GameStatus, CardType, FieldUnit, Tar
 import { PlayCardHandler } from "./handlers/PlayCardHandler";
 import { AttackHandler } from "./handlers/AttackHandler";
 import { MergeHandler } from "./handlers/MergeHandler";
-import { GameUtils } from "../utils/GameUtils";
 
 export class PlayerManager {
   private playCardHandler: PlayCardHandler;
@@ -37,11 +36,10 @@ export class PlayerManager {
     }
 
     if (card.type === CardType.UNIT || card.type === CardType.SPELL) {
-      // playCardHandler가 실행 후 사용된 카드를 반환한다고 가정
-      // (실제로는 PlayCardHandler.ts에서 반환 로직 추가 필요)
       this.playCardHandler.execute(cardIndex, targetId);
       return card;
     } 
+    
     return null;
   }
 
@@ -52,18 +50,6 @@ export class PlayerManager {
       throw createError(ErrorCode.NOT_YOUR_TURN);
     }
     this.attackHandler.execute(attackerId, targetId);
-  }
-
-  // 라운드 시작시, 조건 초기화 함수
-  public onTurnStart() {
-    const state = this.getState();
-
-    // 유닛 공격권 초기화
-    state.playerField.forEach(unit => {
-      if (unit) unit.hasAttacked = false;
-    });
-
-    GameUtils.drawCard(state);
   }
 
   public mergeFieldUnits(sourceId: string, targetId: string): FieldUnit {

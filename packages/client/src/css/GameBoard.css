@@ -38,6 +38,25 @@
   position: relative;
 }
 
+/* --- 중앙: 소멸 목록 영역 --- */
+.exhaust-pile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  min-height: 30px;
+}
+
+.exhaust-pile-btn {
+  padding: 5px 15px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.3);
+  color: #95a5a6;
+  border: 1px solid #7f8c8d;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
 
 /* --- 중앙: 전장 (배틀 존) --- */
 .battle-zone {
