@@ -5,7 +5,7 @@ import { Card } from "./Card";
 interface PlayerAreaProps {
   gameState: GameState;
   isPlayerTurn: boolean;
-  playerDamage: { id: number; text: string } | null;
+  playerDamage: { id: string; text: string } | null;
   setUnitRef: (id: string, el: HTMLDivElement | null) => void;
   onEndTurn: () => void;
   onPlayCard: (index: number) => void;
@@ -37,7 +37,7 @@ export const PlayerArea = ({
       onDragOver={(e) => e.stopPropagation()}
       onDrop={(e) => e.stopPropagation()}
     >
-      {/* 플레이어 상태 바 (아바타, 골드, 턴 종료) */}
+      {/* 플레이어 상태 바 */}
       <div className="player-status-bar">
          <div className="avatar player-avatar" ref={(el) => setUnitRef("player", el)}>
             {playerDamage && <div key={playerDamage.id} className="floating-damage">{playerDamage.text}</div>}
@@ -58,7 +58,7 @@ export const PlayerArea = ({
          </button>
       </div>
       
-      {/* 핸드(손패) */}
+      {/* 패 */}
       <div className="hand-container">
         <div className="hand">
           {gameState.hand.map((card, index) => (

@@ -16,7 +16,15 @@ interface UnitSlotProps {
   onDragStart?: (e: DragEvent<HTMLDivElement>) => void;
 }
 
-export const UnitSlot = forwardRef<HTMLDivElement, UnitSlotProps>(({ unit, onClick, isSelected, isMergeTarget, onDrop, draggable, onDragStart }, ref) => {
+export const UnitSlot = forwardRef<HTMLDivElement, UnitSlotProps>(({ 
+  unit, 
+  onClick, 
+  isSelected, 
+  isMergeTarget, 
+  onDrop, 
+  draggable, 
+  onDragStart 
+}, ref) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const { damageText, isShaking, isLevelUp, floatingTexts } = useUnitEffects(unit);
 
@@ -80,14 +88,17 @@ export const UnitSlot = forwardRef<HTMLDivElement, UnitSlotProps>(({ unit, onCli
          draggable={draggable}
          onDragStart={onDragStart}
        >
-          {/* 스택 배지 (카드 위에 표시) */}
+          {/* 카드 스택 배지 */}
           {unit.cardStack > 1 && (
-            <div key={unit.cardStack} className="stack-badge">x{unit.cardStack}</div>
+            <div key={unit.cardStack} className="stack-badge">
+              x{unit.cardStack}
+            </div>
           )}
 
           {/* 툴팁: 마우스 오버 시 상세 정보 표시 */}
           {showTooltip && <UnitTooltip unit={unit} />}
        </Card>
+       
        )}
     </div>
   );

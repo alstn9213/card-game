@@ -1,4 +1,4 @@
-import type { CardData, FieldUnit } from "@card-game/shared";
+import { CardType, type CardData, type FieldUnit } from "@card-game/shared";
 import { type MouseEvent, type ReactNode, type DragEvent } from "react";
 import "../css/Card.css";
 import "../css/UnitSlot.css";
@@ -42,11 +42,11 @@ export const Card = ({
 
   const classes = [
     "card",
-    isField ? "field" : "",
-    isSelected ? "selected" : "",
-    isExhausted ? "exhausted" : "",
-    isShaking ? "shake-effect" : "",
-    isHand ? "draw-effect" : "",
+    isField && "field",
+    isSelected && "selected",
+    isExhausted && "exhausted",
+    isShaking && "shake-effect",
+    isHand && "draw-effect",
     className,
   ]
     .filter(Boolean)
@@ -63,11 +63,14 @@ export const Card = ({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
+      {/* 카드가 패에 있을 경우 코스트를 보여준다. */}
       {!isField && <div className="card-cost">💰 {card.cost}</div>}
       <div className="card-content">
         <div className="card-name">{card.name}</div>
       </div>
-      {card.type === "UNIT" && (
+
+      {/* 유닛 카드는 체력과 공격력을 보여준다. */}
+      {card.type === CardType.UNIT && (
         <>
           <div className="stat-badge atk">
             ⚔️ {(card as FieldUnit).attackPower}
@@ -77,7 +80,6 @@ export const Card = ({
           </div>
         </>
       )}
-
       {children}
     </div>
   );

@@ -16,6 +16,9 @@ export interface GameContextType {
   playCard: (cardIndex: number, targetId?: string) => void;
   endTurn: () => void;
   attack: (attackerId: string, targetId: string) => void;
+  buyCard: (index: number) => void;
+  continueRound: () => void;
+  mergeFieldUnits: (sourceId: string, targetId: string) => void;
   resetGame: () => void;
   clearError: () => void;
 }

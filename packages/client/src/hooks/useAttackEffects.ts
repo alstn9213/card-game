@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { type GameState } from "@card-game/shared";
+import "../css/AttackEffects.css";
 
 export const useAttackEffects = (
   gameState: GameState | null,
@@ -28,7 +29,10 @@ export const useAttackEffects = (
 
   // 공격 애니메이션 처리 (attackLogs 기반)
   useEffect(() => {
-    if (!gameState) return;
+    if (!gameState) {
+      console.warn("[useAttackEffects] gameState가 없습니다.");
+      return;
+    }
 
     // 턴이 바뀌거나 로그가 초기화된 경우 카운트 리셋
     if (gameState.attackLogs.length < processedLogCount.current) {
@@ -58,19 +62,19 @@ export const useAttackEffects = (
       const dx = end.x - start.x;
       const dy = end.y - start.y;
 
-      // 1. 목표지점으로 돌진
-      attackerEl.style.transition = "transform 0.2s cubic-bezier(0.2, 0, 0.6, 1)";
-      attackerEl.style.zIndex = "100";
-      attackerEl.style.transform = `translate(${dx}px, ${dy}px)`;
+      // CSS 변수로 이동 거리 전달 및 클래스 적용
+      attackerEl.style.setProperty('--attack-dx', `${dx}px`);
+      attackerEl.style.setProperty('--attack-dy', `${dy}px`);
+      attackerEl.classList.add('attacking-unit');
 
-      // 2. 원위치로 복귀
+      // 원위치로 복귀
       setTimeout(() => {
-        attackerEl.style.transition = "transform 0.4s ease-out";
-        attackerEl.style.transform = "translate(0px, 0px)";
+        attackerEl.classList.add('returning');
         
         setTimeout(() => {
-          attackerEl.style.zIndex = "";
-          attackerEl.style.transition = "";
+          attackerEl.classList.remove('attacking-unit', 'returning');
+          attackerEl.style.removeProperty('--attack-dx');
+          attackerEl.style.removeProperty('--attack-dy');
         }, 400);
       }, 200);
     } 

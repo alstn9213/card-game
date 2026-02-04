@@ -12,9 +12,14 @@ export const useTargetingArrow = (isActive: boolean) => {
 
   const getUnitCenter = useCallback((id: string) => {
     const el = unitRefs.current.get(id);
-    if (!el) return null;
+    if (!el) {
+      return null;
+    }
     const rect = el.getBoundingClientRect();
-    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    return { 
+      x: rect.left + rect.width / 2, 
+      y: rect.top + rect.height / 2 
+    };
   }, []);
 
   const setUnitRef = useCallback((id: string, el: HTMLDivElement | null) => {

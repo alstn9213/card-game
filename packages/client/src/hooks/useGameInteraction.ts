@@ -22,6 +22,7 @@ export const useGameInteraction = (
     if (selectedAttackerId === unit.id) {
       setSelectedAttackerId(null);
     } 
+    
     else {
       setSelectedAttackerId(unit.id);
     }

@@ -28,8 +28,8 @@ import { ExhaustPileModal } from "../components/ExhaustPileModal";
 export const GameBoard = () => {
   const { 
     gameState, 
-    socket,
     isConnected, 
+    mergeFieldUnits,
     playCard, 
     endTurn, 
     attack, 
@@ -64,7 +64,7 @@ export const GameBoard = () => {
     handleDrop,
     handleUnitDragStart,
     handleUnitDrop
-  } = useGameDragDrop(playCard, socket);
+  } = useGameDragDrop(playCard, mergeFieldUnits);
 
   useGameInitialization(isConnected, startGame);
   useEffect(() => {
@@ -201,10 +201,14 @@ export const GameBoard = () => {
       {showTurnNotification && (
         <div className="turn-notification">YOUR TURN</div>
       )}
-
       
       {/* 스펠 사용 이펙트 */}
-      {spellEffect && <SpellCastAnimation key={spellEffect.key} cardId={spellEffect.cardId} />}
+      {spellEffect && (
+        <SpellCastAnimation 
+          key={spellEffect.key} 
+          cardId={spellEffect.cardId} 
+        />
+      )}
 
       {/* 라운드 승리 메시지 */}
       {showRoundVictory && (

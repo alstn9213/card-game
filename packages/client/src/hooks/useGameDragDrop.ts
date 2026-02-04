@@ -1,9 +1,9 @@
 import { useState, type DragEvent } from "react";
-import { type CardData, type FieldUnit, ClientEvents } from "@card-game/shared";
+import { type CardData, type FieldUnit } from "@card-game/shared";
 
 export const useGameDragDrop = (
   playCard: (index: number, targetUnitId?: string) => void,
-  socket: any
+  mergeFieldUnits: (sourceId: string, targetId: string) => void
 ) => {
   const [draggedCard, setDraggedCard] = useState<CardData | null>(null);
   const isDragging = !!draggedCard;
@@ -44,8 +44,8 @@ export const useGameDragDrop = (
         playCard(index, unitId); // 타겟 유닛 ID와 함께 호출하여 병합 시도
       }
     } else if (sourceUnitId) {
-      if (sourceUnitId !== unitId && socket) {
-        socket.emit(ClientEvents.MERGE_FIELD_UNITS, sourceUnitId, unitId);
+      if (sourceUnitId !== unitId) {
+        mergeFieldUnits(sourceUnitId, unitId);
       }
     }
   };

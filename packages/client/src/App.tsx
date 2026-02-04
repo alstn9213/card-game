@@ -17,7 +17,6 @@ const DeckBuilderWithNavigation = () => {
 };
 
 function App() {
-
   return (
     <GameProvider>
       <BrowserRouter>

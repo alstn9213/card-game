@@ -11,7 +11,18 @@ interface DeckBuilderPageProps {
 }
 
 export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) => {
-  const { deck, allCards, getCardCount, addToDeck, removeFromDeck, groupedDeck, validation, toastError, setToastError } = useDeckBuilder();
+  const { 
+    deck, 
+    allCards, 
+    getCardCount, 
+    addToDeck, 
+    removeFromDeck, 
+    groupedDeck, 
+    validation, 
+    toastError, 
+    setToastError 
+  } = useDeckBuilder();
+  
   return (
     <div className="deck-builder-container">
       {toastError && <Toast error={toastError} onClose={() => setToastError(null)} />}

@@ -1,11 +1,9 @@
-import { useShopActions } from '../hooks/useShopActions';
 import "../css/Shop.css";
 import { DeckRules } from "@card-game/shared";
 import { useGameState } from '../hooks/GameContext';
 
 export const Shop = () => {
-  const { gameState, socket } = useGameState();
-  const { buyCard, continueRound } = useShopActions(socket);
+  const { gameState, buyCard, continueRound } = useGameState();
 
   if (!gameState) return null;
 

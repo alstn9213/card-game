@@ -13,39 +13,40 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
   useEffect(() => {
     const prevUnit = prevUnitRef.current;
     
-    // 유닛이 있고 체력이 감소한 경우
-    if (unit && prevUnit && unit.id === prevUnit.id && unit.currentHp < prevUnit.currentHp) {
-      const damage = prevUnit.currentHp - unit.currentHp;
-      triggerDamageEffect(damage);
-      triggerShake();
-    }
-    // 유닛이 파괴된 경우 (이전에는 있었는데 지금은 null)
-    else if (!unit && prevUnit) {
-      triggerDamageEffect(prevUnit.currentHp);
-    }
-
-    // 유닛이 공격을 수행한 경우 (공격 모션 효과)
-    if (unit && prevUnit && unit.id === prevUnit.id && !prevUnit.hasAttacked && unit.hasAttacked) {
-      triggerShake();
-    }
-
-    // 병합(레벨업) 감지: 같은 유닛 ID인데 스택이 증가한 경우
+    // 유닛이 계속 존재하는 경우 (ID가 같음)
     if (unit && prevUnit && unit.id === prevUnit.id) {
+      // 체력 감소 (피격)
+      if (unit.currentHp < prevUnit.currentHp) {
+        const damage = prevUnit.currentHp - unit.currentHp;
+        triggerDamageEffect(damage);
+        triggerShake();
+      }
+
+      // 공격 수행 (공격 모션)
+      if (!prevUnit.hasAttacked && unit.hasAttacked) {
+        triggerShake();
+      }
+
+      // 병합 감지
       if (unit.cardStack > prevStackRef.current) {
         triggerLevelUp();
       }
 
-      // 스탯 증가 감지 (병합 시)
+      // 스탯 증가 감지
       const atkDiff = unit.attackPower - prevUnit.attackPower;
       const hpDiff = unit.maxHp - prevUnit.maxHp;
 
       if (atkDiff > 0) {
         addFloatingText(`+${atkDiff} ATK`, "#e67e22"); // 주황색
       }
-      if (hpDiff > 0) {
-        // 겹치지 않게 약간의 시간차를 두고 표시
+      
+      else if (hpDiff > 0) {
         setTimeout(() => addFloatingText(`+${hpDiff} HP`, "#2ecc71"), 300); // 초록색
       }
+    }
+    // 유닛이 파괴된 경우 (이전에는 있었는데 지금은 null)
+    else if (!unit && prevUnit) {
+      triggerDamageEffect(prevUnit.currentHp);
     }
 
     prevUnitRef.current = unit;

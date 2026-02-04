@@ -17,7 +17,7 @@ export const ExhaustPileModal: React.FC<ExhaustPileModalProps> = ({ cards, onClo
         onClick={(e) => e.stopPropagation()}
       >
         <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#e74c3c' }}>
-          소멸된 카드 ({cards.length})
+          묘지 ({cards.length})
         </h2>
         
         <div style={{ 
@@ -30,7 +30,7 @@ export const ExhaustPileModal: React.FC<ExhaustPileModalProps> = ({ cards, onClo
           padding: '10px'
         }}>
           {cards.length === 0 ? (
-            <p style={{ color: '#aaa' }}>소멸된 카드가 없습니다.</p>
+            <p style={{ color: '#aaa' }}>묘지에 카드가 없습니다.</p>
           ) : (
             cards.map((card) => (
               <div key={card.id} className="card" style={{ position: 'relative', transform: 'scale(0.9)' }}>

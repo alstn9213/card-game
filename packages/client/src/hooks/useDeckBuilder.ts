@@ -1,13 +1,12 @@
 import { DeckRules, UNIT_CARDS, SPELL_CARDS, validateDeck, type CardData, createError, ErrorCode, type GameError } from '@card-game/shared';
 import { useState,  useMemo } from 'react';
 
+// 정적 데이터이므로 훅 외부에서 한 번만 정의하는 것이 효율적이다.
+const ALL_CARDS = [...UNIT_CARDS, ...SPELL_CARDS];
+
 export const useDeckBuilder = () => {
-  // 선택된 카드의 ID 목록 (중복 허용)
   const [deck, setDeck] = useState<string[]>([]);
   const [toastError, setToastError] = useState<GameError | null>(null);
-
-  // 전체 카드 목록 (배열로 변환)
-  const allCards = useMemo(() => [...UNIT_CARDS, ...SPELL_CARDS], []);
 
   // 덱에 포함된 특정 카드의 개수 계산
   const getCardCount = (cardId: string) => deck.filter((id) => id === cardId).length;
@@ -51,7 +50,7 @@ export const useDeckBuilder = () => {
     const uniqueIds = Array.from(new Set(deck));
     
     uniqueIds.forEach(id => {
-      const card = allCards.find(c => c.cardId === id);
+      const card = ALL_CARDS.find(c => c.cardId === id);
       if (card) {
         groups.push({ card, count: getCardCount(id) });
       }
@@ -59,11 +58,11 @@ export const useDeckBuilder = () => {
     
     // 코스트 순 정렬
     return groups.sort((a, b) => a.card.cost - b.card.cost);
-  }, [deck, allCards]);
+  }, [deck]);
 
   return {
     deck,
-    allCards,    
+    allCards: ALL_CARDS,    
     setDeck,
     addToDeck,
     removeFromDeck,

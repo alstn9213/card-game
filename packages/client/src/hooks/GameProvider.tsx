@@ -1,11 +1,8 @@
 import { useState, useEffect, useCallback, type ReactNode } from "react";
-import {
-  type GameState,
-  type GameError,
-  ClientEvents,
-} from "@card-game/shared";
+import { type GameState, type GameError } from "@card-game/shared";
 import { GameContext } from "./GameContext";
 import { useGameSocket } from "./useGameSocket";
+import { useGameActions } from "./useGameActions";
 
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -13,6 +10,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<GameError | null>(null);
 
   const socket = useGameSocket(setGameState, setError, setIsConnected);
+  const gameActions = useGameActions(socket, setError);
 
   // 에러 발생 시 3초 후 자동 소멸 (Toast 효과)
   useEffect(() => {
@@ -23,26 +21,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       return () => clearTimeout(timer);
     }
   }, [error]);
-
-  const startGame = useCallback((deck: string[]) => {
-    if (socket) {
-      socket.emit(ClientEvents.JOIN_GAME, deck);
-    }
-  }, [socket]);
-
-  const playCard = useCallback((cardIndex: number, targetId?: string) => {
-    socket?.emit(ClientEvents.PLAY_CARD, cardIndex, targetId);
-  }, [socket]);
-
-  const endTurn = useCallback(() => {
-    socket?.emit(ClientEvents.END_TURN);
-  }, [socket]);
-
-  const attack = useCallback((attackerId: string, targetId: string) => {
-    socket?.emit(ClientEvents.ATTACK, attackerId, targetId);
-  }, [socket]);
-
-  
 
   const resetGame = useCallback(() => {
     setGameState(null);
@@ -59,10 +37,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         gameState, 
         isConnected, 
         error, 
-        startGame, 
-        playCard, 
-        endTurn, 
-        attack, 
+        ...gameActions,
         resetGame, 
         clearError 
       }}
