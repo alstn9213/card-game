@@ -4,11 +4,12 @@ export const useTargetingArrow = (isActive: boolean) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const unitRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
+  // 마우스 움직임 감지 핸들러
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (isActive) {
       setMousePos({ x: e.clientX, y: e.clientY });
     }
-  }, [isActive]);
+  }, [isActive, setMousePos]);
 
   const getUnitCenter = useCallback((id: string) => {
     const el = unitRefs.current.get(id);

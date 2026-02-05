@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { type GameState } from "@card-game/shared";
+import { TargetSource, type GameState } from "@card-game/shared";
 import "../css/AttackEffects.css";
 
 export const useAttackEffects = (
@@ -10,9 +10,15 @@ export const useAttackEffects = (
   const lastKnownPositions = useRef<Map<string, {x: number, y: number}>>(new Map());
   const processedLogCount = useRef<number>(0);
 
+  const playerField = gameState?.playerField;
+  const enemyField = gameState?.enemyField;
+  const attackLogs = gameState?.attackLogs;
+
   // 유닛 위치 캐싱 (유닛이 죽어서 사라져도 마지막 위치를 기억하기 위함)
   useEffect(() => {
-    if (!gameState) return;
+    if (!playerField || !enemyField) {
+      return;
+    }
 
     const cachePosition = (id: string) => {
       const pos = getUnitCenter(id);
@@ -21,26 +27,25 @@ export const useAttackEffects = (
       }
     };
 
-    // 플레이어, 적 유닛, 플레이어 본체 위치 저장
-    gameState.playerField.forEach(u => u && cachePosition(u.id));
-    gameState.enemyField.forEach(u => u && cachePosition(u.id));
-    cachePosition("player");
-  }, [gameState, getUnitCenter]);
+    // 플레이어 유닛, 적 유닛, 플레이어 본체 위치 저장
+    playerField.forEach(u => u && cachePosition(u.id));
+    enemyField.forEach(u => u && cachePosition(u.id));
+    cachePosition(TargetSource.PLAYER);
+  }, [playerField, enemyField, getUnitCenter]);
 
   // 공격 애니메이션 처리 (attackLogs 기반)
   useEffect(() => {
-    if (!gameState) {
-      console.warn("[useAttackEffects] gameState가 없습니다.");
+    if (!attackLogs) {
       return;
     }
 
     // 턴이 바뀌거나 로그가 초기화된 경우 카운트 리셋
-    if (gameState.attackLogs.length < processedLogCount.current) {
+    if (attackLogs.length < processedLogCount.current) {
       processedLogCount.current = 0;
     }
 
     // 새로운 로그만 처리
-    const newLogs = gameState.attackLogs.slice(processedLogCount.current);
+    const newLogs = attackLogs.slice(processedLogCount.current);
     
     if (newLogs.length > 0) {
       newLogs.forEach((log, index) => {
@@ -48,9 +53,9 @@ export const useAttackEffects = (
           triggerAttackAnimation(log.attackerId, log.targetId);
         }, index * 600); // 애니메이션 전체 시간(600ms)에 맞춰 순차 재생
       });
-      processedLogCount.current = gameState.attackLogs.length;
+      processedLogCount.current = attackLogs.length;
     }
-  }, [gameState?.attackLogs]);
+  }, [attackLogs]);
 
   const triggerAttackAnimation = (attackerId: string, targetId: string) => {
     // 현재 위치를 가져오거나, 없으면 캐시된 마지막 위치 사용

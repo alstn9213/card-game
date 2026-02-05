@@ -1,4 +1,4 @@
-import { useState, type DragEvent } from "react";
+import { useState, useCallback, type DragEvent } from "react";
 import { type CardData, type FieldUnit } from "@card-game/shared";
 
 export const useGameDragDrop = (
@@ -8,12 +8,12 @@ export const useGameDragDrop = (
   const [draggedCard, setDraggedCard] = useState<CardData | null>(null);
   const isDragging = !!draggedCard;
 
-  const handleDragOver = (e: DragEvent) => {
+  const handleDragOver = useCallback((e: DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-  };
+  }, []);
 
-  const handleDrop = (e: DragEvent) => {
+  const handleDrop = useCallback((e: DragEvent) => {
     e.preventDefault();
     setDraggedCard(null);
     const cardIndexStr = e.dataTransfer.getData("cardIndex");
@@ -23,15 +23,15 @@ export const useGameDragDrop = (
         playCard(index);
       }
     }
-  };
+  }, [playCard, setDraggedCard]);
 
-  const handleUnitDragStart = (e: DragEvent, unit: FieldUnit) => {
+  const handleUnitDragStart = useCallback((e: DragEvent, unit: FieldUnit) => {
     e.dataTransfer.setData("sourceUnitId", unit.id);
     e.dataTransfer.effectAllowed = "move";
     setDraggedCard(unit);
-  };
+  }, [setDraggedCard]);
 
-  const handleUnitDrop = (e: DragEvent, unitId: string) => {
+  const handleUnitDrop = useCallback((e: DragEvent, unitId: string) => {
     e.preventDefault();
     e.stopPropagation(); // BattleZone의 일반 드롭 방지
     setDraggedCard(null);
@@ -48,7 +48,7 @@ export const useGameDragDrop = (
         mergeFieldUnits(sourceUnitId, unitId);
       }
     }
-  };
+  }, [playCard, mergeFieldUnits, setDraggedCard]);
 
   return {
     draggedCard,

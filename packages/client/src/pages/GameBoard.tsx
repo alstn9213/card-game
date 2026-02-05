@@ -67,6 +67,7 @@ export const GameBoard = () => {
   } = useGameDragDrop(playCard, mergeFieldUnits);
 
   useGameInitialization(isConnected, startGame);
+  
   useEffect(() => {
     if (isConnected) {
       startGame(deck);

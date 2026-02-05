@@ -23,9 +23,7 @@ export const useGameInteraction = (
       setSelectedAttackerId(null);
     } 
     
-    else {
-      setSelectedAttackerId(unit.id);
-    }
+    setSelectedAttackerId(unit.id);
   };
 
   const handleEnemyClick = (targetId: string) => {

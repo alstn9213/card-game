@@ -18,7 +18,7 @@ export const SPELL_CARDS: SpellCard[] = [
     description: "덱에서 카드 1장을 뽑습니다",
     type: CardType.SPELL,
     effectType: EffectType.DRAW,
-    cost: 2,
+    cost: 1,
     targetType: TargetType.NONE
   }
   

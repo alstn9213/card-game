@@ -10,6 +10,13 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
   const prevUnitRef = useRef<FieldUnit | null>(unit);
   const prevStackRef = useRef<number>(unit?.cardStack || 1);
 
+  const unitId = unit?.id;
+  const currentHp = unit?.currentHp;
+  const hasAttacked = unit?.hasAttacked;
+  const cardStack = unit?.cardStack;
+  const attackPower = unit?.attackPower;
+  const maxHp = unit?.maxHp;
+
   useEffect(() => {
     const prevUnit = prevUnitRef.current;
     
@@ -50,8 +57,11 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
     }
 
     prevUnitRef.current = unit;
-    if (unit) prevStackRef.current = unit.cardStack;
-  }, [unit]);
+    
+    if (unit) {
+      prevStackRef.current = unit.cardStack;
+    }
+  }, [unitId, currentHp, hasAttacked, cardStack, attackPower, maxHp]);
 
   const triggerDamageEffect = (amount: number) => {
     setDamageText({ id: uuidv4(), text: `-${amount}` });
@@ -76,5 +86,10 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
     }, 1000);
   };
 
-  return { damageText, isShaking, isLevelUp, floatingTexts };
+  return { 
+    damageText, 
+    isShaking, 
+    isLevelUp, 
+    floatingTexts 
+  };
 };
