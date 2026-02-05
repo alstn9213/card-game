@@ -26,7 +26,7 @@ export const initializeGame = (playerDeck?: string[]): GameState => {
   return state;
 };
 
-// --- 내부 메서드 ---
+// --- 헬퍼 함수 ---
 
 const createInitialGameState = (): GameState => {
   const emptyField: FieldUnit[] = [null, null, null, null, null];
@@ -50,9 +50,8 @@ const createInitialGameState = (): GameState => {
     currentGold: 5,
     turn: 1,
     round: 1,
-    isPlayerTurn: true,
     
-    gameStatus: GameStatus.PLAYING,
+    gameStatus: GameStatus.PLAYER_TURN,
     shopItems: [],
     currentRoundEnemies: [],
     attackLogs: [],
@@ -71,7 +70,6 @@ const generateDefaultDeck = (): string[] => {
 
   while (deckIds.length < DeckRules.MIN_DECK_SIZE) {
     const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
-    
     const currentCardCount = deckIds.filter(id => id === randomCard.cardId).length;
 
     if (currentCardCount < DeckRules.MAX_COPIES_PER_CARD) {

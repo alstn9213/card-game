@@ -25,7 +25,7 @@ export class PlayerManager {
   public playCard(cardIndex: number, targetId?: string): GameCard | null {
     const state = this.getState();
 
-    if (state.gameStatus !== GameStatus.PLAYING) {
+    if (state.gameStatus !== GameStatus.PLAYER_TURN) {
       throw createError(ErrorCode.NOT_YOUR_TURN);
     }
 
@@ -46,7 +46,7 @@ export class PlayerManager {
   // 공격 함수
   public attack(attackerId: string, targetId: string): void {
     const state = this.getState();
-    if (state.gameStatus !== GameStatus.PLAYING) {
+    if (state.gameStatus !== GameStatus.PLAYER_TURN) {
       throw createError(ErrorCode.NOT_YOUR_TURN);
     }
     this.attackHandler.execute(attackerId, targetId);
@@ -54,7 +54,7 @@ export class PlayerManager {
 
   public mergeFieldUnits(sourceId: string, targetId: string): FieldUnit {
     const state = this.getState();
-    if (state.gameStatus !== GameStatus.PLAYING) {
+    if (state.gameStatus !== GameStatus.PLAYER_TURN) {
       throw createError(ErrorCode.NOT_YOUR_TURN);
     }
     return this.mergeHandler.execute(sourceId, targetId);
@@ -62,7 +62,7 @@ export class PlayerManager {
 
   public mergeHandCard(cardIndex: number, targetId: string): FieldUnit {
     const state = this.getState();
-    if (state.gameStatus !== GameStatus.PLAYING) {
+    if (state.gameStatus !== GameStatus.PLAYER_TURN) {
       throw createError(ErrorCode.NOT_YOUR_TURN);
     }
     return this.mergeHandler.execute(cardIndex, targetId);

@@ -13,7 +13,7 @@ export const useGameEffects = (
 
   const gameStatus = gameState?.gameStatus;
   const round = gameState?.round;
-  const isPlayerTurn = gameState?.isPlayerTurn;
+  const isPlayerTurn = gameState?.gameStatus === GameStatus.PLAYER_TURN;
   const turn = gameState?.turn;
 
   // 라운드 승리 확인 핸들러

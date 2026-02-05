@@ -52,7 +52,7 @@ export const GameBoard = () => {
     error: interactionError,
     clearError: clearInteractionError
   } = useGameInteraction(
-    gameState?.isPlayerTurn ?? false,
+    gameState?.gameStatus === GameStatus.PLAYER_TURN || false,
     attack
   );
   
@@ -119,7 +119,9 @@ export const GameBoard = () => {
     );
   }
  
-  const { isPlayerTurn } = gameState;
+  const { isPlayerTurn } = gameState.gameStatus === GameStatus.PLAYER_TURN 
+    ? { isPlayerTurn: true } 
+    : { isPlayerTurn: false };
 
   return (
     // 배경 클릭 시 상호작용 취소

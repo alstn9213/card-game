@@ -10,30 +10,45 @@ export class TurnManager {
   public startPlayerTurn() {
     const state = this.getState();
     state.turn++;
-    state.isPlayerTurn = true;
+    state.gameStatus = GameStatus.PLAYER_TURN;
     state.attackLogs = [];
 
     // 유닛 공격권 초기화
     state.playerField.forEach(unit => {
-      if (unit) unit.hasAttacked = false;
+      if (unit) {
+        unit.hasAttacked = false;
+      }
     });
 
     GameUtils.drawCard(state);
-
+    GameUtils.earnGold(state, 2);
     this.updateGameStatus();
   }
 
-  // 플레이어의 턴을 종료하는 메서드
-  public endTurn() {
+  // 적의 턴을 시작하는 메서드
+  public startEnemyTurn() {
     const state = this.getState();
-    if (state.gameStatus !== GameStatus.PLAYING) {
-      throw createError(ErrorCode.NOT_YOUR_TURN);
-    }
-    if (!state.isPlayerTurn) {
-      console.warn(`[TurnManager] 플레이어의 턴이 스킵되었습니다. GameStatus: ${state.gameStatus}`);
-      return;
-    }
-    state.isPlayerTurn = false;
+    state.gameStatus = GameStatus.ENEMY_TURN;
+    state.attackLogs = [];
+
+    // 적 유닛 공격권 초기화
+    state.enemyField.forEach(unit => {
+      if (unit) {
+        unit.hasAttacked = false;
+      }
+    });
+  }
+
+  // 플레이어의 턴을 종료하는 메서드
+  public endPlayerTurn() {
+    const state = this.getState();
+    state.gameStatus = GameStatus.ENEMY_TURN;
+  }
+
+  // 적 턴을 종료하는 메서드
+  public endEnemyTurn() {
+    const state = this.getState();
+    state.gameStatus = GameStatus.PLAYER_TURN;
   }
 
   // 게임 상태 업데이트 (승패 체크 및 라운드 클리어 체크)
@@ -49,8 +64,9 @@ export class TurnManager {
   // 게임 종료 여부 판단 헬퍼 (승리/패배)
   private checkGameOver(): boolean {
     const state = this.getState();
-    if (state.gameStatus !== GameStatus.PLAYING) {
-      console.warn("[TuenManager] 게임이 종료되었습니다.");
+    const isPlaying = state.gameStatus === GameStatus.PLAYER_TURN || state.gameStatus === GameStatus.ENEMY_TURN;
+
+    if (!isPlaying) {
       return true;
     }
 
@@ -88,7 +104,7 @@ export class TurnManager {
       throw createError(ErrorCode.GAME_NOT_SHOP);
     }
 
-    state.gameStatus = GameStatus.PLAYING;
+    state.gameStatus = GameStatus.PLAYER_TURN;
     state.round++;
     this.startPlayerTurn();
   }

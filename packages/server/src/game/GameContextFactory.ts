@@ -20,9 +20,6 @@ export const createGameContext = (playerDeck: string[]): GameContext => {
   const playerManager = new PlayerManager(() => state);
   const shopManager = new ShopManager(() => state);
 
-  // 게임 시작시 적 생성
-  enemyManager.spawnRandomEnemies(state);
-
   return {
     state,
     playerManager,

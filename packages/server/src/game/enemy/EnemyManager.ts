@@ -17,14 +17,9 @@ export class EnemyManager {
     this.enemySpawnHandler.execute(state);
   }
 
-  // 적 턴 진행 메서드
-  public executeTurn(): void {
+  // 적 공격 메서드 (AI)
+  public attack(): void {
     const state = this.getState();
-
-    // 턴 시작 시 기존 유닛들의 공격권 초기화
-    state.enemyField.forEach(unit => {
-      if (unit) unit.hasAttacked = false;
-    });
 
     this.aiAttackHandler.execute(state);
   }

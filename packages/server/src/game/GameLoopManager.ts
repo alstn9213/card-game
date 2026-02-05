@@ -28,10 +28,9 @@ export class GameLoopManager {
         return;
       }
 
-      // 적 행동 계산 및 결과 전송
-      if (state.gameStatus === GameStatus.PLAYING) {
-        state.attackLogs = [];
-        enemyManager.executeTurn();
+      if (state.gameStatus === GameStatus.ENEMY_TURN) {
+        turnManager.startEnemyTurn();
+        enemyManager.attack();
         turnManager.updateGameStatus();
       }
       
@@ -39,13 +38,15 @@ export class GameLoopManager {
       this.broadcastState();
 
       // 게임이 계속 진행 중이라면 플레이어 턴 전환 대기
-      if (state.gameStatus === GameStatus.PLAYING) {
+      if (state.gameStatus === GameStatus.ENEMY_TURN) {
         const delay = 1500 + (state.attackLogs.length * 600);
         await this.wait(delay);
 
         // 대기 후 상태 재확인 (그 사이 게임이 끝났거나 유저가 나갔을 수 있음)
         const tm = this.getTurnManager();
+        
         if (tm) {
+          tm.endEnemyTurn();
           tm.startPlayerTurn();
           this.broadcastState();
         }
@@ -56,7 +57,8 @@ export class GameLoopManager {
       // 에러 발생 시 복구 로직
       const tm = this.getTurnManager();
       const st = this.getGameState();
-      if (tm && st && st.gameStatus === GameStatus.PLAYING) {
+      // 에러가 나도 게임이 진행 중(적 턴)이었다면 플레이어 턴으로 넘겨줌
+      if (tm && st && st.gameStatus === GameStatus.ENEMY_TURN) {
         tm.startPlayerTurn();
         this.broadcastState();
       }

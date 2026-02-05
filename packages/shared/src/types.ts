@@ -7,8 +7,8 @@ export type CardType = (typeof CardType)[keyof typeof CardType];
 
 // 타겟 방식 (누구를 때릴지)
 export const TargetType = {
-  SINGLE_ENEMY: "SINGLE_ENEMY", // 적 하나
-  ALL_ENEMIES: "ALL_ENEMIES",   // 적 전체
+  SINGLE_ENEMY: "SINGLE_ENEMY",
+  ALL_ENEMIES: "ALL_ENEMIES", 
   PLAYER_FIELD: "PLAYER_FIELD",
   SELF: "SELF",                 // 나 자신 (힐, 버프)
   NONE: "NONE"                  // 타겟 필요 없음 (필드 마법 등)
@@ -34,6 +34,8 @@ export type DeckRules = (typeof DeckRules)[keyof typeof DeckRules];
 
 // 게임 상태
 export const GameStatus = {
+  PLAYER_TURN: "player-turn",
+  ENEMY_TURN: "enemy-turn",
   PLAYING: "playing",
   VICTORY: "victory",
   DEFEAT: "defeat",

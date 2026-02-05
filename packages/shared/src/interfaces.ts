@@ -67,7 +67,6 @@ export interface GameState {
   gameStatus: GameStatus;
   turn: number;
   round: number;
-  isPlayerTurn: boolean;
   player: Entity;
   playerField: (FieldUnit | null)[];
   enemyField: (FieldUnit | null)[];
@@ -76,7 +75,7 @@ export interface GameState {
   discardPile: GameCard[];
   exhaustPile: GameCard[];
   currentGold: number;
-  shopItems: UnitCard[];        // 상점에서 판매 중인 카드 목록
+  shopItems: UnitCard[];
   currentRoundEnemies: UnitCard[]; // 현재 라운드에 등장한 적 목록 (라운드 종료 후 상점 등록용)
-  attackLogs: AttackLog[];      // 이번 턴(또는 액션)에 발생한 공격 로그
+  attackLogs: AttackLog[];
 }

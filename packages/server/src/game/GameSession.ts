@@ -35,9 +35,10 @@ export class GameSession {
     }
   }
   
+  
+
   // 소켓 전파 헬퍼
   private setupListeners() {
-    // 클라이언트에서 게임 시작 상태를 전파받으면 게임 진행
     this.socket.on(ClientEvents.JOIN_GAME, (deck: string[]) => {
       this.handleStartGame(deck);
     });
@@ -78,6 +79,8 @@ export class GameSession {
       // 이전 게임의 타이머가 남아있을 수 있으므로 정리
       this.gameLoopManager.clearTimers();
       this.gameContext = createGameContext(playerDeck);
+      this.spawnEnemies(this.gameContext);
+      this.gameContext.turnManager.endEnemyTurn();
       this.broadcastState();
     } 
     
@@ -86,6 +89,11 @@ export class GameSession {
     }
   }
 
+  // 적 생성 헬퍼
+  private spawnEnemies(context: GameContext) {
+    context.enemyManager.spawnRandomEnemies(context.state);
+  }
+  
   // 카드소환 및 병합 핸들러
   private handlePlayCard(cardIndex: number, targetId?: string) {
     let mergedUnit: FieldUnit | undefined;
@@ -136,7 +144,7 @@ export class GameSession {
    // 플레이어 턴이 끝나면 상대 로직 실행 핸들러
   private handleEndTurn() {
     const success = this.executeGameAction(
-      (context) => context.turnManager.endTurn()
+      (context) => context.turnManager.endPlayerTurn()
     );
 
     if (success) {
@@ -156,7 +164,7 @@ export class GameSession {
     this.executeGameAction(
       (context) => {
         context.turnManager.startNextRound();
-        context.enemyManager.spawnRandomEnemies(context.state);
+        this.spawnEnemies(context);
       }
     );
   }
