@@ -14,12 +14,11 @@ export const SpellCastAnimation = ({ cardId }: SpellCastAnimationProps) => {
     setVisible(true);
     const timer = setTimeout(() => {
       setVisible(false);
-    }, 1500); // 애니메이션 지속 시간
+    }, 1500);
     return () => clearTimeout(timer);
   }, [cardId]);
 
   if (!card) {
-    console.warn("[SpellCastAnimation] card가 없습니다.");
     return null;
   }
 

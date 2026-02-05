@@ -1,6 +1,7 @@
 import React from "react";
 import "../css/GameModal.css";
 import "../css/Card.css";
+import "../css/ExhaustPileModal.css";
 import type { GameCard } from "@card-game/shared";
 
 interface ExhaustPileModalProps {
@@ -12,28 +13,19 @@ export const ExhaustPileModal: React.FC<ExhaustPileModalProps> = ({ cards, onClo
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div 
-        className="modal-content" 
-        style={{ maxWidth: '800px', width: '90%' }} 
+        className="modal-content exhaust-pile-modal-content" 
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#e74c3c' }}>
+        <h2 className="exhaust-pile-title">
           묘지 ({cards.length})
         </h2>
         
-        <div style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          gap: '15px', 
-          justifyContent: 'center', 
-          maxHeight: '60vh', 
-          overflowY: 'auto',
-          padding: '10px'
-        }}>
+        <div className="exhaust-pile-grid">
           {cards.length === 0 ? (
-            <p style={{ color: '#aaa' }}>묘지에 카드가 없습니다.</p>
+            <p className="exhaust-pile-empty">묘지에 카드가 없습니다.</p>
           ) : (
             cards.map((card) => (
-              <div key={card.id} className="card" style={{ position: 'relative', transform: 'scale(0.9)' }}>
+              <div key={card.id} className="card exhaust-pile-card-wrapper">
                 <div className="card-cost">{card.cost}</div>
                 <div className="card-name">{card.name}</div>
                 <div className="card-desc">{card.description}</div>
@@ -42,8 +34,8 @@ export const ExhaustPileModal: React.FC<ExhaustPileModalProps> = ({ cards, onClo
           )}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <button onClick={onClose} style={{ padding: '8px 24px', cursor: 'pointer', fontSize: '16px' }}>
+        <div className="exhaust-pile-footer">
+          <button onClick={onClose} className="exhaust-pile-close-btn">
             닫기
           </button>
         </div>

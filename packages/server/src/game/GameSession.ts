@@ -35,8 +35,6 @@ export class GameSession {
     }
   }
   
-  
-
   // 소켓 전파 헬퍼
   private setupListeners() {
     this.socket.on(ClientEvents.JOIN_GAME, (deck: string[]) => {

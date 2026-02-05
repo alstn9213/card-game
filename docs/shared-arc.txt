@@ -1,9 +1,0 @@
-C:.
-│  gameState.ts
-│  index.ts
-│  interfaces.ts
-│  socketEvents.ts
-│  types.ts
-│
-└─data
-        units.ts
