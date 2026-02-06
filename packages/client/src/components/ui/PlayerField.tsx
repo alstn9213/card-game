@@ -1,6 +1,7 @@
-import { UnitSlot } from "./UnitSlot";
+import { UnitSlot } from "../UnitSlot";
 import type { FieldUnit, CardData } from "@card-game/shared";
 import type { DragEvent } from "react";
+import "../../css/PlayerField.css";
 
 interface PlayerFieldProps {
   playerField: (FieldUnit | null)[];
@@ -25,7 +26,7 @@ export const PlayerField = ({
   onUnitDrop,
   onUnitDragStart,
   draggedCard,
-  isDragging
+  isDragging,
 }: PlayerFieldProps) => {
   // 드래그 중인 카드가 필드 유닛인지 확인 (FieldUnit은 hasAttacked 속성을 가짐)
   const isFieldUnitDragging = draggedCard && 'hasAttacked' in draggedCard;

@@ -1,0 +1,135 @@
+/* --- 플레이어 영역 --- */
+.player-area {
+  flex: 0 0 35%; /* 하단 영역 확보 */
+  background: linear-gradient(0deg, #18232c 0%, #1a1a1a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  position: relative;
+  border-top: 2px solid #2980b9;
+}
+
+/* 플레이어 상태 바 (체력, 골드, 턴버튼) */
+.player-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 10px;
+  padding: 0 20px;
+}
+
+.avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border: 3px solid #7f8c8d;
+  background-color: #34495e;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  z-index: 2;
+}
+
+.player-avatar {
+  border-color: #3498db;
+  background-color: #1b3a4b;
+}
+
+.resource-display {
+  font-size: 1.2rem;
+  color: #f1c40f;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* 턴 종료 버튼 */
+.end-turn-btn {
+  padding: 8px 20px;
+  background-color: #f1c40f;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 700;
+  color: #2c3e50;
+  box-shadow: 0 4px 0 #b7950b;
+  transition: all 0.1s;
+}
+
+.end-turn-btn:hover {
+  background-color: #f4d03f;
+  transform: translateY(-2px);
+}
+
+.end-turn-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #b7950b;
+}
+
+/* --- 핸드 (카드 영역) --- */
+.hand-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 20px;
+  perspective: 1000px;
+}
+
+.hand {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 5px; 
+  height: 100%;
+  max-width: 1000px;
+}
+
+/* --- 덱 UI --- */
+.deck-pile {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 80px;
+  height: 110px;
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  border: 2px solid #95a5a6;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+
+.deck-label {
+  color: #bdc3c7;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.deck-count-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}

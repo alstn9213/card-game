@@ -1,5 +1,5 @@
-import "../css/GameModal.css";
-import "../css/GameEffects.css";
+import "../../css/GameModal.css";
+import "../../css/GameEffects.css";
 
 interface RoundVictoryModalProps {
   onConfirm: () => void;

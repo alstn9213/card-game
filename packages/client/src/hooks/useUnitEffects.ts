@@ -17,52 +17,6 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
   const attackPower = unit?.attackPower;
   const maxHp = unit?.maxHp;
 
-  useEffect(() => {
-    const prevUnit = prevUnitRef.current;
-    
-    // 유닛이 계속 존재하는 경우 (ID가 같음)
-    if (unit && prevUnit && unit.id === prevUnit.id) {
-      // 체력 감소 (피격)
-      if (unit.currentHp < prevUnit.currentHp) {
-        const damage = prevUnit.currentHp - unit.currentHp;
-        triggerDamageEffect(damage);
-        triggerShake();
-      }
-
-      // 공격 수행 (공격 모션)
-      if (!prevUnit.hasAttacked && unit.hasAttacked) {
-        triggerShake();
-      }
-
-      // 병합 감지
-      if (unit.cardStack > prevStackRef.current) {
-        triggerLevelUp();
-      }
-
-      // 스탯 증가 감지
-      const atkDiff = unit.attackPower - prevUnit.attackPower;
-      const hpDiff = unit.maxHp - prevUnit.maxHp;
-
-      if (atkDiff > 0) {
-        addFloatingText(`+${atkDiff} ATK`, "#e67e22"); // 주황색
-      }
-      
-      else if (hpDiff > 0) {
-        setTimeout(() => addFloatingText(`+${hpDiff} HP`, "#2ecc71"), 300); // 초록색
-      }
-    }
-    // 유닛이 파괴된 경우 (이전에는 있었는데 지금은 null)
-    else if (!unit && prevUnit) {
-      triggerDamageEffect(prevUnit.currentHp);
-    }
-
-    prevUnitRef.current = unit;
-    
-    if (unit) {
-      prevStackRef.current = unit.cardStack;
-    }
-  }, [unitId, currentHp, hasAttacked, cardStack, attackPower, maxHp]);
-
   const triggerDamageEffect = (amount: number) => {
     setDamageText({ id: uuidv4(), text: `-${amount}` });
     setTimeout(() => setDamageText(null), 1000);
@@ -85,6 +39,56 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
       setFloatingTexts(prev => prev.filter(item => item.id !== id));
     }, 1000);
   };
+
+  // 상태 변화 감지 로직 분리
+  const checkCombatStatus = (prev: FieldUnit, current: FieldUnit) => {
+    // 체력 감소 (피격)
+    if (current.currentHp < prev.currentHp) {
+      triggerDamageEffect(prev.currentHp - current.currentHp);
+      triggerShake();
+    }
+    // 공격 수행 (공격 모션)
+    if (!prev.hasAttacked && current.hasAttacked) {
+      triggerShake();
+    }
+  };
+
+  const checkStatChanges = (prev: FieldUnit, current: FieldUnit) => {
+    const atkDiff = current.attackPower - prev.attackPower;
+    const hpDiff = current.maxHp - prev.maxHp;
+
+    if (atkDiff > 0) {
+      addFloatingText(`+${atkDiff} ATK`, "#e67e22");
+    } else if (hpDiff > 0) {
+      setTimeout(() => addFloatingText(`+${hpDiff} HP`, "#2ecc71"), 300);
+    }
+  };
+
+  useEffect(() => {
+    const prevUnit = prevUnitRef.current;
+
+    if (unit && prevUnit && unit.id === prevUnit.id) {
+      checkCombatStatus(prevUnit, unit);
+      checkStatChanges(prevUnit, unit);
+      
+      if (unit.cardStack > prevStackRef.current) {
+        triggerLevelUp();
+      }
+    } 
+    
+    else if (!unit && prevUnit) {
+      // 유닛이 사라질 때 체력이 남아있던 경우에만 데미지 표시 (이미 죽은 유닛 제외)
+      if (prevUnit.currentHp > 0) {
+        triggerDamageEffect(prevUnit.currentHp);
+      }
+    }
+
+    prevUnitRef.current = unit;
+    
+    if (unit) {
+      prevStackRef.current = unit.cardStack;
+    }
+  }, [unitId, currentHp, hasAttacked, cardStack, attackPower, maxHp]);
 
   return { 
     damageText, 

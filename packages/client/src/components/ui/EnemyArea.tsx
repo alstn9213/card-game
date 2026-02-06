@@ -1,5 +1,6 @@
-import { UnitSlot } from "./UnitSlot";
 import type { FieldUnit } from "@card-game/shared";
+import { UnitSlot } from "../UnitSlot";
+import "../../css/EnemyArea.css";
 
 interface EnemyAreaProps {
   enemyField: (FieldUnit | null)[];

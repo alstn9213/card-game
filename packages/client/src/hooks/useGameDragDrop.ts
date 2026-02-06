@@ -50,6 +50,12 @@ export const useGameDragDrop = (
     }
   }, [playCard, mergeFieldUnits, setDraggedCard]);
 
+  const handleCardDragStart = useCallback((e: DragEvent, card: CardData, index: number) => {
+    e.dataTransfer.setData("cardIndex", index.toString());
+    e.dataTransfer.effectAllowed = "move";
+    setDraggedCard(card);
+  }, [setDraggedCard]);
+
   return {
     draggedCard,
     isDragging,
@@ -57,6 +63,7 @@ export const useGameDragDrop = (
     handleDragOver,
     handleDrop,
     handleUnitDragStart,
-    handleUnitDrop
+    handleUnitDrop,
+    handleCardDragStart
   };
 };

@@ -5,7 +5,8 @@ import "../css/AttackEffects.css";
 export const useAttackEffects = (
   gameState: GameState | null,
   getUnitCenter: (id: string) => { x: number; y: number } | null,
-  getUnitElement: (id: string) => HTMLElement | null
+  getUnitElement: (id: string) => HTMLElement | null,
+  onAttackImpact?: (log: { attackerId: string; targetId: string; damage: number }) => void
 ) => {
   const lastKnownPositions = useRef<Map<string, {x: number, y: number}>>(new Map());
   const processedLogCount = useRef<number>(0);
@@ -50,14 +51,15 @@ export const useAttackEffects = (
     if (newLogs.length > 0) {
       newLogs.forEach((log, index) => {
         setTimeout(() => {
-          triggerAttackAnimation(log.attackerId, log.targetId);
-        }, index * 600); // 애니메이션 전체 시간(600ms)에 맞춰 순차 재생
+          triggerAttackAnimation(log);
+        }, index * 600);
       });
       processedLogCount.current = attackLogs.length;
     }
-  }, [attackLogs]);
+  }, [attackLogs, onAttackImpact]);
 
-  const triggerAttackAnimation = (attackerId: string, targetId: string) => {
+  const triggerAttackAnimation = (log: { attackerId: string; targetId: string; damage: number }) => {
+    const { attackerId, targetId } = log;
     // 현재 위치를 가져오거나, 없으면 캐시된 마지막 위치 사용
     const start = getUnitCenter(attackerId) || lastKnownPositions.current.get(attackerId);
     const end = getUnitCenter(targetId) || lastKnownPositions.current.get(targetId);
@@ -67,13 +69,23 @@ export const useAttackEffects = (
       const dx = end.x - start.x;
       const dy = end.y - start.y;
 
-      // CSS 변수로 이동 거리 전달 및 클래스 적용
       attackerEl.style.setProperty('--attack-dx', `${dx}px`);
       attackerEl.style.setProperty('--attack-dy', `${dy}px`);
       attackerEl.classList.add('attacking-unit');
 
-      // 원위치로 복귀
-      setTimeout(() => {
+      const handleImpact = (e: TransitionEvent) => {
+        // transform 속성의 변화가 끝났을 때만 트리거 (다른 속성 변화 무시)
+        if (e.target !== attackerEl) return;
+        if (e.propertyName !== 'transform' && e.propertyName !== 'left' && e.propertyName !== 'top') return;
+        
+        attackerEl.removeEventListener('transitionend', handleImpact);
+
+        // 충돌 시점 로직 실행 (데미지 적용, 사운드 등)
+        if (onAttackImpact) {
+          onAttackImpact(log);
+        }
+
+        // 원위치로 복귀 애니메이션 시작
         attackerEl.classList.add('returning');
         
         setTimeout(() => {
@@ -81,7 +93,9 @@ export const useAttackEffects = (
           attackerEl.style.removeProperty('--attack-dx');
           attackerEl.style.removeProperty('--attack-dy');
         }, 400);
-      }, 200);
+      };
+
+      attackerEl.addEventListener('transitionend', handleImpact);
     } 
   };
 };

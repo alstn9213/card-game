@@ -22,6 +22,7 @@ export interface GameContextType {
   enterShop: () => void;
   resetGame: () => void;
   clearError: () => void;
+  registerUnit: (id: string, element: HTMLElement | null) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);

@@ -1,7 +1,8 @@
-import "../css/Shop.css";
+import "../../css/Shop.css";
+import "../../css/Card.css";
 import { DeckRules } from "@card-game/shared";
-import { useGameState } from '../hooks/GameContext';
-import { Card } from "../components/Card";
+import { useGameState } from '../../hooks/GameContext';
+import { Card } from "../Card";
 
 export const Shop = () => {
   const { gameState, buyCard, continueRound } = useGameState();

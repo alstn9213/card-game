@@ -9,6 +9,7 @@ export const useGameInteraction = (
   const [error, setError] = useState<GameError | null>(null);
 
   const handlePlayerUnitClick = (unit: FieldUnit) => {
+  
     if (!isPlayerTurn) {
       setError(createError(ErrorCode.NOT_YOUR_TURN));
       return;
@@ -27,6 +28,7 @@ export const useGameInteraction = (
   };
 
   const handleEnemyClick = (targetId: string) => {
+   
     if (selectedAttackerId) {
       attack(selectedAttackerId, targetId);
       setSelectedAttackerId(null);

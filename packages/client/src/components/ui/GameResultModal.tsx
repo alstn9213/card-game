@@ -1,4 +1,5 @@
 import { GameStatus } from "@card-game/shared";
+import "../../css/GameModal.css";
 
 interface GameResultModalProps {
   status: GameStatus;

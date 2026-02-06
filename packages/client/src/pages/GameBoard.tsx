@@ -9,21 +9,23 @@ import { useGameInitialization } from "../hooks/useGameInitialization";
 import { useGameDragDrop } from "../hooks/useGameDragDrop";
 import { usePlayerDamageAnimation } from "../hooks/usePlayerDamageAnimation";
 import { GameStatus } from "@card-game/shared";
-import { Shop } from "./Shop";
-import { GameResultModal } from "../components/GameResultModal";
-import { Toast } from "../components/Toast";
-import { TargetingArrow } from "../components/TargetingArrow";
 import { useTargetingArrow } from "../hooks/useTargetingArrow";
 import { useGameEffects } from "../hooks/useGameEffects";
 import { useAttackEffects } from "../hooks/useAttackEffects";
 import { useSpellCastEffect } from "../hooks/useSpellCastEffect";
-import { SpellCastAnimation } from "../components/SpellCastAnimation";
-import { RoundVictoryModal } from "../components/RoundVictoryModal";
-import { EnemyArea } from "../components/EnemyArea";
-import { PlayerArea } from "../components/PlayerArea";
 import { useGameState } from "../hooks/GameContext";
-import { ExhaustPileModal } from "../components/ExhaustPileModal";
-import { PlayerField } from "../components/PlayerField";
+import { 
+  EnemyArea, 
+  ExhaustPileModal, 
+  GameResultModal, 
+  PlayerArea, 
+  PlayerField, 
+  RoundVictoryModal, 
+  Shop, 
+  SpellCastAnimation, 
+  TargetingArrow, 
+  Toast
+} from "../components";
 
 export const GameBoard = () => {
   const { 
@@ -37,7 +39,7 @@ export const GameBoard = () => {
     enterShop,
     resetGame, 
     error, 
-    clearError 
+    clearError,
   } = useGameState();
 
   const location = useLocation();
@@ -64,7 +66,8 @@ export const GameBoard = () => {
     handleDragOver,
     handleDrop,
     handleUnitDragStart,
-    handleUnitDrop
+    handleUnitDrop,
+    handleCardDragStart
   } = useGameDragDrop(playCard, mergeFieldUnits);
 
   useGameInitialization(isConnected, startGame);
@@ -123,7 +126,6 @@ export const GameBoard = () => {
     : { isPlayerTurn: false };
 
   return (
-    // 배경 클릭 시 상호작용 취소
     <div 
       className="game-board" 
       onClick={cancelInteraction} 
@@ -137,14 +139,14 @@ export const GameBoard = () => {
         <span>TURN {gameState.turn} — {isPlayerTurn ? "YOUR TURN" : "ENEMY TURN"}</span>
       </div>
 
-      {/* 1. 적 영역 */}
+      {/* 적 영역 */}
       <EnemyArea 
         enemyField={gameState.enemyField}
         onEnemyClick={handleEnemyClick}
         setUnitRef={setUnitRef}
       />
 
-      {/* 중앙 정보 영역 (소멸 목록) */}
+      {/* 묘지 */}
       <div className="exhaust-pile-container">
         <button 
           onClick={() => setShowExhaustPile(true)}
@@ -154,7 +156,7 @@ export const GameBoard = () => {
         </button>
       </div>
 
-      {/* 2. 플레이어 필드 */}
+      {/* 플레이어 필드 */}
       <PlayerField 
         playerField={gameState.playerField}
         selectedAttackerId={selectedAttackerId}
@@ -171,7 +173,7 @@ export const GameBoard = () => {
         onUnitDragStart={handleUnitDragStart}
       />
 
-      {/* 3. 플레이어 영역 */}
+      {/* 플레이어 영역 */}
       <PlayerArea 
         gameState={gameState}
         isPlayerTurn={isPlayerTurn}
@@ -179,7 +181,8 @@ export const GameBoard = () => {
         setUnitRef={setUnitRef}
         onEndTurn={endTurn}
         onPlayCard={playCard}
-        onDragStateChange={setDraggedCard}
+        onCardDragStart={handleCardDragStart}
+        onCardDragEnd={() => setDraggedCard(null)}
       />
 
       {/* 에러 메시지 토스트 */}

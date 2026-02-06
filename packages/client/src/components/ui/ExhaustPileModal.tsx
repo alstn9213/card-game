@@ -1,7 +1,7 @@
 import React from "react";
-import "../css/GameModal.css";
-import "../css/Card.css";
-import "../css/ExhaustPileModal.css";
+import "../../css/GameModal.css";
+import "../../css/Card.css";
+import "../../css/ExhaustPileModal.css";
 import type { GameCard } from "@card-game/shared";
 
 interface ExhaustPileModalProps {

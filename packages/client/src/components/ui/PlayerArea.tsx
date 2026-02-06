@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import type { GameState, CardData } from "@card-game/shared";
-import { Card } from "./Card";
+import { Card } from "../Card";
+import { v4 as uuidv4 } from 'uuid';
+import "../../css/PlayerArea.css";
+
 
 interface PlayerAreaProps {
   gameState: GameState;
@@ -9,7 +12,8 @@ interface PlayerAreaProps {
   setUnitRef: (id: string, el: HTMLDivElement | null) => void;
   onEndTurn: () => void;
   onPlayCard: (index: number) => void;
-  onDragStateChange?: (card: CardData | null) => void;
+  onCardDragStart?: (e: React.DragEvent, card: CardData, index: number) => void;
+  onCardDragEnd?: () => void;
 }
 
 export const PlayerArea = ({ 
@@ -18,16 +22,16 @@ export const PlayerArea = ({
   playerDamage, 
   setUnitRef, 
   onEndTurn, 
-  onDragStateChange
+  onCardDragStart,
+  onCardDragEnd
 }: PlayerAreaProps) => {
-  // 골드 변경 감지 및 효과 처리를 위한 상태
   const prevGoldRef = useRef(gameState.currentGold);
-  const [goldEffects, setGoldEffects] = useState<{ id: number; value: number }[]>([]);
+  const [goldEffects, setGoldEffects] = useState<{ id: string; value: number }[]>([]);
 
   useEffect(() => {
     if (gameState.currentGold > prevGoldRef.current) {
       const diff = gameState.currentGold - prevGoldRef.current;
-      const newEffect = { id: Date.now(), value: diff };
+      const newEffect = { id: uuidv4(), value: diff };
       setGoldEffects(prev => [...prev, newEffect]);
       setTimeout(() => {
         setGoldEffects(prev => prev.filter(e => e.id !== newEffect.id));
@@ -35,16 +39,6 @@ export const PlayerArea = ({
     }
     prevGoldRef.current = gameState.currentGold;
   }, [gameState.currentGold]);
-
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    e.dataTransfer.setData("cardIndex", index.toString());
-    e.dataTransfer.effectAllowed = "move";
-    onDragStateChange?.(gameState.hand[index]);
-  };
-
-  const handleDragEnd = () => {
-    onDragStateChange?.(null);
-  };
 
   return (
     <div 
@@ -87,8 +81,8 @@ export const PlayerArea = ({
               variant="hand"
               style={{ position: 'relative', cursor: 'grab' }}
               draggable={true}
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragEnd={handleDragEnd}
+              onDragStart={(e) => onCardDragStart?.(e, card, index)}
+              onDragEnd={onCardDragEnd}
             />
           ))}
         </div>
