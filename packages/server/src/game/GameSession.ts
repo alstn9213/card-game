@@ -1,4 +1,4 @@
-import { ClientToServerEvents, ServerToClientEvents, validateDeck, ClientEvents, ServerEvents, ErrorCode, createError, GameState, CardType, FieldUnit, GameCard } from "@card-game/shared";
+import { ClientToServerEvents, ServerToClientEvents, ClientEvents, ServerEvents, ErrorCode, createError, CardType, FieldUnit, GameCard } from "@card-game/shared";
 import { Socket } from "socket.io";
 import { GameLoopManager } from "./GameLoopManager";
 import { ErrorHandler } from "./ErrorHandler";
@@ -63,6 +63,10 @@ export class GameSession {
 
     this.socket.on(ClientEvents.MERGE_FIELD_UNITS, (sourceId: string, targetId: string) => {
       this.handleMergeFieldUnits(sourceId, targetId);
+    });
+
+    this.socket.on(ClientEvents.ENTER_SHOP, () => {
+      this.handleEnterShop();
     });
 
     this.socket.on("disconnect", () => {
@@ -183,6 +187,13 @@ export class GameSession {
         level: mergedUnit.cardStack
       });
     }
+  }
+
+  // 상점 진입 핸들러
+  private handleEnterShop() {
+    this.executeGameAction(
+      (context) => context.turnManager.enterShop()
+    );
   }
 
  

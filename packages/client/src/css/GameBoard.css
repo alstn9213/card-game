@@ -59,7 +59,7 @@
 }
 
 /* --- 중앙: 전장 (배틀 존) --- */
-.battle-zone {
+.player-field {
   flex: 1; /* 남은 공간 모두 차지 */
   display: flex;
   flex-direction: column;
@@ -71,14 +71,8 @@
   transition: background-color 0.2s, border-color 0.2s;
 }
 
-.battle-zone.drag-active {
-  border: 2px dashed #f1c40f;
-  background-color: rgba(241, 196, 15, 0.05);
-  box-shadow: inset 0 0 20px rgba(241, 196, 15, 0.1);
-}
-
 /* 드래그 중일 때 비어있는 슬롯 강조 */
-.battle-zone.drag-active .field-slot.empty {
+.player-field.drag-active .field-slot.empty {
   border-color: #f1c40f;
   background-color: rgba(241, 196, 15, 0.15);
   box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);

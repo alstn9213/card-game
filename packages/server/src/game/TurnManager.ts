@@ -7,7 +7,7 @@ export class TurnManager {
   ) {}
 
   // 플레이어의 턴을 시작하는 메서드
-  public startPlayerTurn() {
+  public startPlayerTurn(skipStatusCheck: boolean = false) {
     const state = this.getState();
     state.turn++;
     state.gameStatus = GameStatus.PLAYER_TURN;
@@ -22,7 +22,10 @@ export class TurnManager {
 
     GameUtils.drawCard(state);
     GameUtils.earnGold(state, 2);
-    this.updateGameStatus();
+    
+    if (!skipStatusCheck) {
+      this.updateGameStatus();
+    }
   }
 
   // 적의 턴을 시작하는 메서드
@@ -92,7 +95,7 @@ export class TurnManager {
 
     if (activeEnemyCount === 0) {
       state.shopItems = [...state.currentRoundEnemies];
-      state.gameStatus = GameStatus.SHOP;
+      state.gameStatus = GameStatus.ROUND_VICTORY;
     }
   }
 
@@ -106,6 +109,17 @@ export class TurnManager {
 
     state.gameStatus = GameStatus.PLAYER_TURN;
     state.round++;
-    this.startPlayerTurn();
+    this.startPlayerTurn(true);
+  }
+
+  // 승리 화면에서 상점으로 진입하는 메서드
+  public enterShop() {
+    const state = this.getState();
+
+    if (state.gameStatus !== GameStatus.ROUND_VICTORY) {
+      throw createError(ErrorCode.GAME_NOT_SHOP);
+    }
+    
+    state.gameStatus = GameStatus.SHOP;
   }
 }

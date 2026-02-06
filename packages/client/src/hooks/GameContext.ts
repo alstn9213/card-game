@@ -19,6 +19,7 @@ export interface GameContextType {
   buyCard: (index: number) => void;
   continueRound: () => void;
   mergeFieldUnits: (sourceId: string, targetId: string) => void;
+  enterShop: () => void;
   resetGame: () => void;
   clearError: () => void;
 }

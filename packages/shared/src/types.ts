@@ -37,6 +37,7 @@ export const GameStatus = {
   PLAYER_TURN: "player-turn",
   ENEMY_TURN: "enemy-turn",
   PLAYING: "playing",
+  ROUND_VICTORY: "round-victory",
   VICTORY: "victory",
   DEFEAT: "defeat",
   SHOP: "shop"

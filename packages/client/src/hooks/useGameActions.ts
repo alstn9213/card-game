@@ -57,6 +57,12 @@ export const useGameActions = (
     }
   }, [socket, checkConnection]);
 
+  const enterShop = useCallback(() => {
+    if (checkConnection()) {
+      socket?.emit(ClientEvents.ENTER_SHOP);
+    }
+  }, [socket, checkConnection]);
+
   return {
     startGame,
     playCard,
@@ -64,6 +70,7 @@ export const useGameActions = (
     attack,
     buyCard,
     continueRound,
-    mergeFieldUnits
+    mergeFieldUnits,
+    enterShop
   };
 };

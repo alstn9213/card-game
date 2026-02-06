@@ -2,7 +2,7 @@ import { UnitSlot } from "./UnitSlot";
 import type { FieldUnit, CardData } from "@card-game/shared";
 import type { DragEvent } from "react";
 
-interface BattleZoneProps {
+interface PlayerFieldProps {
   playerField: (FieldUnit | null)[];
   selectedAttackerId: string | null;
   setUnitRef: (id: string, el: HTMLDivElement | null) => void;
@@ -15,7 +15,7 @@ interface BattleZoneProps {
   isDragging?: boolean;
 }
 
-export const BattleZone = ({ 
+export const PlayerField = ({ 
   playerField, 
   selectedAttackerId, 
   setUnitRef, 
@@ -26,10 +26,14 @@ export const BattleZone = ({
   onUnitDragStart,
   draggedCard,
   isDragging
-}: BattleZoneProps) => {
+}: PlayerFieldProps) => {
+  // 드래그 중인 카드가 필드 유닛인지 확인 (FieldUnit은 hasAttacked 속성을 가짐)
+  const isFieldUnitDragging = draggedCard && 'hasAttacked' in draggedCard;
+  const shouldHighlight = isDragging && !isFieldUnitDragging;
+
   return (
     <div 
-      className={`battle-zone ${isDragging ? "drag-active" : ""}`}
+      className={`player-field ${shouldHighlight ? "drag-active" : ""}`}
       onDrop={onDrop}
       onDragOver={onDragOver}
     >

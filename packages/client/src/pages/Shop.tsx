@@ -1,6 +1,7 @@
 import "../css/Shop.css";
 import { DeckRules } from "@card-game/shared";
 import { useGameState } from '../hooks/GameContext';
+import { Card } from "../components/Card";
 
 export const Shop = () => {
   const { gameState, buyCard, continueRound } = useGameState();
@@ -29,7 +30,6 @@ export const Shop = () => {
 
         <div className="shop-message">
           <p>전투를 마치고 잠시 숨을 고릅니다.</p>
-          <p className="shop-sub-message">체력이 소량 회복되었습니다.</p>
         </div>
 
         {gameState.shopItems.length > 0 && (
@@ -41,9 +41,12 @@ export const Shop = () => {
                 const isMaxCopies = currentCount >= DeckRules.MAX_COPIES_PER_CARD;
 
                 return (
-                <div key={index} className={`shop-card-item ${isMaxCopies ? 'sold-out' : ''}`}>
-                  <div className="shop-card-name">{card.name}</div>
-                  <div className="shop-card-cost">🪙 {card.cost}</div>
+                <div key={index} className="shop-card-item">
+                  <Card 
+                    card={card} 
+                    variant="hand"
+                    style={isMaxCopies ? { filter: "grayscale(100%) opacity(0.7)" } : undefined}
+                  />
                   <button 
                     onClick={() => buyCard(index)}
                     className="shop-buy-btn"

@@ -20,10 +20,10 @@ import { useSpellCastEffect } from "../hooks/useSpellCastEffect";
 import { SpellCastAnimation } from "../components/SpellCastAnimation";
 import { RoundVictoryModal } from "../components/RoundVictoryModal";
 import { EnemyArea } from "../components/EnemyArea";
-import { BattleZone } from "../components/BattleZone";
 import { PlayerArea } from "../components/PlayerArea";
 import { useGameState } from "../hooks/GameContext";
 import { ExhaustPileModal } from "../components/ExhaustPileModal";
+import { PlayerField } from "../components/PlayerField";
 
 export const GameBoard = () => {
   const { 
@@ -34,6 +34,7 @@ export const GameBoard = () => {
     endTurn, 
     attack, 
     startGame, 
+    enterShop,
     resetGame, 
     error, 
     clearError 
@@ -86,9 +87,7 @@ export const GameBoard = () => {
   } = useTargetingArrow(!!selectedAttackerId);
 
   const { 
-    showRoundVictory, 
-    showTurnNotification, 
-    handleVictoryConfirm 
+    showTurnNotification
   } = useGameEffects(gameState);
 
   useAttackEffects(gameState, getUnitCenter, getUnitElement);
@@ -155,8 +154,8 @@ export const GameBoard = () => {
         </button>
       </div>
 
-      {/* 2. 중앙 전장 (플레이어 필드) */}
-      <BattleZone 
+      {/* 2. 플레이어 필드 */}
+      <PlayerField 
         playerField={gameState.playerField}
         selectedAttackerId={selectedAttackerId}
         setUnitRef={setUnitRef}
@@ -214,12 +213,12 @@ export const GameBoard = () => {
       )}
 
       {/* 라운드 승리 메시지 */}
-      {showRoundVictory && (
-        <RoundVictoryModal onConfirm={handleVictoryConfirm} />
+      {gameState.gameStatus === GameStatus.ROUND_VICTORY && (
+        <RoundVictoryModal onConfirm={enterShop} />
       )}
 
       {/* 상점 화면 (오버레이) */}
-      {gameState.gameStatus === GameStatus.SHOP && !showRoundVictory && <Shop />}
+      {gameState.gameStatus === GameStatus.SHOP && <Shop />}
 
       {/* 게임 종료 모달 */}
       {(gameState.gameStatus === GameStatus.VICTORY || gameState.gameStatus === GameStatus.DEFEAT) && (

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { GameState, CardData } from "@card-game/shared";
 import { Card } from "./Card";
 
@@ -20,6 +20,22 @@ export const PlayerArea = ({
   onEndTurn, 
   onDragStateChange
 }: PlayerAreaProps) => {
+  // 골드 변경 감지 및 효과 처리를 위한 상태
+  const prevGoldRef = useRef(gameState.currentGold);
+  const [goldEffects, setGoldEffects] = useState<{ id: number; value: number }[]>([]);
+
+  useEffect(() => {
+    if (gameState.currentGold > prevGoldRef.current) {
+      const diff = gameState.currentGold - prevGoldRef.current;
+      const newEffect = { id: Date.now(), value: diff };
+      setGoldEffects(prev => [...prev, newEffect]);
+      setTimeout(() => {
+        setGoldEffects(prev => prev.filter(e => e.id !== newEffect.id));
+      }, 800);
+    }
+    prevGoldRef.current = gameState.currentGold;
+  }, [gameState.currentGold]);
+
   const handleDragStart = (e: React.DragEvent, index: number) => {
     e.dataTransfer.setData("cardIndex", index.toString());
     e.dataTransfer.effectAllowed = "move";
@@ -43,8 +59,11 @@ export const PlayerArea = ({
             {playerDamage && <div key={playerDamage.id} className="floating-damage">{playerDamage.text}</div>}
             HP {gameState.player.currentHp}
          </div>
-         <div className="resource-display">
+         <div className="resource-display" style={{ position: 'relative' }}>
            💰 {gameState.currentGold}
+           {goldEffects.map(effect => (
+             <div key={effect.id} className="floating-gold">+{effect.value}</div>
+           ))}
          </div>
          <button 
            className="end-turn-btn" 

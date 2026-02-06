@@ -1,4 +1,4 @@
-import { DeckRules } from "@card-game/shared";
+import { DeckRules, ErrorCode } from "@card-game/shared";
 import { useDeckBuilder } from "../hooks/useDeckBuilder";
 import "../css/DeckBuilder.css";
 import { Toast } from "../components/Toast";
@@ -23,6 +23,17 @@ export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) =
     setToastError 
   } = useDeckBuilder();
   
+  const handleGameStart = () => {
+    if (!validation.isValid) {
+      setToastError({
+        code: ErrorCode.UNKNOWN_ERROR,
+        message: validation.message || "덱 구성이 올바르지 않습니다."
+      });
+      return;
+    }
+    onGameStart(deck);
+  };
+
   return (
     <div className="deck-builder-container">
       {toastError && <Toast error={toastError} onClose={() => setToastError(null)} />}
@@ -58,7 +69,7 @@ export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) =
       <div className="deck-sidebar">
         <div className="deck-header">
           <h2>나의 덱</h2>
-          <div className={`deck-count ${validation.isValid ? "valid" : "invalid"}`} title={validation.message}>
+          <div className={`deck-count ${validation.isValid ? "valid" : "invalid"}`}>
             {deck.length} / {DeckRules.MAX_DECK_SIZE}
           </div>
         </div>
@@ -88,9 +99,7 @@ export const DeckBuilderPage = ({ onGameStart, onBack }: DeckBuilderPageProps) =
         <div className="deck-footer">
           <button 
             className="start-game-btn" 
-            disabled={!validation.isValid}
-            onClick={() => onGameStart(deck)}
-            title={validation.message}
+            onClick={handleGameStart}
           >
             게임 시작
           </button>
