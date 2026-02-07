@@ -53,7 +53,7 @@ export class AiAttackHandler {
 
         state.attackLogs.push({
           attackerId: enemyUnit.id,
-          targetId: "player",
+          targetId: TargetSource.PLAYER,
           damage: enemyUnit.attackPower
         });
       }
@@ -78,7 +78,7 @@ export class AiAttackHandler {
 
         state.attackLogs.push({ 
           attackerId: enemyUnit.id, 
-          targetId: "player", 
+          targetId: TargetSource.PLAYER, 
           damage: overkillDamage 
         });
       }

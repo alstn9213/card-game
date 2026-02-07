@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { FieldUnit } from "@card-game/shared";
 import { v4 as uuidv4 } from 'uuid';
+import { useTimeoutManager } from "./useTimeoutManager";
 
 export const useUnitEffects = (unit: FieldUnit | null) => {
   const [damageText, setDamageText] = useState<{ id: string; text: string } | null>(null);
@@ -8,7 +9,7 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
   const [isLevelUp, setIsLevelUp] = useState(false);
   const [floatingTexts, setFloatingTexts] = useState<{ id: string; text: string; color: string }[]>([]);
   const prevUnitRef = useRef<FieldUnit | null>(unit);
-  const prevStackRef = useRef<number>(unit?.cardStack || 1);
+  const { addTimeout } = useTimeoutManager();
 
   const unitId = unit?.id;
   const currentHp = unit?.currentHp;
@@ -19,23 +20,23 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
 
   const triggerDamageEffect = (amount: number) => {
     setDamageText({ id: uuidv4(), text: `-${amount}` });
-    setTimeout(() => setDamageText(null), 1000);
+    addTimeout(() => setDamageText(null), 1000);
   };
 
   const triggerShake = () => {
     setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 500);
+    addTimeout(() => setIsShaking(false), 500);
   };
 
   const triggerLevelUp = () => {
     setIsLevelUp(true);
-    setTimeout(() => setIsLevelUp(false), 1500);
+    addTimeout(() => setIsLevelUp(false), 1500);
   };
 
   const addFloatingText = (text: string, color: string) => {
     const id = uuidv4();
     setFloatingTexts(prev => [...prev, { id, text, color }]);
-    setTimeout(() => {
+    addTimeout(() => {
       setFloatingTexts(prev => prev.filter(item => item.id !== id));
     }, 1000);
   };
@@ -59,8 +60,10 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
 
     if (atkDiff > 0) {
       addFloatingText(`+${atkDiff} ATK`, "#e67e22");
-    } else if (hpDiff > 0) {
-      setTimeout(() => addFloatingText(`+${hpDiff} HP`, "#2ecc71"), 300);
+    } 
+    
+    if (hpDiff > 0) {
+      addTimeout(() => addFloatingText(`+${hpDiff} HP`, "#2ecc71"), 300);
     }
   };
 
@@ -70,24 +73,19 @@ export const useUnitEffects = (unit: FieldUnit | null) => {
     if (unit && prevUnit && unit.id === prevUnit.id) {
       checkCombatStatus(prevUnit, unit);
       checkStatChanges(prevUnit, unit);
-      
-      if (unit.cardStack > prevStackRef.current) {
+      // 카드 스택이 변하면 레벨업 이펙트
+      if (unit.cardStack > prevUnit.cardStack) {
         triggerLevelUp();
       }
     } 
     
-    else if (!unit && prevUnit) {
-      // 유닛이 사라질 때 체력이 남아있던 경우에만 데미지 표시 (이미 죽은 유닛 제외)
-      if (prevUnit.currentHp > 0) {
-        triggerDamageEffect(prevUnit.currentHp);
-      }
+    // 유닛이 사라질 때 체력이 남아있던 경우에만 데미지 표시 (이미 죽은 유닛 제외)
+    if (!unit && prevUnit && prevUnit.currentHp > 0) { 
+      triggerDamageEffect(prevUnit.currentHp);
     }
 
     prevUnitRef.current = unit;
     
-    if (unit) {
-      prevStackRef.current = unit.cardStack;
-    }
   }, [unitId, currentHp, hasAttacked, cardStack, attackPower, maxHp]);
 
   return { 

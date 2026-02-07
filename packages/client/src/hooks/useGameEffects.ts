@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { GameStatus, type GameState } from "@card-game/shared";
+import { useTimeoutManager } from "./useTimeoutManager";
 
 export const useGameEffects = (
   gameState: GameState | null
 ) => {
   const [showTurnNotification, setShowTurnNotification] = useState(false);
   const lastNotifiedTurnRef = useRef<number>(-1);
+  const { addTimeout } = useTimeoutManager();
 
   const isPlayerTurn = gameState?.gameStatus === GameStatus.PLAYER_TURN;
   const turn = gameState?.turn;
@@ -16,11 +18,10 @@ export const useGameEffects = (
       if (turn !== lastNotifiedTurnRef.current) {
         setShowTurnNotification(true);
         lastNotifiedTurnRef.current = turn;
-        const timer = setTimeout(() => setShowTurnNotification(false), 2000);
-        return () => clearTimeout(timer);
+        addTimeout(() => setShowTurnNotification(false), 2000);
       }
     }
-  }, [isPlayerTurn, turn]);
+  }, [isPlayerTurn, turn, addTimeout]);
 
   return {
     showTurnNotification

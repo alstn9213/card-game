@@ -26,7 +26,8 @@ export const useTargetingArrow = (isActive: boolean) => {
   const setUnitRef = useCallback((id: string, el: HTMLDivElement | null) => {
     if (el) {
       unitRefs.current.set(id, el);
-    } else {
+    } 
+    else {
       unitRefs.current.delete(id);
     }
   }, []);

@@ -52,7 +52,9 @@ export class GameLoopManager {
         }
       }
       
-    } catch (error) {
+    } 
+    
+    catch (error) {
       console.error("[GameLoopManager] 적 턴 처리중 에러 발생:", error);
       // 에러 발생 시 복구 로직
       const tm = this.getTurnManager();

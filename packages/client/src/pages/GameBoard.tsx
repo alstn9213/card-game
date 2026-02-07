@@ -30,6 +30,7 @@ import {
 export const GameBoard = () => {
   const { 
     gameState, 
+    setGameState,
     isConnected, 
     mergeFieldUnits,
     playCard, 
@@ -93,7 +94,7 @@ export const GameBoard = () => {
     showTurnNotification
   } = useGameEffects(gameState);
 
-  useAttackEffects(gameState, getUnitCenter, getUnitElement);
+  useAttackEffects(gameState, setGameState, getUnitCenter, getUnitElement);
 
   const spellEffect = useSpellCastEffect();
 

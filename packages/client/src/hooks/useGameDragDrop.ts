@@ -43,7 +43,9 @@ export const useGameDragDrop = (
       if (!isNaN(index)) {
         playCard(index, unitId); // 타겟 유닛 ID와 함께 호출하여 병합 시도
       }
-    } else if (sourceUnitId) {
+    } 
+    
+    else if (sourceUnitId) {
       if (sourceUnitId !== unitId) {
         mergeFieldUnits(sourceUnitId, unitId);
       }

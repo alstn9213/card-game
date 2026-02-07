@@ -1,15 +1,18 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { TargetSource, type GameState } from "@card-game/shared";
+import { applyLogToState } from "../utils/GameLogUtils";
+import { useTimeoutManager } from "./useTimeoutManager";
 import "../css/AttackEffects.css";
 
 export const useAttackEffects = (
   gameState: GameState | null,
+  setGameState: Dispatch<SetStateAction<GameState | null>>,
   getUnitCenter: (id: string) => { x: number; y: number } | null,
-  getUnitElement: (id: string) => HTMLElement | null,
-  onAttackImpact?: (log: { attackerId: string; targetId: string; damage: number }) => void
+  getUnitElement: (id: string) => HTMLElement | null
 ) => {
   const lastKnownPositions = useRef<Map<string, {x: number, y: number}>>(new Map());
   const processedLogCount = useRef<number>(0);
+  const { addTimeout } = useTimeoutManager();
 
   const playerField = gameState?.playerField;
   const enemyField = gameState?.enemyField;
@@ -50,13 +53,13 @@ export const useAttackEffects = (
     
     if (newLogs.length > 0) {
       newLogs.forEach((log, index) => {
-        setTimeout(() => {
+        addTimeout(() => {
           triggerAttackAnimation(log);
         }, index * 600);
       });
       processedLogCount.current = attackLogs.length;
     }
-  }, [attackLogs, onAttackImpact]);
+  }, [attackLogs, addTimeout]);
 
   const triggerAttackAnimation = (log: { attackerId: string; targetId: string; damage: number }) => {
     const { attackerId, targetId } = log;
@@ -73,22 +76,26 @@ export const useAttackEffects = (
       attackerEl.style.setProperty('--attack-dy', `${dy}px`);
       attackerEl.classList.add('attacking-unit');
 
-      const handleImpact = (e: TransitionEvent) => {
-        // transform 속성의 변화가 끝났을 때만 트리거 (다른 속성 변화 무시)
-        if (e.target !== attackerEl) return;
-        if (e.propertyName !== 'transform' && e.propertyName !== 'left' && e.propertyName !== 'top') return;
+      let isImpactHandled = false;
+
+      const handleImpact = (e?: TransitionEvent) => {
+        if (isImpactHandled) return;
         
+        if (e) {
+          if (e.target !== attackerEl) return;
+          if (e.propertyName !== 'transform') return;
+        }
+        
+        isImpactHandled = true;
         attackerEl.removeEventListener('transitionend', handleImpact);
 
-        // 충돌 시점 로직 실행 (데미지 적용, 사운드 등)
-        if (onAttackImpact) {
-          onAttackImpact(log);
-        }
+        // GameLogUtils를 사용하여 상태 업데이트 (애니메이션 동기화)
+        setGameState((prev) => (prev ? applyLogToState(prev, log) : null));
 
         // 원위치로 복귀 애니메이션 시작
         attackerEl.classList.add('returning');
         
-        setTimeout(() => {
+        addTimeout(() => {
           attackerEl.classList.remove('attacking-unit', 'returning');
           attackerEl.style.removeProperty('--attack-dx');
           attackerEl.style.removeProperty('--attack-dy');
@@ -96,6 +103,9 @@ export const useAttackEffects = (
       };
 
       attackerEl.addEventListener('transitionend', handleImpact);
+      
+      // 안전장치: 트랜지션 이벤트가 발생하지 않을 경우를 대비 (0.2s duration + buffer)
+      addTimeout(() => handleImpact(), 300);
     } 
   };
 };

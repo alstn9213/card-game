@@ -11,7 +11,10 @@ export const UnitTooltip = ({ unit }: UnitTooltipProps) => {
 
   useLayoutEffect(() => {
     const el = tooltipRef.current;
-    if (!el) return;
+    
+    if (!el) {
+      return;
+    }
 
     const rect = el.getBoundingClientRect();
     const viewportWidth = window.innerWidth;

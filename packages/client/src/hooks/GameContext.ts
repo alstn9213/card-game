@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, type Dispatch, type SetStateAction } from "react";
 import { Socket } from "socket.io-client";
 import {
   type GameState,
@@ -10,6 +10,7 @@ import {
 export interface GameContextType {
   socket: Socket<ServerToClientEvents, ClientToServerEvents> | null;
   gameState: GameState | null;
+  setGameState: Dispatch<SetStateAction<GameState | null>>;
   isConnected: boolean;
   error: GameError | null;
   startGame: (deck: string[]) => void;
@@ -22,7 +23,6 @@ export interface GameContextType {
   enterShop: () => void;
   resetGame: () => void;
   clearError: () => void;
-  registerUnit: (id: string, element: HTMLElement | null) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);

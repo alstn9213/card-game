@@ -1,11 +1,10 @@
 import "../css/GameEffects.css";
 import "../css/UnitSlot.css";
 import type { FieldUnit } from "@card-game/shared";
-import { type MouseEvent, type DragEvent, useState, useEffect, forwardRef, useRef, useCallback, type CSSProperties } from "react";
+import { type MouseEvent, type DragEvent, useState, useEffect, forwardRef, type CSSProperties } from "react";
 import { useUnitEffects } from "../hooks/useUnitEffects";
 import { UnitTooltip } from "./UnitTooltip";
 import { Card } from "./Card";
-import { useGameState } from "../hooks/GameContext";
 
 interface UnitSlotProps {
   unit: FieldUnit | null;
@@ -28,38 +27,15 @@ export const UnitSlot = forwardRef<HTMLDivElement, UnitSlotProps>(({
 }, ref) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const { damageText, isShaking, isLevelUp, floatingTexts } = useUnitEffects(unit);
-  const { registerUnit } = useGameState();
-  const internalRef = useRef<HTMLDivElement | null>(null);
 
   // 유닛 정보가 바뀌면(라운드 전환 등) 툴팁 닫기
   useEffect(() => {
     setShowTooltip(false);
   }, [unit]);
 
-  // Ref 병합 및 등록 로직
-  const setRef = useCallback((node: HTMLDivElement | null) => {
-    internalRef.current = node;
-    // 부모로부터 전달받은 ref 처리
-    if (typeof ref === 'function') {
-      ref(node);
-    } else if (ref) {
-      (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
-    }
-  }, [ref]);
-
-  // 유닛 ID가 있을 때 Context에 Ref 등록
-  useEffect(() => {
-    if (unit && internalRef.current) {
-      registerUnit(unit.id, internalRef.current);
-    }
-    return () => {
-      if (unit) registerUnit(unit.id, null);
-    };
-  }, [unit, registerUnit]);
-
   return (
     <div 
-      ref={setRef} 
+      ref={ref} 
       className={`field-slot ${unit ? "occupied-wrapper" : "empty"} ${isMergeTarget ? "merge-target" : ""}`} 
       onClick={onClick} 
       style={{ position: 'relative' }}
