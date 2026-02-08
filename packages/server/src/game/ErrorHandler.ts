@@ -8,18 +8,23 @@ import {
   ServerToClientEvents 
 } from "@card-game/shared";
 
-export class ErrorHandler {
-  constructor(private socket: Socket<ClientToServerEvents, ServerToClientEvents>) {}
 
-  public handleError(error: unknown, failCode: ErrorCode): void {
+
+export class ErrorHandler {
+  public static handleError(socket: Socket<ClientToServerEvents, ServerToClientEvents>, error: unknown, failCode: ErrorCode, context: string = "ErrorHandler"): void {
     if (this.isGameError(error)) {
-      this.socket.emit(ServerEvents.ERROR, error);
+      console.warn(`[${context}] 유저 요청 오류: ${error.message}`);
+      socket.emit(ServerEvents.ERROR, error);
     } else {
-      this.socket.emit(ServerEvents.ERROR, createError(failCode));
+      console.error(`[${context}] 서버 내부 오류:`, error);
+      socket.emit(ServerEvents.ERROR, createError(failCode));
     }
   }
 
-  private isGameError(error: unknown): error is GameError {
-    return typeof error === "object" && error !== null && "code" in error && "message" in error;
+  public static isGameError(error: unknown): error is GameError {
+    return typeof error === "object" 
+      && error !== null 
+      && "code" in error 
+      && "message" in error;
   }
 }

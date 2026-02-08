@@ -1,4 +1,4 @@
-import { GameState, GameStatus, TargetSource, FieldUnit } from "@card-game/shared";
+import { GameState, GameStatus, TargetSource, FieldUnit, ServerEvents } from "@card-game/shared";
 import { GameUtils } from "../../utils/GameUtils";
 
 export class AiAttackHandler {
@@ -32,12 +32,6 @@ export class AiAttackHandler {
         const targetHpBeforeAttack = targetUnit.currentHp;
 
         targetUnit.currentHp -= enemyUnit.attackPower;
-
-        state.attackLogs.push({
-          attackerId: enemyUnit.id,
-          targetId: targetUnit.id,
-          damage: enemyUnit.attackPower
-        });
 
         this.handleOverkill(state, enemyUnit, targetUnit, targetHpBeforeAttack);
 

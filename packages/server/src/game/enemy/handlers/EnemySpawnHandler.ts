@@ -7,6 +7,11 @@ export class EnemySpawnHandler {
   public execute(state: GameState): void {
     state.enemyField = [null, null, null, null, null];
     state.currentRoundEnemies = [];
+
+    if (UNIT_CARDS.length === 0) {
+      console.warn("[EnemySpawnHandler] UNIT_CARDS가 비어있어 적을 소환할 수 없습니다.");
+      return;
+    }
     
     const spawnCount = this.calculateSpawnCount(state.round);
     const availableSlots = GameUtils.shuffleArray([0, 1, 2, 3, 4]);
@@ -20,6 +25,10 @@ export class EnemySpawnHandler {
       const pool = candidateUnits.length > 0 ? candidateUnits : UNIT_CARDS;
       const randomUnit = pool[Math.floor(Math.random() * pool.length)];
 
+      if (!randomUnit) {
+        continue;
+      }
+      
       const stack = this.calculateStack(state.round);
 
       state.enemyField[slotIndex] = {

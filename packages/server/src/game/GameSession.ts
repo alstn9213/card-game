@@ -1,4 +1,4 @@
-import { ClientToServerEvents, ServerToClientEvents, ClientEvents, ServerEvents, ErrorCode, createError, CardType, FieldUnit, GameCard } from "@card-game/shared";
+import { ClientToServerEvents, ServerToClientEvents, ClientEvents, ServerEvents, ErrorCode, createError, CardType, FieldUnit, GameCard, GameError } from "@card-game/shared";
 import { Socket } from "socket.io";
 import { GameLoopManager } from "./GameLoopManager";
 import { ErrorHandler } from "./ErrorHandler";
@@ -8,31 +8,25 @@ export class GameSession {
   private socket: Socket<ClientToServerEvents, ServerToClientEvents>;
   private gameContext: GameContext | null = null;
   private gameLoopManager: GameLoopManager;
-  private errorHandler: ErrorHandler;
 
   constructor(socket: Socket) {
     this.socket = socket;
-    this.errorHandler = new ErrorHandler(this.socket);
     this.gameLoopManager = new GameLoopManager(
       () => this.gameContext?.turnManager ?? null,
       () => this.gameContext?.state ?? null,
       () => this.gameContext?.enemyManager ?? null,
-      () => this.broadcastState()
+      () => this.broadcastState(),
+      this.socket
     );
     this.setupListeners();
   }
 
   // --- 헬퍼 메서드 ---
 
-  // 게임 상태 최신화 전파 헬퍼
+  // 게임 상태 최신화 헬퍼
   private broadcastState() {
-    if (!this.gameContext) {
-      console.warn("[GameSession] broadcastState가 gameContext를 찾을 수 없습니다.");
-      return;
-    }
-    else {
-      this.socket.emit(ServerEvents.GAME_STATE_UPDATE, this.gameContext.state);
-    }
+    const context = this.validateGameContext();
+    this.socket.emit(ServerEvents.GAME_STATE_UPDATE, context.state);
   }
   
   // 소켓 전파 헬퍼
@@ -81,20 +75,24 @@ export class GameSession {
       // 이전 게임의 타이머가 남아있을 수 있으므로 정리
       this.gameLoopManager.clearTimers();
       this.gameContext = createGameContext(playerDeck);
-      this.spawnEnemies(this.gameContext);
-      this.gameContext.turnManager.endEnemyTurn();
-      this.broadcastState();
+      
+      const isSuccess = this.executeGameAction((context) => {
+        context.enemyManager.spawnRandomEnemies(context.state);
+        context.turnManager.endEnemyTurn();
+      });
+
+      // 초기화 로직(적 소환 등) 실패 시 생성된 불완전한 게임 컨텍스트 파기
+      if (!isSuccess) {
+        this.gameContext = null;
+      }
     } 
     
     catch (err: unknown) {
-      this.errorHandler.handleError(err, ErrorCode.UNKNOWN_ERROR);
+      this.gameContext = null;
+      ErrorHandler.handleError(this.socket, err, ErrorCode.UNKNOWN_ERROR, "GameSession: StartGame");
     }
   }
 
-  // 적 생성 헬퍼
-  private spawnEnemies(context: GameContext) {
-    context.enemyManager.spawnRandomEnemies(context.state);
-  }
   
   // 카드소환 및 병합 핸들러
   private handlePlayCard(cardIndex: number, targetId?: string) {
@@ -166,7 +164,8 @@ export class GameSession {
     this.executeGameAction(
       (context) => {
         context.turnManager.startNextRound();
-        this.spawnEnemies(context);
+        context.enemyManager.spawnRandomEnemies(context.state);
+        context.turnManager.endEnemyTurn();
       }
     );
   }
@@ -201,14 +200,8 @@ export class GameSession {
   private executeGameAction(
     action: (context: GameContext) => void
   ): boolean {
-    const context = this.validateGameContext();
-
-    if (!context) {
-      console.warn("[GameSession] executeGameAction이 gameContext를 찾을 수 없습니다");
-      return false;
-    }
-
     try {
+      const context = this.validateGameContext();
       action(context);      
       context.turnManager.updateGameStatus();
       this.broadcastState();
@@ -216,19 +209,18 @@ export class GameSession {
     } 
 
     catch (error: unknown) {
-      this.errorHandler.handleError(error, ErrorCode.UNKNOWN_ERROR);
+      ErrorHandler.handleError(this.socket, error, ErrorCode.UNKNOWN_ERROR, "GameSession: Action");
       return false;
     }
   }
   
   // 매니저 반환 및 유효성 검사 헬퍼
-  private validateGameContext(): GameContext | null {
+  private validateGameContext(): GameContext {
     if (!this.gameContext) {
-      this.socket.emit(ServerEvents.ERROR, createError(ErrorCode.GAME_NOT_STARTED));
-      return null;
+      throw createError(ErrorCode.GAME_NOT_STARTED);
     }
-    else {
-      return this.gameContext;
-    }
+    return this.gameContext;
   }
+
+ 
 }

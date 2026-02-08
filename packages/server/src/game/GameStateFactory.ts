@@ -8,10 +8,7 @@ export const initializeGame = (playerDeck?: string[]): GameState => {
   let deckCardIds: string[] = [];
 
   if (playerDeck && playerDeck.length > 0) {
-    const errors = validateDeck(playerDeck);
-    if (errors.length > 0) {
-      throw errors[0];
-    }
+    validateDeck(playerDeck);
     deckCardIds = playerDeck;
   } 
   
@@ -57,7 +54,7 @@ const createInitialGameState = (): GameState => {
     gameStatus: GameStatus.PLAYER_TURN,
     shopItems: [],
     currentRoundEnemies: [],
-    attackLogs: [],
+    attackLogs: []
   };
 };
 
