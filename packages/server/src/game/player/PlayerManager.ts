@@ -21,7 +21,7 @@ export class PlayerManager {
 
   }
 
-  // 카드 소환 함수
+  // 카드 소환 메서드
   public playCard(cardIndex: number, targetId?: string): GameCard | null {
     const state = this.getState();
 
@@ -43,7 +43,7 @@ export class PlayerManager {
     return null;
   }
 
-  // 공격 함수
+  // 공격 메서드
   public attack(attackerId: string, targetId: string): void {
     const state = this.getState();
     if (state.gameStatus !== GameStatus.PLAYER_TURN) {
@@ -52,6 +52,7 @@ export class PlayerManager {
     this.attackHandler.execute(attackerId, targetId);
   }
 
+  // 패에서 카드 겹치기 메서드
   public mergeFieldUnits(sourceId: string, targetId: string): FieldUnit {
     const state = this.getState();
     if (state.gameStatus !== GameStatus.PLAYER_TURN) {
@@ -60,6 +61,7 @@ export class PlayerManager {
     return this.mergeHandler.execute(sourceId, targetId);
   }
 
+  // 필드에서 카드 겹치기 메서드
   public mergeHandCard(cardIndex: number, targetId: string): FieldUnit {
     const state = this.getState();
     if (state.gameStatus !== GameStatus.PLAYER_TURN) {

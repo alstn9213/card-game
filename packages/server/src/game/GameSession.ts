@@ -3,21 +3,32 @@ import { Socket } from "socket.io";
 import { GameLoopManager } from "./GameLoopManager";
 import { ErrorHandler } from "./ErrorHandler";
 import { createGameContext, GameContext } from "./GameContextFactory";
+import { GameActionManager } from "./GameActionManager";
 
 export class GameSession {
   private socket: Socket<ClientToServerEvents, ServerToClientEvents>;
   private gameContext: GameContext | null = null;
   private gameLoopManager: GameLoopManager;
+  private gameActionManager: GameActionManager;
 
   constructor(socket: Socket) {
     this.socket = socket;
+    
+    const errorHandler = (error: unknown, code: ErrorCode, context: string) => 
+      ErrorHandler.handleError(this.socket, error, code, context);
+
     this.gameLoopManager = new GameLoopManager(
-      () => this.gameContext?.turnManager ?? null,
-      () => this.gameContext?.state ?? null,
-      () => this.gameContext?.enemyManager ?? null,
+      () => this.gameContext,
       () => this.broadcastState(),
-      this.socket
+      errorHandler
     );
+
+    this.gameActionManager = new GameActionManager(
+      () => this.gameContext,
+      () => this.broadcastState(),
+      errorHandler
+    );
+
     this.setupListeners();
   }
 
@@ -76,10 +87,10 @@ export class GameSession {
       this.gameLoopManager.clearTimers();
       this.gameContext = createGameContext(playerDeck);
       
-      const isSuccess = this.executeGameAction((context) => {
-        context.enemyManager.spawnRandomEnemies(context.state);
+      const isSuccess = this.gameActionManager.execute((context) => {
+        context.enemyManager.spawnEnemies();
         context.turnManager.endEnemyTurn();
-      });
+      }, "GameSession: StartGame");
 
       // 초기화 로직(적 소환 등) 실패 시 생성된 불완전한 게임 컨텍스트 파기
       if (!isSuccess) {
@@ -99,7 +110,7 @@ export class GameSession {
     let mergedUnit: FieldUnit | undefined;
     let playedCard: GameCard | null = null;
 
-    this.executeGameAction((context) => {
+    this.gameActionManager.execute((context) => {
       const state = context.state;
       const card = state.hand[cardIndex];
 
@@ -117,7 +128,7 @@ export class GameSession {
       else {
         playedCard = context.playerManager.playCard(cardIndex, targetId);
       }
-    });
+    }, "GameSession: PlayCard");
 
     if (mergedUnit) {
       this.socket.emit(ServerEvents.MERGE_SUCCESS, {
@@ -136,15 +147,17 @@ export class GameSession {
 
   // 플레이어의 상대 공격 핸들러
   private handleAttack(attackerId: string, targetId: string) {
-    this.executeGameAction(
-      (context) => context.playerManager.attack(attackerId, targetId)
+    this.gameActionManager.execute(
+      (context) => context.playerManager.attack(attackerId, targetId),
+      "GameSession: Attack"
     );
   }
 
    // 플레이어 턴이 끝나면 상대 로직 실행 핸들러
   private handleEndTurn() {
-    const success = this.executeGameAction(
-      (context) => context.turnManager.endPlayerTurn()
+    const success = this.gameActionManager.execute(
+      (context) => context.turnManager.endPlayerTurn(),
+      "GameSession: EndTurn"
     );
 
     if (success) {
@@ -154,19 +167,21 @@ export class GameSession {
 
   // 상점에서 카드 구매 핸들러  
   private handleBuyCard(cardIndex: number) {
-    this.executeGameAction(
-      (context) => context.shopManager.buyCard(cardIndex)
+    this.gameActionManager.execute(
+      (context) => context.shopManager.buyCard(cardIndex),
+      "GameSession: BuyCard"
     );
   }
 
   // 다음 라운드 진행 핸들러
   private handleContinueRound() {
-    this.executeGameAction(
+    this.gameActionManager.execute(
       (context) => {
         context.turnManager.startNextRound();
-        context.enemyManager.spawnRandomEnemies(context.state);
+        context.enemyManager.spawnEnemies();
         context.turnManager.endEnemyTurn();
-      }
+      },
+      "GameSession: ContinueRound"
     );
   }
 
@@ -174,10 +189,11 @@ export class GameSession {
   private handleMergeFieldUnits(sourceId: string, targetId: string) {
     let mergedUnit: FieldUnit | undefined;
 
-    this.executeGameAction(
+    this.gameActionManager.execute(
       (context) => {
         mergedUnit = context.playerManager.mergeFieldUnits(sourceId, targetId);
-      }
+      },
+      "GameSession: MergeFieldUnits"
     );
 
     if (mergedUnit) {
@@ -190,29 +206,12 @@ export class GameSession {
 
   // 상점 진입 핸들러
   private handleEnterShop() {
-    this.executeGameAction(
-      (context) => context.turnManager.enterShop()
+    this.gameActionManager.execute(
+      (context) => context.turnManager.enterShop(),
+      "GameSession: EnterShop"
     );
   }
 
- 
-  // 반복되는 액션 실행 및 에러 처리 헬퍼
-  private executeGameAction(
-    action: (context: GameContext) => void
-  ): boolean {
-    try {
-      const context = this.validateGameContext();
-      action(context);      
-      context.turnManager.updateGameStatus();
-      this.broadcastState();
-      return true;  
-    } 
-
-    catch (error: unknown) {
-      ErrorHandler.handleError(this.socket, error, ErrorCode.UNKNOWN_ERROR, "GameSession: Action");
-      return false;
-    }
-  }
   
   // 매니저 반환 및 유효성 검사 헬퍼
   private validateGameContext(): GameContext {

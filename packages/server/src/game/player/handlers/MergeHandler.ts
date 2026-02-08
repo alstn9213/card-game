@@ -12,6 +12,8 @@ export class MergeHandler {
     }
   }
 
+  // --- 헬퍼 메서드 ---
+  
   private handleHandMerge(cardIndex: number, targetId: string): FieldUnit {
     const state = this.getState();
     const card = state.hand[cardIndex];

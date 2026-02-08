@@ -6,7 +6,9 @@ export class AiAttackHandler {
     private getState: () => GameState
   ) {}
   
-  public execute(state: GameState): void {
+  public execute(): void {
+    const state: GameState = this.getState();
+    
     // 공격 가능한 적 유닛들을 수집하고 공격력이 높은 순서대로 정렬
     const attackers = state.enemyField
       .filter((u): u is FieldUnit => u !== null && !u.hasAttacked)

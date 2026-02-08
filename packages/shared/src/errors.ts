@@ -5,6 +5,7 @@ export const ErrorCode = {
   GAME_NOT_STARTED: "게임이 시작되지 않았습니다.",
   GAME_NOT_SHOP: "상점 단계가 아닙니다.",
   NOT_YOUR_TURN: "상대 차례입니다",
+  NOT_ENEMY_TURN: "플레이어 차례입니다",
   CARD_NOT_ON_FIELD: "카드가 필드에 없습니다.",
   CARD_NOT_FOUND: "카드를 찾을 수 없습니다.",
   FIELD_FULL: "필드가 가득 찼습니다",

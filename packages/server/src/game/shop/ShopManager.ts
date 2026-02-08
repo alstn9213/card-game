@@ -3,7 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { GameUtils } from "../utils/GameUtils";
 
 export class ShopManager {
-  constructor(private getState: () => GameState) {}
+  constructor(
+    private getState: () => GameState
+  ) {}
 
   public buyCard(cardIndex: number): void {
     const state = this.getState();
@@ -18,19 +20,13 @@ export class ShopManager {
       throw createError(ErrorCode.CARD_NOT_FOUND);
     }
 
-    const currentCardCount = state.deck.filter(c => c.cardId === cardData.cardId).length;
-
-    if (currentCardCount >= DeckRules.MAX_COPIES_PER_CARD) {
-      throw createError(ErrorCode.MAX_COPIES_PER_CARD);
-    }
-
-    else if (state.currentGold < cardData.cost) {
+    if (state.currentGold < cardData.cost) {
       throw createError(ErrorCode.NOT_ENOUGH_GOLD);
     }
 
     state.currentGold -= cardData.cost;
     
-    // 덱에 추가 (새 인스턴스 생성)
+    // 새 인스턴스 생성
     const newCard: GameCard = { 
       ...cardData,
       id: uuidv4(), 

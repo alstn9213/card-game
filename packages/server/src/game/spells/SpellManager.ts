@@ -13,6 +13,7 @@ export class SpellManager {
     }
 
   public execute(card: SpellCard, cardIndex: number, targetId?: string): void {
+    
     switch (card.effectType) {
       case EffectType.GOLD:
         this.goldHandler.execute(cardIndex, card.value ?? 0);

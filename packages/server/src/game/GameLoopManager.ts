@@ -1,19 +1,17 @@
-import { GameStatus, GameState, ErrorCode, ClientToServerEvents, ServerToClientEvents } from "@card-game/shared";
-import { Socket } from "socket.io";
-import { TurnManager } from "./TurnManager";
-import { EnemyManager } from "./enemy/EnemyManager";
-import { ErrorHandler } from "./ErrorHandler";
+import { GameStatus, ErrorCode } from "@card-game/shared";
+import { GameContext } from "./GameContextFactory";
+import { BaseGameManager } from "./BaseGameManager";
 
-export class GameLoopManager {
+export class GameLoopManager extends BaseGameManager {
   private timers: NodeJS.Timeout[] = [];
 
   constructor(
-    private getTurnManager: () => TurnManager | null,
-    private getGameState: () => GameState | null,
-    private getEnemyManager: () => EnemyManager | null,
-    private broadcastState: () => void,
-    private socket: Socket<ClientToServerEvents, ServerToClientEvents>
-  ) {}
+    getGameContext: () => GameContext | null,
+    broadcastState: () => void,
+    onError: (error: unknown, code: ErrorCode, context: string) => void
+  ) {
+    super(getGameContext, broadcastState, onError);
+  }
 
   public async startEnemyTurnSequence() {
     this.clearTimers();
@@ -48,13 +46,12 @@ export class GameLoopManager {
     } 
     
     catch (error) {
-      ErrorHandler.handleError(this.socket, error, ErrorCode.UNKNOWN_ERROR, "GameLoopManager: StartEnemyTurnSequence");
+      this.onError(error, ErrorCode.UNKNOWN_ERROR, "GameLoopManager: StartEnemyTurnSequence");
       // 에러 발생 시 복구 로직
-      const tm = this.getTurnManager();
-      const st = this.getGameState();
+      const context = this.getGameContext();
       // 에러가 나도 게임이 진행 중(적 턴)이었다면 플레이어 턴으로 넘겨줌
-      if (tm && st && st.gameStatus === GameStatus.ENEMY_TURN) {
-        tm.startPlayerTurn();
+      if (context && context.state.gameStatus === GameStatus.ENEMY_TURN) {
+        context.turnManager.startPlayerTurn();
         this.broadcastState();
       }
     }
@@ -74,16 +71,5 @@ export class GameLoopManager {
       }, ms);
       this.timers.push(timer);
     });
-  }
-
-  private validateContext() {
-    const state = this.getGameState();
-    const turnManager = this.getTurnManager();
-    const enemyManager = this.getEnemyManager();
-
-    if (!state || !turnManager || !enemyManager) {
-      throw new Error("[GameLoopManager] GameContext가 유효하지 않습니다.");
-    }
-    return { state, turnManager, enemyManager };
   }
 }

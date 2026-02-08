@@ -16,6 +16,7 @@ export class DrawHandler {
   
   private validate(state: GameState, cardIndex: number): void {
     const card = state.hand[cardIndex];
+    
     if (!card) {
       throw createError(ErrorCode.CARD_NOT_FOUND);
     }

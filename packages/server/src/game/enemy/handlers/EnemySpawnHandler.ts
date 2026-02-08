@@ -3,8 +3,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { GameUtils } from "../../utils/GameUtils";
 
 export class EnemySpawnHandler {
-  
-  public execute(state: GameState): void {
+  constructor(
+    private getState: () => GameState
+  ) {}
+
+  public execute(): void {
+    const state: GameState = this.getState();
     state.enemyField = [null, null, null, null, null];
     state.currentRoundEnemies = [];
 
@@ -46,6 +50,8 @@ export class EnemySpawnHandler {
     }
   }
 
+  // --- 헬퍼 메서드 ---
+
   // 라운드별 스폰 수 계산 헬퍼
   private calculateSpawnCount(round: number): number {
     let min = 1;
@@ -72,7 +78,7 @@ export class EnemySpawnHandler {
   private calculateStack(round: number): number {
     // 10라운드마다 기본 스택 1 증가 (1~10: 1, 11~20: 2 ...)
     const baseStack = Math.ceil(round / 10);
-    // 20% 확률로 +1 스택 (엘리트 몬스터 느낌)
+    // 20% 확률로 +1 스택
     const bonus = Math.random() < 0.2 ? 1 : 0;
     return baseStack + bonus;
   }
